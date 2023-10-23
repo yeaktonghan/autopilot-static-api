@@ -25,7 +25,7 @@ public class Project {
     private String project_code;
     private LocalDateTime created_at=LocalDateTime.now();
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
-    private Set<ProjectDetails> projectDetails =new HashSet<>();
+    private final Set<ProjectDetails> projectDetails =new HashSet<>();
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
     private List<DeploymentApp> deploymentApps=new ArrayList<>();
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)

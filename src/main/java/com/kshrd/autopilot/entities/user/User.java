@@ -33,7 +33,7 @@ public class User implements UserDetails {
     private Gender gender;
 
     @OneToMany(mappedBy = "user",cascade =CascadeType.ALL)
-    private Set<ProjectDetails> projectDetails =new HashSet<>();
+    private final Set<ProjectDetails> projectDetails =new HashSet<>();
 
     public UserDto toUserDto(){
         return new UserDto(this.id,this.username,this.full_name,this.email,this.imageUrl,this.gender);
