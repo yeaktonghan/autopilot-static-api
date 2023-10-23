@@ -13,16 +13,12 @@ import com.kshrd.autopilot.repository.ProjectRepository;
 import com.kshrd.autopilot.repository.UserRepository;
 import com.kshrd.autopilot.service.DeploymentAppService;
 import com.kshrd.autopilot.util.CurrentUserUtil;
-import com.kshrd.autopilot.util.FileUtil;
 import com.kshrd.autopilot.util.Jenkins;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class DeploymentAppServiceImpl implements DeploymentAppService {
