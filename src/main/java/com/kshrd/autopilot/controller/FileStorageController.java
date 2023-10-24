@@ -84,4 +84,8 @@ public class FileStorageController {
         }
         return ResponseEntity.notFound().build();
     }
+    @GetMapping("/hello")
+    public String test(){
+        return "Hello bong";
+    }
 }
