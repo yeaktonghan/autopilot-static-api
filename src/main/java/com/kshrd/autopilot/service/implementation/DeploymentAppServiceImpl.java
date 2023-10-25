@@ -49,7 +49,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String path="";
         String protocol="";
         try{
-            URL url=new URL(request.getGitUrl());
+            URL url=new URL(request.getGit_src_url());
             newUrl=url.getHost();
             path=url.getPath();
             protocol=url.getProtocol();
@@ -57,7 +57,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             e.printStackTrace();
         }
         if (request.getToken() != null) {
-            request.setGitUrl(protocol+"://"+request.getToken()+"@"+newUrl+path);
+            request.setGit_src_url(protocol+"://"+request.getToken()+"@"+newUrl+path);
         }
 //        if (request.getLanguage().equals("REACT-NPM")){
 //            cli.triggerReactJob(request.getAppName(),"react-npm",request.getGitUrl());
@@ -65,7 +65,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 //            cli.triggerReactJob(request.getAppName(),"react-vite",request.getGitUrl());
 //        }
 
-        cli.createJobConfig(request.getGitUrl());
+        cli.createJobConfig(request.getGit_src_url());
         return null;
     }
 

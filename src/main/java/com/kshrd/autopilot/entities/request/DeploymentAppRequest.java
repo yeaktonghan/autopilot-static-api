@@ -13,6 +13,13 @@ public class DeploymentAppRequest {
     private Integer project_id;
     private String domain;
     private String token;
-    private String language;
-    private String gitUrl;
+    private String framework;
+    private String build_tool;
+    private String email;
+    private String description;
+    private String git_platform;
+    private String git_src_url;
+    private Integer depends_on;
+    private String branch;
+
 }

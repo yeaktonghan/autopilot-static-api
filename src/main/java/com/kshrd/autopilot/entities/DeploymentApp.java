@@ -27,9 +27,7 @@ public class DeploymentApp {
     private String description;
     private String git_platform;
     private String git_src_url;
-    @OneToOne
-    @JoinColumn(name = "token_id",referencedColumnName = "id")
-    private Token token_id;
+    private String token;
     private Boolean status;
     private Integer depends_on;
     private String branch;
@@ -39,6 +37,6 @@ public class DeploymentApp {
     private Project project;
 
     public DeploymentAppDto toDeploymentAppDto() {
-        return new DeploymentAppDto(this.appName,this.domain,this.ipAddress,this.port,this.framework,this.build_tool,this.email,this.description,this.git_platform,this.git_src_url,this.token_id.getUsername(),this.depends_on,this.project.getName(),this.branch,this.create_at);
+        return new DeploymentAppDto(this.appName,this.domain,this.ipAddress,this.port,this.framework,this.build_tool,this.email,this.description,this.git_platform,this.git_src_url,this.token,this.depends_on,this.project.getName(),this.branch,this.create_at);
     }
 }
