@@ -1,6 +1,5 @@
 package com.kshrd.autopilot.entities.dto;
 
-import com.kshrd.autopilot.entities.ProjectBranch;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
