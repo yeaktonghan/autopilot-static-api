@@ -80,7 +80,7 @@ public class FileStorageController {
             ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
             return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(new InputStreamResource(resource.getInputStream()));
         } catch (Exception e) {
-            System.out.println("Error message {} " + e.getMessage());
+            System.out.println("Error message " + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
