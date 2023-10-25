@@ -35,3 +35,4 @@ error:
   url: http://localhost:8080/errors/
 file:
   uploadPath: src/main/resources/images/
+

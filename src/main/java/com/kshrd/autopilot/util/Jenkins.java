@@ -34,7 +34,7 @@ public class Jenkins {
 //            e.printStackTrace();
 //        }
 //    }
-    public void triggerReactJob(String appName, String jobName, String gitUrl) {
+    public void buildReactJob(String appName, String jobName, String gitUrl) {
         //System.out.println(gitUrl);
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
@@ -75,7 +75,7 @@ public class Jenkins {
             String apiToken = "112c1c4092c8db6fb4e74c976f6e5d1ace";
 
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
-            String dockerfile=FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/dockerfile/react-npm");
+             String dockerfile=FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/dockerfile/react-npm");
             // Create a new Jenkins job
 //            String pipelineScript = "pipeline {\n" +
 //                    "    agent any\n" +
