@@ -25,6 +25,6 @@ public class DeploymentAppDto {
     private String token;
     private Integer depends_on;
     private  String project;
-    private List<ProjectBranch> branchList;
+    private String branch;
     private LocalDateTime create_at;
 }

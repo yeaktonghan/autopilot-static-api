@@ -32,14 +32,13 @@ public class DeploymentApp {
     private Token token_id;
     private Boolean status;
     private Integer depends_on;
-    @OneToMany(mappedBy = "deploymentApp",cascade = CascadeType.ALL)
-    private List<ProjectBranch> projectBranches;
+    private String branch;
     private LocalDateTime create_at;
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "id")
     private Project project;
 
     public DeploymentAppDto toDeploymentAppDto() {
-        return new DeploymentAppDto(this.appName,this.domain,this.ipAddress,this.port,this.framework,this.build_tool,this.email,this.description,this.git_platform,this.git_src_url,this.token_id.getUsername(),this.depends_on,this.project.getName(),this.projectBranches,this.create_at);
+        return new DeploymentAppDto(this.appName,this.domain,this.ipAddress,this.port,this.framework,this.build_tool,this.email,this.description,this.git_platform,this.git_src_url,this.token_id.getUsername(),this.depends_on,this.project.getName(),this.branch,this.create_at);
     }
 }
