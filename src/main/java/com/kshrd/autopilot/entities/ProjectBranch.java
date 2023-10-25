@@ -1,10 +1,12 @@
 package com.kshrd.autopilot.entities;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.List;
 
 @Entity
+@Data
 public class ProjectBranch {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

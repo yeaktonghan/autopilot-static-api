@@ -40,6 +40,6 @@ public class DeploymentApp {
     private Project project;
 
     public DeploymentAppDto toDeploymentAppDto() {
-        return new DeploymentAppDto(this.id, this.appName, this.domain, this.ipAddress, this.framework, this.project.getName(), this.create_at);
+        return new DeploymentAppDto(this.appName,this.domain,this.ipAddress,this.port,this.framework,this.build_tool,this.email,this.description,this.git_platform,this.git_src_url,this.token_id.getUsername(),this.depends_on,this.project.getName(),this.projectBranches,this.create_at);
     }
 }
