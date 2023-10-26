@@ -1,8 +1,6 @@
 package com.kshrd.autopilot.util;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -33,5 +31,29 @@ public class FileUtil {
         }
         return text.toString();
     }
-    
+
+    public static String replaceText(File path,String oldText,String newText) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path.getAbsoluteFile()));
+             BufferedWriter writer = new BufferedWriter(new FileWriter("temp_file.txt"))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains(oldText)) {
+                    // Replace the text with the multi-line replacement
+                    writer.write(line.replace(oldText, newText));
+                } else {
+                    writer.write(line);
+                }
+                writer.newLine(); // Add a new line after each line
+            // Add a new line after each line
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return readFile("temp_file.txt");
+        //System.out.println(readFile("temp_file.txt"));
+        // Rename the temp file to the original file to replace it
+    }
+
 }

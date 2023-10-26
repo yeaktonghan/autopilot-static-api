@@ -65,7 +65,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 //            cli.triggerReactJob(request.getAppName(),"react-vite",request.getGitUrl());
 //        }
 
-        cli.createJobConfig(request.getGit_src_url());
+        cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
         return null;
     }
 

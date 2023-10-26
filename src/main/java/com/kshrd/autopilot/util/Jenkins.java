@@ -1,6 +1,9 @@
 package com.kshrd.autopilot.util;
+
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Job;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -8,6 +11,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class Jenkins {
     //    public void createJob(String jobName,String pipelineConfig) {
@@ -34,7 +38,7 @@ public class Jenkins {
 //            e.printStackTrace();
 //        }
 //    }
-    public void buildReactJob(String appName, String jobName, String gitUrl) {
+    public void buildReactJob(String appName, String jobName, String gitUrl, String project_name) {
         //System.out.println(gitUrl);
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
@@ -66,122 +70,100 @@ public class Jenkins {
 
     }
 
-    public void createJobConfig(String gitUrl) {
+    public void createJobConfig(String gitUrl, String tool, String branch, String project_name) {
         try {
 
             String jenkinsUrl = "http://188.166.179.13:8080/";
-            String jobName = "test-jenkins";
             String username = "kshrd";
             String apiToken = "112c1c4092c8db6fb4e74c976f6e5d1ace";
-
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
-             String dockerfile=FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/dockerfile/react-npm");
-            // Create a new Jenkins job
-//            String pipelineScript = "pipeline {\n" +
-//                    "    agent any\n" +
-//                    "    stages {\n" +
-//                    "        stage('Hello') {\n" +
-//                    "            steps {\n" +
-//                    "                echo 'Hello, Jenkins!'\n" +
-//                    "            }\n" +
-//                    "        }\n" +
-//                    "    }\n" +
-//                    "}\n";
-            String jobConfig = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                    "<project>\n" +
-                    "  <actions/>\n" +
-                    "  <description>Build for admin_add_number_range</description>\n" +
-                    "  <logRotator class=\"hudson.tasks.LogRotator\">\n" +
-                    "    <daysToKeep>-1</daysToKeep>\n" +
-                    "    <numToKeep>3</numToKeep>\n" +
-                    "    <artifactDaysToKeep>-1</artifactDaysToKeep>\n" +
-                    "    <artifactNumToKeep>-1</artifactNumToKeep>\n" +
-                    "  </logRotator>\n" +
-                    "  <keepDependencies>false</keepDependencies>\n" +
-                    "  <properties>\n" +
-                    "    <hudson.plugins.disk__usage.DiskUsageProperty plugin=\"disk-usage@0.28\"/>\n" +
-                    "  </properties>\n" +
-                    "  <scm class=\"hudson.plugins.git.GitSCM\" plugin=\"git@2.3.5\">\n" +
-                    "    <configVersion>2</configVersion>\n" +
-                    "    <userRemoteConfigs>\n" +
-                    "      <hudson.plugins.git.UserRemoteConfig>\n" +
-                    "        <name>origin</name>\n" +
-                    "        <url>"+gitUrl+"</url>\n" +
-                    "      </hudson.plugins.git.UserRemoteConfig>\n" +
-                    "    </userRemoteConfigs>\n" +
-                    "    <branches>\n" +
-                    "      <hudson.plugins.git.BranchSpec>\n" +
-                    "        <name>*/main</name>\n" +
-                    "      </hudson.plugins.git.BranchSpec>\n" +
-                    "    </branches>\n" +
-                    "    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>\n" +
-                    "    <browser class=\"hudson.plugins.git.browser.Stash\">\n" +
-                    "      <url>https://example.com.au/eg</url>\n" +
-                    "    </browser>\n" +
-                    "    <submoduleCfg class=\"list\"/>\n" +
-                    "    <extensions>\n" +
-                    "      <hudson.plugins.git.extensions.impl.LocalBranch>\n" +
-                    "        <localBranch>admin_add_number_range</localBranch>\n" +
-                    "      </hudson.plugins.git.extensions.impl.LocalBranch>\n" +
-                    "    </extensions>\n" +
-                    "  </scm>\n" +
-                    "  <assignedNode>slave</assignedNode>\n" +
-                    "  <canRoam>false</canRoam>\n" +
-                    "  <disabled>false</disabled>\n" +
-                    "  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\n" +
-                    "  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\n" +
-                    "  <jdk>(Default)</jdk>\n" +
-                    "  <triggers>\n" +
-                    "    <hudson.triggers.SCMTrigger>\n" +
-                    "      <spec>@hourly</spec>\n" +
-                    "      <ignorePostCommitHooks>false</ignorePostCommitHooks>\n" +
-                    "    </hudson.triggers.SCMTrigger>\n" +
-                    "  </triggers>\n" +
-                    "  <concurrentBuild>false</concurrentBuild>\n" +
-                    "  <builders>\n" +
-                    "    <hudson.tasks.Shell>\n" +
-                    "      <command>#!/bin/bash --login\n" +
-                    "# the &quot;--login&quot; means that Bash will reload the .bashrc profile\n" +
-                    " \n" +
-                    "# Switch node version using nvm.\n" +
-                    "nvm use 0.12\n" +
-                    " \n" +
-                    "# Run everything, including updating deps.\n" +
-                    "npm run ci</command>\n" +
-                    "    </hudson.tasks.Shell>\n" +
-                    "  </builders>\n" +
-                    "  <publishers>\n" +
-                    "    <org.jenkinsci.plugins.stashNotifier.StashNotifier plugin=\"stashNotifier@1.8\">\n" +
-                    "      <stashServerBaseUrl></stashServerBaseUrl>\n" +
-                    "      <stashUserName></stashUserName>\n" +
-                    "      <stashUserPassword>Q7WMbss05lWqRXm260a==</stashUserPassword>\n" +
-                    "      <ignoreUnverifiedSSLPeer>false</ignoreUnverifiedSSLPeer>\n" +
-                    "      <commitSha1></commitSha1>\n" +
-                    "      <includeBuildNumberInKey>false</includeBuildNumberInKey>\n" +
-                    "    </org.jenkinsci.plugins.stashNotifier.StashNotifier>\n" +
-                    "  </publishers>\n" +
-                    "  <buildWrappers>\n" +
-                    "    <hudson.plugins.build__timeout.BuildTimeoutWrapper plugin=\"build-timeout@1.16\">\n" +
-                    "      <strategy class=\"hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy\">\n" +
-                    "        <timeoutMinutes>25</timeoutMinutes>\n" +
-                    "      </strategy>\n" +
-                    "      <operationList>\n" +
-                    "        <hudson.plugins.build__timeout.operations.FailOperation/>\n" +
-                    "      </operationList>\n" +
-                    "    </hudson.plugins.build__timeout.BuildTimeoutWrapper>\n" +
-                    "    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin=\"ansicolor@0.4.1\">\n" +
-                    "      <colorMapName>xterm</colorMapName>\n" +
-                    "    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>\n" +
-                    "    <EnvInjectBuildWrapper plugin=\"envinject@1.91.1\">\n" +
-                    "      <info>\n" +
-                    "        <loadFilesFromMaster>false</loadFilesFromMaster>\n" +
-                    "      </info>\n" +
-                    "    </EnvInjectBuildWrapper>\n" +
-                    "  </buildWrappers>\n" +
-                    "</project>";
-         jenkins.createJob(jobName,jobConfig);
-        }catch (Exception e){
+            String pipeline = "pipeline {\n" +
+                    "    agent {\n" +
+                    "        node{\n" +
+                    "            label 'worker1'\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "   tools{\n" +
+                    "        "+tool+"  '"+tool+"'\n" +
+                    "    }\n" +
+                    "    \n" +
+                    "    environment{\n" +
+                    "    CURRENT_DATETIME = new Date().format(\"yyyy-MM-dd-HH-mm-ss\")\n" +
+                    "    }\n" +
+                    "    \n" +
+                    "    stages {\n" +
+                    "       \n" +
+                    "        stage('Clone Repository') {\n" +
+                    "            steps {\n" +
+                    "                 script{\n" +
+                    "                    checkout([$class: 'GitSCM', branches: [[name: '"+branch+"']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: '"+gitUrl+"']]])\n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "        }\n" +
+                    "        stage('Buid Project'){\n" +
+                    "            steps{\n" +
+                    "                script{\n" +
+                    "                    sh 'gradle build'\n" +
+                    "                    echo \"Build successfully\"\n" +
+                    "                }\n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "\n" +
+                    "         stage('Add Dockerfile') {\n" +
+                    "            steps {\n" +
+                    "                script {\n" +
+                    "                   def dockerfileContent = \"\"\"\n" +
+                    "                  \n" +
+                    "                      \n" +
+                    "FROM openjdk:17\n" +
+                    "\n" +
+                    "\n" +
+                    "WORKDIR /app\n" +
+                    "\n" +
+                    "COPY build/libs/"+project_name+"-0.0.1-SNAPSHOT.jar "+project_name+"-0.0.1-SNAPSHOT.jar\n" +
+                    "\n" +
+                    "CMD [\"java\", \"-jar\", \""+project_name+"-0.0.1-SNAPSHOT.jar\"]\n" +
+                    "\n" +
+                    "                                            \"\"\"\n" +
+                    "                    \n" +
+                    "                   writeFile file: 'Dockerfile', text: dockerfileContent\n" +
+                    "                }\n" +
+                    "            }\n" +
+                    "         }\n" +
+                    "       \n" +
+                    "             stage('build to docker images') {\n" +
+                    "            steps {\n" +
+                    "                script{\n" +
+                    "        \n" +
+                    "                sh 'docker build -t kshrdautopilot/autopilot:${CURRENT_DATETIME} .'\n" +
+                    "                \n" +
+                    "                 sh 'docker push kshrdautopilot/autopilot:${CURRENT_DATETIME}'\n" +
+                    "              \n" +
+                    "                    echo \"build images successfully\"\n" +
+                    "                   \n" +
+                    "                }\n" +
+                    "              \n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "                    stage('trigger Manifest') {\n" +
+                    "            steps {\n" +
+                    "                script{\n" +
+                    "                    build job: 'autopilot-manifest', parameters: [string(name: 'DOCKERTAG', value: evn.CURRENT_DATETIME)]\n" +
+                    "                }\n" +
+                    "              \n" +
+                    "            }\n" +
+                    "    \n" +
+                    "    }\n" +
+                    "}\n" +
+                    "}\n";
+            File file = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring");
+            String jobConfig = FileUtil.replaceText(file, "replacePipeline", pipeline);
+            System.out.println(jobConfig);
+            String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);
+            jenkins.createJob(jobName, jobConfig);
+        } catch (Exception e) {
             e.printStackTrace();
+        }
     }
-    }
+
 }
