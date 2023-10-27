@@ -40,11 +40,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
     @Override
     public DeploymentAppDto createDeploymentApp(DeploymentAppRequest request) {
-//        Optional<Project> project=projectRepository.findById(request.getProject_id());
-//        if (!project.isPresent()){
-//            throw new AutoPilotException("Not found",HttpStatus.NOT_FOUND,urlError,"Project id not found");
-//        }
-      Jenkins cli = new Jenkins();
         String newUrl = null;
         String path="";
         String protocol="";
@@ -59,13 +54,13 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (request.getToken() != null) {
             request.setGit_src_url(protocol+"://"+request.getToken()+"@"+newUrl+path);
         }
-//        if (request.getLanguage().equals("REACT-NPM")){
-//            cli.triggerReactJob(request.getAppName(),"react-npm",request.getGitUrl());
-//        }else if(request.getLanguage().equals("REACT-VITE")){
-//            cli.triggerReactJob(request.getAppName(),"react-vite",request.getGitUrl());
-//        }
+      switch (request.getFramework().toLowerCase()){
+          case "spring": deploymentSpring(request);
+              break;
+          case "react" :
+              break;
+      }
 
-        cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
         return null;
     }
 
@@ -81,5 +76,11 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         }
         List<DeploymentAppDto> deploymentApps = deploymentAppRepository.findAllByProject(project).stream().map(DeploymentApp::toDeploymentAppDto).toList();
         return deploymentApps;
+    }
+    public static DeploymentAppDto deploymentSpring(DeploymentAppRequest request){
+        Jenkins cli = new Jenkins();
+        cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
+
+        return null;
     }
 }
