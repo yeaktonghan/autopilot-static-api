@@ -17,6 +17,7 @@ public class Jenkins {
     public void buildReactJob(String appName, String jobName, String gitUrl, String project_name) {
         //System.out.println(gitUrl);
         try {
+            // store this in application.yml
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
             String token = "112c1c4092c8db6fb4e74c976f6e5d1ace";
@@ -51,7 +52,14 @@ public class Jenkins {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
             String apiToken = "112c1c4092c8db6fb4e74c976f6e5d1ace";
-            File fileDocker = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/springGradle");
+            String toolType="";
+            switch (tool){
+                case "gradle" : toolType="springGradle";
+                break;
+                case "mavean" : toolType="springMavean";
+                break;
+            }
+            File fileDocker = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/"+toolType);
             String dockerfile=FileUtil.replaceText(fileDocker,"appname",project_name);
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             String pipeline = "pipeline {\n" +
@@ -90,7 +98,7 @@ public class Jenkins {
                     "            steps {\n" +
                     "                script {\n" +
                     "                   def dockerfileContent = \"\"\"\n" +
-                                   dockerfile+
+                                        dockerfile+
                     "                   writeFile file: 'Dockerfile', text: dockerfileContent\n" +
                     "                }\n" +
                     "            }\n" +
