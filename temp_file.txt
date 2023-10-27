@@ -36,7 +36,7 @@ pipeline {
         }
     }
    tools{
-        gradle  'gradle'
+        string  'string'
     }
     
     environment{
@@ -48,7 +48,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                  script{
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://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@github.com/ksga-11th-generation-advance-course/auto-pilot-api.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'string']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: '://string@null']]])
             }
         }
         }
@@ -65,19 +65,6 @@ pipeline {
             steps {
                 script {
                    def dockerfileContent = """
-                  
-                      
-FROM openjdk:17
-
-
-WORKDIR /app
-
-COPY build/libs/autopilot-0.0.1-SNAPSHOT.jar autopilot-0.0.1-SNAPSHOT.jar
-
-CMD ["java", "-jar", "autopilot-0.0.1-SNAPSHOT.jar"]
-
-                                            """
-                    
                    writeFile file: 'Dockerfile', text: dockerfileContent
                 }
             }

@@ -14,30 +14,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Jenkins {
-    //    public void createJob(String jobName,String pipelineConfig) {
-//        try {
-//            String jenkinsUrl = "http://188.166.179.13:8080/";
-//            String jobConfigXml = "<project><builders/><publishers/></project>";
-//            //String pipelineConfig = "node {\n    echo 'Hello, Jenkins Pipeline!'\n}";
-//            String autoGen= UUID.randomUUID().toString();
-//
-//            URL url = new URL(jenkinsUrl + "createItem?name=" + jobName+autoGen);
-//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//            connection.setRequestMethod("POST");
-//            String authHeaderValue = "Basic " + Base64.getEncoder().encodeToString("kshrd:11fdcca00117763b5dd3e14d3ca2b9dfb9".getBytes());
-//            connection.setRequestProperty("Authorization", authHeaderValue);
-//            connection.setRequestProperty("Content-Type", "application/xml");
-//            connection.setDoOutput(true);
-//            try (OutputStream os = connection.getOutputStream()) {
-//                String pipelineXml = String.format("<flow-definition>%s</flow-definition>", pipelineConfig);
-//                os.write(pipelineXml.getBytes("utf-8"));
-//            }
-//            int responseCode = connection.getResponseCode();
-//            System.out.println(responseCode == HttpURLConnection.HTTP_OK ? "Jenkins job created" : "Failed to create Jenkins job");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
     public void buildReactJob(String appName, String jobName, String gitUrl, String project_name) {
         //System.out.println(gitUrl);
         try {
@@ -72,10 +48,11 @@ public class Jenkins {
 
     public void createJobConfig(String gitUrl, String tool, String branch, String project_name) {
         try {
-
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
             String apiToken = "112c1c4092c8db6fb4e74c976f6e5d1ace";
+            File fileDocker = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/springGradle");
+            String dockerfile=FileUtil.replaceText(fileDocker,"appname",project_name);
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             String pipeline = "pipeline {\n" +
                     "    agent {\n" +
@@ -113,19 +90,7 @@ public class Jenkins {
                     "            steps {\n" +
                     "                script {\n" +
                     "                   def dockerfileContent = \"\"\"\n" +
-                    "                  \n" +
-                    "                      \n" +
-                    "FROM openjdk:17\n" +
-                    "\n" +
-                    "\n" +
-                    "WORKDIR /app\n" +
-                    "\n" +
-                    "COPY build/libs/"+project_name+"-0.0.1-SNAPSHOT.jar "+project_name+"-0.0.1-SNAPSHOT.jar\n" +
-                    "\n" +
-                    "CMD [\"java\", \"-jar\", \""+project_name+"-0.0.1-SNAPSHOT.jar\"]\n" +
-                    "\n" +
-                    "                                            \"\"\"\n" +
-                    "                    \n" +
+                                   dockerfile+
                     "                   writeFile file: 'Dockerfile', text: dockerfileContent\n" +
                     "                }\n" +
                     "            }\n" +
@@ -158,7 +123,6 @@ public class Jenkins {
                     "}\n";
             File file = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring");
             String jobConfig = FileUtil.replaceText(file, "replacePipeline", pipeline);
-            System.out.println(jobConfig);
             String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);
             jenkins.createJob(jobName, jobConfig);
         } catch (Exception e) {
