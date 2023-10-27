@@ -54,14 +54,18 @@ public class UserServiceImpl implements UserService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserDetails userDetails = userRepository.findByUsername(username);
         if (userDetails == null) {
-            throw new UsernameNotFoundException("Username not found with username: " + username);
+            throw new AutoPilotException("Username not found", HttpStatus.NOT_FOUND,
+                    urlError, "Username is not registered yet!");
         }
         return userDetails;
     }
 
     @Override
     public UserDto getUserByUsername(String username) {
-        return userRepository.findByUsername(username).toUserDto();
+        User user=userRepository.findByUsername(username);
+        if (user==null){ throw new AutoPilotException("Username not found", HttpStatus.NOT_FOUND,
+                urlError, "Username is not registered yet!");}
+        return user.toUserDto();
 
     }
 
