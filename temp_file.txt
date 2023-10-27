@@ -36,7 +36,7 @@ pipeline {
         }
     }
    tools{
-        string  'string'
+        mavean  'mavean'
     }
     
     environment{
@@ -48,7 +48,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                  script{
-                    checkout([$class: 'GitSCM', branches: [[name: 'string']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: '://string@null']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'string']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://@github.com/ksga-11th-generation-basic-course/soccer_date_api.git']]])
             }
         }
         }
@@ -65,6 +65,11 @@ pipeline {
             steps {
                 script {
                    def dockerfileContent = """
+FROM openjdk:19-jdk
+WORKDIR /app
+COPY target/soccerdate-0.0.1-SNAPSHOT.jar /app
+EXPOSE 8080
+CMD ["java", "-jar", "/app/soccerdate-0.0.1-SNAPSHOT.jar"]
                    writeFile file: 'Dockerfile', text: dockerfileContent
                 }
             }

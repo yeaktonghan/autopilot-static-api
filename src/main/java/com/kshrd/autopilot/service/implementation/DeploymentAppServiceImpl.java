@@ -54,6 +54,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (request.getToken() != null) {
             request.setGit_src_url(protocol+"://"+request.getToken()+"@"+newUrl+path);
         }
+        System.out.println("please");
       switch (request.getFramework().toLowerCase()){
           case "spring": deploymentSpring(request);
               break;

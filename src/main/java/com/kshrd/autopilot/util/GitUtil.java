@@ -40,16 +40,13 @@ public class GitUtil {
             connection.setRequestProperty("Content-Type","application/json");
             connection.setDoInput(true);
             connection.setDoOutput(true);
-
             String jsonPayload = "{\"name\":\"" + reposName + "\",\"private\":false}";
-
             try (OutputStream os = connection.getOutputStream();
                  OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
                 osw.write(jsonPayload);
             }
 
             connection.connect();
-
             int responseCode = connection.getResponseCode();
             if (responseCode == 201) {
                 System.out.println("GitHub repository created successfully.");
