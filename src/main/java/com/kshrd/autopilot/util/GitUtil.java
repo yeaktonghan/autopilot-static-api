@@ -3,7 +3,11 @@ package com.kshrd.autopilot.util;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
 public class GitUtil {
@@ -54,9 +58,24 @@ public class GitUtil {
             }
 
             connection.disconnect();
-
         }catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public Integer createGitRepos(String name) throws IOException, InterruptedException {
+        HttpClient httpClient = HttpClient.newBuilder().build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.github.com/user/repos"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer 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")
+                .POST(HttpRequest.BodyPublishers.ofString("{ \"name\": \""+name+"\",  \"private\": true }"))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.statusCode();
+    }
+
+//    public Integer commitToGit()
 }
