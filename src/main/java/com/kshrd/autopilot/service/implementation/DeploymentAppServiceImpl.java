@@ -65,6 +65,9 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         return null;
     }
 
+    private void deploymentSpring(DeploymentAppRequest request) {
+    }
+
     @Override
     public List<DeploymentAppDto> getAllDeploymentApps(Integer project_id) {
         String email = CurrentUserUtil.getEmail();
@@ -78,10 +81,13 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         List<DeploymentAppDto> deploymentApps = deploymentAppRepository.findAllByProject(project).stream().map(DeploymentApp::toDeploymentAppDto).toList();
         return deploymentApps;
     }
-    public static DeploymentAppDto deploymentSpring(DeploymentAppRequest request){
-        Jenkins cli = new Jenkins();
-        cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
-
-        return null;
-    }
+//    public static DeploymnullentAppDto deploymentSpring(DeploymentAppRequest request){
+//        Jenkins cli = new Jenkins();
+//        cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
+//        // build
+//        // cd repos
+//        // argo
+//
+//        return "null";
+//    }
 }
