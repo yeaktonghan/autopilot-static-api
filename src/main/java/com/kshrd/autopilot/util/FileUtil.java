@@ -8,7 +8,9 @@ import java.util.Map;
 public class FileUtil {
     public static String readFile(String file) {
         Path filePaths = Paths.get(file);
+        System.out.println(filePaths.toString());
         String filePath = String.valueOf(filePaths.toAbsolutePath());
+        System.out.println(filePath);
         StringBuilder text = new StringBuilder();
         try {
             // Create a FileReader to open the file

@@ -81,6 +81,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     public static DeploymentAppDto deploymentSpring(DeploymentAppRequest request){
         Jenkins cli = new Jenkins();
         GitUtil gitUtil=new GitUtil();
+        String image = "autopilot:customer-spring:2023-12-12-12:00";
         try{
             Integer code=gitUtil.createGitRepos(request.getAppName());
             System.out.println("this is code :"+code);
@@ -89,7 +90,10 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         }
 
        // cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
-
+        // push to docker hub
+        // create cd repos
+        // create deployment
+        // create service
         return null;
     }
 }

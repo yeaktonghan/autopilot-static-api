@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: d-name
+  labels:
+    app: d-label
+spec:
+  replicas: d-replicas
+  selector:
+    matchLabels:
+      app: d-label
+  template:
+    metadata:
+      labels:
+        app: d-label
+    spec:
+      containers:
+        - name: d-container-name
+          image: d-image
+          ports:
+            - containerPort: d-port
