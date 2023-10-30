@@ -42,11 +42,13 @@ public class SecurityConfig {
     ) throws Exception {
         return configuration.getAuthenticationManager();
     }
+
+
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http
     ) throws Exception {
-        http.csrf(config -> config.disable()).authorizeHttpRequests(registry -> registry
+        http.cors().and().csrf(config -> config.disable()).authorizeHttpRequests(registry -> registry
                         .requestMatchers("/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html").permitAll()
@@ -57,7 +59,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 );
-        http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

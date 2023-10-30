@@ -20,7 +20,7 @@ public class DeploymentAppController {
     public DeploymentAppController(DeploymentAppService service) {
         this.service = service;
     }
-    @PostMapping("/create")
+    @PostMapping("/deployment")
     public ResponseEntity<AutoPilotResponse<DeploymentAppDto>> createDeploymentApp(@RequestBody @Valid DeploymentAppRequest request) throws IOException {
         AutoPilotResponse<DeploymentAppDto> response = AutoPilotResponse.<DeploymentAppDto>builder()
                 .success(true)

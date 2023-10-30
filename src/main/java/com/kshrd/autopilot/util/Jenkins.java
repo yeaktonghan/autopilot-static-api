@@ -53,84 +53,26 @@ public class Jenkins {
             String username = "kshrd";
             String apiToken = "112c1c4092c8db6fb4e74c976f6e5d1ace";
             String toolType="";
+            String build_tool="gradle";
             switch (tool){
                 case "gradle" : toolType="springGradle";
                 break;
-                case "mavean" : toolType="springMavean";
+                case "mavean" : toolType="springMavean"; build_tool="mvn";
                 break;
             }
             File fileDocker = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/"+toolType);
-            String dockerfile=FileUtil.replaceText(fileDocker,"appname",project_name);
+            Map<String,String> docker=new HashMap<>();
+            docker.put("appname",project_name);
+            String dockerfile=FileUtil.replaceText(fileDocker,docker);
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
-            String pipeline = "pipeline {\n" +
-                    "    agent {\n" +
-                    "        node{\n" +
-                    "            label 'worker1'\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "   tools{\n" +
-                    "        "+tool+"  '"+tool+"'\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    environment{\n" +
-                    "    CURRENT_DATETIME = new Date().format(\"yyyy-MM-dd-HH-mm-ss\")\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    stages {\n" +
-                    "       \n" +
-                    "        stage('Clone Repository') {\n" +
-                    "            steps {\n" +
-                    "                 script{\n" +
-                    "                    checkout([$class: 'GitSCM', branches: [[name: '"+branch+"']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: '"+gitUrl+"']]])\n" +
-                    "            }\n" +
-                    "        }\n" +
-                    "        }\n" +
-                    "        stage('Buid Project'){\n" +
-                    "            steps{\n" +
-                    "                script{\n" +
-                    "                    sh 'gradle build'\n" +
-                    "                    echo \"Build successfully\"\n" +
-                    "                }\n" +
-                    "            }\n" +
-                    "        }\n" +
-                    "\n" +
-                    "         stage('Add Dockerfile') {\n" +
-                    "            steps {\n" +
-                    "                script {\n" +
-                    "                   def dockerfileContent = \"\"\"\n" +
-                                        dockerfile+
-                    "                   writeFile file: 'Dockerfile', text: dockerfileContent\n" +
-                    "                }\n" +
-                    "            }\n" +
-                    "         }\n" +
-                    "       \n" +
-                    "             stage('build to docker images') {\n" +
-                    "            steps {\n" +
-                    "                script{\n" +
-                    "        \n" +
-                    "                sh 'docker build -t kshrdautopilot/autopilot:${CURRENT_DATETIME} .'\n" +
-                    "                \n" +
-                    "                 sh 'docker push kshrdautopilot/autopilot:${CURRENT_DATETIME}'\n" +
-                    "              \n" +
-                    "                    echo \"build images successfully\"\n" +
-                    "                   \n" +
-                    "                }\n" +
-                    "              \n" +
-                    "            }\n" +
-                    "        }\n" +
-                    "                    stage('trigger Manifest') {\n" +
-                    "            steps {\n" +
-                    "                script{\n" +
-                    "                    build job: 'autopilot-manifest', parameters: [string(name: 'DOCKERTAG', value: evn.CURRENT_DATETIME)]\n" +
-                    "                }\n" +
-                    "              \n" +
-                    "            }\n" +
-                    "    \n" +
-                    "    }\n" +
-                    "}\n" +
-                    "}\n";
             File file = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring");
-            String jobConfig = FileUtil.replaceText(file, "replacePipeline", pipeline);
+            Map<String,String> replacement=new HashMap<>();
+            replacement.put("toolChange",tool);
+            replacement.put("appname",project_name);
+            replacement.put("fordockerfile",dockerfile);
+            replacement.put("gitUrl",gitUrl);
+            replacement.put("buildtool",build_tool);
+            String jobConfig = FileUtil.replaceText(file, replacement);
             String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);
             jenkins.createJob(jobName, jobConfig);
         } catch (Exception e) {

@@ -10,13 +10,12 @@ import lombok.Data;
 public class AuthenticationRequest {
     @NotNull(message = "Please enter username.")
     private String username;
-    private String fullName;
     @Email(message = "Please enter a valid email address.")
+    @Pattern(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",message = "Your email is invalid!")
     private String email;
     @NotNull
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$",
             message = "Password must contain 8 to 20 characters at least one digit, lower, upper case and one special character."
     )
     private String password;
-    private Gender gender;
 }

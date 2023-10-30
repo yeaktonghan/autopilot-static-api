@@ -36,26 +36,27 @@ pipeline {
         }
     }
    tools{
-        mavean  'mavean'
+        mavean 'mavean'
     }
-    
+
     environment{
     CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
     }
-    
+
     stages {
-       
+
         stage('Clone Repository') {
             steps {
                  script{
-                    checkout([$class: 'GitSCM', branches: [[name: 'string']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://@github.com/ksga-11th-generation-basic-course/soccer_date_api.git']]])
+
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://@github.com/ksga-11th-generation-basic-course/soccer_date_api.git']]])
             }
         }
         }
         stage('Buid Project'){
             steps{
                 script{
-                    sh 'gradle build'
+                    sh 'mvn build'
                     echo "Build successfully"
                 }
             }
@@ -65,39 +66,34 @@ pipeline {
             steps {
                 script {
                    def dockerfileContent = """
-FROM openjdk:19-jdk
+                  FROM openjdk:19-jdk
 WORKDIR /app
 COPY target/soccerdate-0.0.1-SNAPSHOT.jar /app
 EXPOSE 8080
 CMD ["java", "-jar", "/app/soccerdate-0.0.1-SNAPSHOT.jar"]
+
+
+                                            """
+
                    writeFile file: 'Dockerfile', text: dockerfileContent
                 }
             }
          }
-       
+
              stage('build to docker images') {
             steps {
                 script{
-        
-                sh 'docker build -t kshrdautopilot/autopilot:${CURRENT_DATETIME} .'
-                
-                 sh 'docker push kshrdautopilot/autopilot:${CURRENT_DATETIME}'
-              
+
+                sh 'docker build -t kshrdautopilot/soccerdate:${CURRENT_DATETIME} .'
+
+                 sh 'docker push kshrdautopilot/soccerdate:${CURRENT_DATETIME}'
+
                     echo "build images successfully"
-                   
+
                 }
-              
+
             }
         }
-                    stage('trigger Manifest') {
-            steps {
-                script{
-                    build job: 'autopilot-manifest', parameters: [string(name: 'DOCKERTAG', value: evn.CURRENT_DATETIME)]
-                }
-              
-            }
-    
-    }
 }
 }
 

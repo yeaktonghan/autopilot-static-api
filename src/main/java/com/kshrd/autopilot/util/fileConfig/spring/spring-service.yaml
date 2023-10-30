@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: s-name
+spec:
+  selector:
+    app: d-label
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: d-port
+      nodePort: s-nodeport
+      targetPort: s-target-port
