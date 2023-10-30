@@ -13,6 +13,7 @@ import com.kshrd.autopilot.repository.ProjectRepository;
 import com.kshrd.autopilot.repository.UserRepository;
 import com.kshrd.autopilot.service.DeploymentAppService;
 import com.kshrd.autopilot.util.CurrentUserUtil;
+import com.kshrd.autopilot.util.GitUtil;
 import com.kshrd.autopilot.util.Jenkins;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -54,7 +55,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (request.getToken() != null) {
             request.setGit_src_url(protocol+"://"+request.getToken()+"@"+newUrl+path);
         }
-        System.out.println("please");
       switch (request.getFramework().toLowerCase()){
           case "spring": deploymentSpring(request);
               break;
@@ -80,7 +80,15 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     }
     public static DeploymentAppDto deploymentSpring(DeploymentAppRequest request){
         Jenkins cli = new Jenkins();
-        cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
+        GitUtil gitUtil=new GitUtil();
+        try{
+            Integer code=gitUtil.createGitRepos(request.getAppName());
+            System.out.println("this is code :"+code);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+       // cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
 
         return null;
     }

@@ -63,6 +63,7 @@ public class ProjectServiceImpl implements ProjectService {
         for (ProjectDetails pro : projectDetails) {
             Project project = projectRepository.findById(pro.getProject().getId()).get();
             ProjectDto projectDto = project.toProjectDto();
+            projectDto.setMember(projectDetailRepository.countAllByProject(project));
             projects.add(projectDto);
         }
         return projects;

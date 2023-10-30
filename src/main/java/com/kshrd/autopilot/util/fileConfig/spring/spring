@@ -29,7 +29,69 @@
 </properties>
 <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3802.vd42b_fcf00b_a_c">
 <script>
-replacePipeline
+pipeline {
+    agent {
+        node{
+            label 'worker1'
+        }
+    }
+   tools{
+        toolChange 'toolChange'
+    }
+
+    environment{
+    CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
+    }
+
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                 script{
+
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'gitUrl']]])
+            }
+        }
+        }
+        stage('Buid Project'){
+            steps{
+                script{
+                    sh 'buildtool build'
+                    echo "Build successfully"
+                }
+            }
+        }
+
+         stage('Add Dockerfile') {
+            steps {
+                script {
+                   def dockerfileContent = """
+                  fordockerfile
+
+                                            """
+
+                   writeFile file: 'Dockerfile', text: dockerfileContent
+                }
+            }
+         }
+
+             stage('build to docker images') {
+            steps {
+                script{
+
+                sh 'docker build -t kshrdautopilot/appname:${CURRENT_DATETIME} .'
+
+                 sh 'docker push kshrdautopilot/appname:${CURRENT_DATETIME}'
+
+                    echo "build images successfully"
+
+                }
+
+            }
+        }
+}
+}
+
 </script>
 <sandbox>true</sandbox>
 </definition>

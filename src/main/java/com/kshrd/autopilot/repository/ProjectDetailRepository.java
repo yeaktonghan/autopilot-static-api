@@ -14,5 +14,6 @@ public interface ProjectDetailRepository extends JpaRepository<ProjectDetails,In
     ProjectDetails findByProject(Project project);
     ProjectDetails findByUserAndProject(User user,Project project);
     void deleteById(Integer id);
+    Integer countAllByProject(Project project);
 
 }

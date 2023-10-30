@@ -80,7 +80,6 @@ public class UserServiceImpl implements UserService {
             user.setEmail(request.getEmail());
             user.setUsername(request.getUsername());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setGender(request.getGender());
             userRepository.save(user);
         }
 

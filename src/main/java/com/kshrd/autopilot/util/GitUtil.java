@@ -61,6 +61,7 @@ public class GitUtil {
     }
 
     public Integer createGitRepos(String name) throws IOException, InterruptedException {
+        System.out.println("Hello");
         HttpClient httpClient = HttpClient.newBuilder().build();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -69,7 +70,6 @@ public class GitUtil {
                 .header("Authorization", "Bearer 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")
                 .POST(HttpRequest.BodyPublishers.ofString("{ \"name\": \""+name+"\",  \"private\": true }"))
                 .build();
-
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response.statusCode();
     }

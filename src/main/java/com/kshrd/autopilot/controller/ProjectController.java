@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1")
+@CrossOrigin
 @SecurityRequirement(name = "auth")
 public class ProjectController {
     private final ProjectService service;
@@ -33,7 +34,6 @@ public class ProjectController {
                 .payload(project).build();
         return ResponseEntity.ok(response);
     }
-
     @GetMapping("/project")
     public ResponseEntity<AutoPilotResponse<List<ProjectDto>>> getAllProjectByUser() {
         List<ProjectDto> projects = service.getProjectByUser();
