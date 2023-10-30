@@ -17,8 +17,7 @@ public class FileUtil {
             // Wrap the FileReader in a BufferedReader for efficient reading
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String line;
-            // /Users/somnangpho/Desktop/finalProject/autopilot/src/main/java/com/kshrd/autopilot/util/dockerfile/react-npm
-            // Read and print each line from the file
+
             while ((line = bufferedReader.readLine()) != null) {
                 text.append(line).append("\n");
                 //System.out.println(line);
