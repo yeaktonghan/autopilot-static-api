@@ -149,7 +149,41 @@ public class GitUtil {
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
                 .header("Authorization", "Bearer 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")
-                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create deployment.yaml\",  \"content\": \""+encodedServiceYamlFile+"\" }"))
+                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create service.yaml\",  \"content\": \""+encodedServiceYamlFile+"\" }"))
+                .build();
+        // send http request
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.statusCode();
+    }
+
+    public static int createApplication(String reposName, String appName, String cdRepos) throws IOException, InterruptedException {
+        if (GitUtil.checkGitReposExist(reposName) != 200) {
+            throw new UserNotFoundException("Repository not found.", "This repository does not exist.");
+        }
+        // find template deployment file
+        String applicationYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/application.yaml");
+        System.out.println(applicationYamlFile);
+        // List spring to replace on the sameple file
+        Map<String,String> replaceString=new HashMap<>();
+        replaceString.put("app-name",appName);
+        replaceString.put("app-repos", cdRepos);
+        // replace string operation
+        for (Map.Entry<String, String> entry : replaceString.entrySet()){
+            applicationYamlFile = applicationYamlFile.replace(entry.getKey(), entry.getValue());
+        }
+        System.out.println(applicationYamlFile);
+        // encode string to base64 for github api
+        String encodedApplicationYamlFile = Base64.getEncoder().encodeToString(applicationYamlFile.getBytes());
+        System.out.println(encodedApplicationYamlFile);
+        // build http request client
+        HttpClient httpClient = HttpClient.newBuilder().build();
+        String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/application.yaml";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(gitEndpoint))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/vnd.github+json")
+                .header("Authorization", "Bearer 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")
+                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create application.yaml\",  \"content\": \""+encodedApplicationYamlFile+"\" }"))
                 .build();
         // send http request
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
