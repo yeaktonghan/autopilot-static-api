@@ -83,7 +83,7 @@ public class GitUtil {
         return response.statusCode();
     }
 
-    public static int createDeployment(String reposName, String deploymentName, String label, int replicaCount, String containerName, String image, int port) throws IOException, InterruptedException {
+    public static int createSpringDeployment(String reposName, String deploymentName, String label, int replicaCount, String containerName, String image, int port) throws IOException, InterruptedException {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new UserNotFoundException("Repository not found.", "This repository does not exist.");
         }
@@ -119,7 +119,7 @@ public class GitUtil {
         return response.statusCode();
     }
 
-    public static int createService(String reposName, String serviceName, String label, int nodeport, int targetPort, int port) throws IOException, InterruptedException {
+    public static int createSpringService(String reposName, String serviceName, String label, int nodeport, int targetPort, int port) throws IOException, InterruptedException {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new UserNotFoundException("Repository not found.", "This repository does not exist.");
         }
