@@ -21,6 +21,8 @@ public class DeploymentApp {
     private String domain;
     private String ipAddress;
     private String port;
+    private Integer project_port;
+    private String path;
     private String framework;
     private String build_tool;
     private String email;
@@ -37,6 +39,6 @@ public class DeploymentApp {
     private Project project;
 
     public DeploymentAppDto toDeploymentAppDto() {
-        return new DeploymentAppDto(this.appName,this.domain,this.ipAddress,this.port,this.framework,this.build_tool,this.email,this.description,this.git_platform,this.git_src_url,this.token,this.depends_on,this.project.getName(),this.branch,this.create_at);
+        return new DeploymentAppDto(this.appName, this.domain, this.ipAddress, this.port,this.project_port,this.path, this.framework, this.build_tool, this.email, this.description, this.git_platform, this.git_src_url, this.token, this.depends_on, this.project.getName(), this.branch, this.create_at);
     }
 }

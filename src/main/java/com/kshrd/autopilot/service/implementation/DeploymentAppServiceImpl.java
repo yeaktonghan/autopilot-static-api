@@ -19,7 +19,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DeploymentAppServiceImpl implements DeploymentAppService {
@@ -41,6 +43,36 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
     @Override
     public DeploymentAppDto createDeploymentApp(DeploymentAppRequest request) {
+        String email =CurrentUserUtil.getEmail();
+        User user=userRepository.findUsersByEmail(email);
+        Optional<Project> project= Optional.ofNullable(projectRepository.findById(request.getProject_id())
+                .orElseThrow(() -> new AutoPilotException("Not found!", HttpStatus.NOT_FOUND, urlError, "You are not owner this project")));
+        ProjectDetails projectDetails=projectDetailRepository.findByUserAndProject(user,project.get());
+         if(projectDetails==null){
+            throw new AutoPilotException("Not owner!",HttpStatus.BAD_REQUEST,urlError,"You are not owner this project");
+        }
+        DeploymentApp deploymentApp=new DeploymentApp();
+        deploymentApp.setAppName(request.getAppName());
+        deploymentApp.setProject(project.get());
+        deploymentApp.setIpAddress("139.59.243.4");
+        deploymentApp.setDomain("");
+        deploymentApp.setBranch(request.getBranch());
+        deploymentApp.setDescription(request.getDescription());
+        deploymentApp.setBuild_tool(request.getBuild_tool());
+        deploymentApp.setDepends_on(request.getDepends_on());
+        deploymentApp.setCreate_at(LocalDateTime.now());
+        deploymentApp.setGit_platform(request.getGit_platform());
+        deploymentApp.setEmail(request.getEmail());
+        deploymentApp.setFramework(request.getFramework());
+        deploymentApp.setGit_src_url(request.getGit_src_url());
+        deploymentApp.setToken(request.getToken());
+//        Optional<DeploymentApp> deployment=deploymentAppRepository.findTopByOrderByCreate_atDesc();
+//       if (deployment==null){
+//           deploymentApp.setPort("30000");
+//       }else {
+//           deploymentApp.setPort(deployment.get().getPort()+1);
+//       }
+
         String newUrl = null;
         String path="";
         String protocol="";
@@ -78,16 +110,30 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         List<DeploymentAppDto> deploymentApps = deploymentAppRepository.findAllByProject(project).stream().map(DeploymentApp::toDeploymentAppDto).toList();
         return deploymentApps;
     }
-    public static DeploymentAppDto deploymentSpring(DeploymentAppRequest request){
+    public  DeploymentAppDto deploymentSpring(DeploymentAppRequest request){
+
         Jenkins cli = new Jenkins();
-        GitUtil gitUtil=new GitUtil();
-        String image = "autopilot:customer-spring:2023-12-12-12:00";
+        String repoName="https://github.com/KSGA-Autopilot/"+request.getAppName()+"-cd"+".git";
         try{
-            Integer code=gitUtil.createGitRepos(request.getAppName());
-            System.out.println("this is code :"+code);
+//            GitUtil.createGitRepos(request.getAppName()+"-cd");
+//            GitUtil.createApplication(request.getAppName()+"-cd", request.getAppName(),repoName);
         }catch (Exception e){
             e.printStackTrace();
         }
+
+        cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
+
+        // to db
+        // create cd repos
+        // create job: build, test, and push image, update cd repos image
+        // check if job is built successfully
+        // make argo cd connect to cd repos
+        // add domain and secure ssl
+        // setup monitoring: server up -> send alert
+
+
+        String image = "autopilot:customer-spring:2023-12-12-12:00";
+
 
        // cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
         // push to docker hub
