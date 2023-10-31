@@ -36,7 +36,7 @@ pipeline {
         }
     }
    tools{
-        mavean 'mavean'
+        gradle 'gradle'
     }
 
     environment{
@@ -49,14 +49,14 @@ pipeline {
             steps {
                  script{
 
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://@github.com/ksga-11th-generation-basic-course/soccer_date_api.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://string@github.com/KSGA-Autopilot/somnang.git']]])
             }
         }
         }
         stage('Buid Project'){
             steps{
                 script{
-                    sh 'mvn build'
+                    sh 'gradle build'
                     echo "Build successfully"
                 }
             }
@@ -67,10 +67,15 @@ pipeline {
                 script {
                    def dockerfileContent = """
                   FROM openjdk:19-jdk
+
+
 WORKDIR /app
-COPY target/soccerdate-0.0.1-SNAPSHOT.jar /app
+
+COPY build/libs/fintrack-0.0.1-SNAPSHOT.jar fintrack-0.0.1-SNAPSHOT.jar
+
 EXPOSE 8080
-CMD ["java", "-jar", "/app/soccerdate-0.0.1-SNAPSHOT.jar"]
+
+CMD ["java", "-jar", "fintrack-0.0.1-SNAPSHOT.jar"]
 
 
                                             """
@@ -84,9 +89,9 @@ CMD ["java", "-jar", "/app/soccerdate-0.0.1-SNAPSHOT.jar"]
             steps {
                 script{
 
-                sh 'docker build -t kshrdautopilot/soccerdate:${CURRENT_DATETIME} .'
+                sh 'docker build -t kshrdautopilot/fintrack:${CURRENT_DATETIME} .'
 
-                 sh 'docker push kshrdautopilot/soccerdate:${CURRENT_DATETIME}'
+                 sh 'docker push kshrdautopilot/fintrack:${CURRENT_DATETIME}'
 
                     echo "build images successfully"
 

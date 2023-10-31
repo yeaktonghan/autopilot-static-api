@@ -15,6 +15,8 @@ public class DeploymentAppDto {
     private String domain;
     private String ipAddress;
     private String port;
+    private Integer project_port;
+    private String path;
     private String framework;
     private String build_tool;
     private String email;

@@ -40,7 +40,6 @@ public class ProjectServiceImpl implements ProjectService {
         String code_team = ProjectCodeGenerator.generateUniqueCode();
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
-        System.out.println(user);
         Project project = new Project();
         project.setName(request.getName());
         project.setProject_code(code_team);

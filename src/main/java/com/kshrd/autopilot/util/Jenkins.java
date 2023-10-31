@@ -51,7 +51,7 @@ public class Jenkins {
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
-            String apiToken = "112c1c4092c8db6fb4e74c976f6e5d1ace";
+            String apiToken = "112de5f0b04bb2ad66d7f233a445f6b0fd";
             String toolType="";
             String build_tool="gradle";
             switch (tool){
@@ -61,6 +61,7 @@ public class Jenkins {
                 break;
             }
             File fileDocker = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/"+toolType);
+
             Map<String,String> docker=new HashMap<>();
             docker.put("appname",project_name);
             String dockerfile=FileUtil.replaceText(fileDocker,docker);
@@ -73,6 +74,7 @@ public class Jenkins {
             replacement.put("gitUrl",gitUrl);
             replacement.put("buildtool",build_tool);
             String jobConfig = FileUtil.replaceText(file, replacement);
+            System.out.println(jobConfig);
             String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);
             jenkins.createJob(jobName, jobConfig);
         } catch (Exception e) {

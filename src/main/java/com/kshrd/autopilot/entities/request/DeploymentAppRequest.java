@@ -1,5 +1,6 @@
 package com.kshrd.autopilot.entities.request;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeploymentAppRequest {
     private String appName;
+    @NotNull
     private Integer project_id;
     private String domain;
     private String token;
