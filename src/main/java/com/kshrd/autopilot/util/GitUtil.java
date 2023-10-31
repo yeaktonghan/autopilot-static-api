@@ -90,15 +90,15 @@ public class GitUtil {
         // find template deployment file
         String deployment = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-deployment.yaml");
         // List spring to replace on the sameple file
-        Map<String,String> replaceString=new HashMap<>();
-        replaceString.put("d-name",deploymentName);
+        Map<String, String> replaceString = new HashMap<>();
+        replaceString.put("d-name", deploymentName);
         replaceString.put("d-label", label);
         replaceString.put("d-replicas", String.valueOf(replicaCount));
         replaceString.put("d-container-name", containerName);
         replaceString.put("d-image", image);
         replaceString.put("d-port", String.valueOf(port));
         // replace string operation
-        for (Map.Entry<String, String> entry : replaceString.entrySet()){
+        for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             deployment = deployment.replace(entry.getKey(), entry.getValue());
         }
         // encode string to base64 for github api
@@ -112,7 +112,7 @@ public class GitUtil {
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
                 .header("Authorization", "Bearer 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")
-                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create deployment.yaml\",  \"content\": \""+encodedDeployment+"\" }"))
+                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create deployment.yaml\",  \"content\": \"" + encodedDeployment + "\" }"))
                 .build();
         // send http request
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -127,14 +127,14 @@ public class GitUtil {
         String serviceYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-service.yaml");
         System.out.println(serviceYamlFile);
         // List spring to replace on the sameple file
-        Map<String,String> replaceString=new HashMap<>();
-        replaceString.put("s-name",serviceName);
+        Map<String, String> replaceString = new HashMap<>();
+        replaceString.put("s-name", serviceName);
         replaceString.put("d-label", label);
         replaceString.put("s-nodeport", String.valueOf(nodeport));
         replaceString.put("s-target-port", String.valueOf(targetPort));
         replaceString.put("d-port", String.valueOf(port));
         // replace string operation
-        for (Map.Entry<String, String> entry : replaceString.entrySet()){
+        for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             serviceYamlFile = serviceYamlFile.replace(entry.getKey(), entry.getValue());
         }
         System.out.println(serviceYamlFile);
@@ -149,14 +149,14 @@ public class GitUtil {
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
                 .header("Authorization", "Bearer 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")
-                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create service.yaml\",  \"content\": \""+encodedServiceYamlFile+"\" }"))
+                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create service.yaml\",  \"content\": \"" + encodedServiceYamlFile + "\" }"))
                 .build();
         // send http request
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response.statusCode();
     }
 
-    public static int createApplication(String reposName, String appName, String cdRepos) throws IOException, InterruptedException {
+    public static int createApplication(String reposName, String appName, String cdRepos, String nameSpace) throws IOException, InterruptedException {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new UserNotFoundException("Repository not found.", "This repository does not exist.");
         }
@@ -164,11 +164,12 @@ public class GitUtil {
         String applicationYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/application.yaml");
         System.out.println(applicationYamlFile);
         // List spring to replace on the sameple file
-        Map<String,String> replaceString=new HashMap<>();
-        replaceString.put("app-name",appName);
+        Map<String, String> replaceString = new HashMap<>();
+        replaceString.put("app-name", appName);
         replaceString.put("app-repos", cdRepos);
+        replaceString.put("namespace", nameSpace);
         // replace string operation
-        for (Map.Entry<String, String> entry : replaceString.entrySet()){
+        for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             applicationYamlFile = applicationYamlFile.replace(entry.getKey(), entry.getValue());
         }
         System.out.println(applicationYamlFile);
@@ -183,12 +184,51 @@ public class GitUtil {
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
                 .header("Authorization", "Bearer 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")
-                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create application.yaml\",  \"content\": \""+encodedApplicationYamlFile+"\" }"))
+                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create application.yaml\",  \"content\": \"" + encodedApplicationYamlFile + "\" }"))
                 .build();
         // send http request
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response.statusCode();
     }
+
+    public static int createIngress(String reposName, String ingressName, String nameSpace, String domainName, String path, String serviceName, String port) throws IOException, InterruptedException {
+        if (GitUtil.checkGitReposExist(reposName) != 200) {
+            throw new UserNotFoundException("Repository not found.", "This repository does not exist.");
+        }
+        // find template deployment file
+        String ingressYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/ingress.yaml");
+        System.out.println(ingressYamlFile);
+        // List spring to replace on the sameple file
+        Map<String, String> replaceString = new HashMap<>();
+        replaceString.put("i-name", ingressName);
+        replaceString.put("i-namespace", nameSpace);
+        replaceString.put("i-domain", domainName);
+        replaceString.put("i-path", path);
+        replaceString.put("service-name", serviceName);
+        replaceString.put("service-port", port);
+        // replace string operation
+        for (Map.Entry<String, String> entry : replaceString.entrySet()) {
+            ingressYamlFile = ingressYamlFile.replace(entry.getKey(), entry.getValue());
+        }
+        System.out.println(ingressYamlFile);
+        // encode string to base64 for github api
+        String encodedIngressYamlFile = Base64.getEncoder().encodeToString(ingressYamlFile.getBytes());
+        System.out.println(encodedIngressYamlFile);
+        // build http request client
+        HttpClient httpClient = HttpClient.newBuilder().build();
+        String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/app/ingress.yaml";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(gitEndpoint))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/vnd.github+json")
+                .header("Authorization", "Bearer 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")
+                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create ingress.yaml\",  \"content\": \"" + encodedIngressYamlFile + "\" }"))
+                .build();
+        // send http request
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.statusCode();
+    }
+
     private static int checkGitReposExist(String reposName) throws IOException, InterruptedException {
         HttpClient httpClient = HttpClient.newBuilder().build();
 

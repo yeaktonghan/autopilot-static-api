@@ -5,9 +5,7 @@ metadata:
 spec:
   selector:
     app: d-label
-  type: NodePort
   ports:
     - protocol: TCP
       port: d-port
-      nodePort: s-nodeport
       targetPort: s-target-port
