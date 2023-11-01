@@ -1,8 +1,8 @@
 package com.kshrd.autopilot.exception;
 
-public class OTPException extends RuntimeException{
+public class ForbiddenException extends RuntimeException {
     private String title;
-    public OTPException(String title,String message) {
+    public ForbiddenException(String title, String message) {
         super(message);
         this.title=title;
     }
@@ -11,3 +11,4 @@ public class OTPException extends RuntimeException{
         return title;
     }
 }
+

@@ -3,9 +3,9 @@ package com.kshrd.autopilot.service.implementation;
 import com.kshrd.autopilot.entities.dto.UserDto;
 import com.kshrd.autopilot.entities.OTPstore;
 import com.kshrd.autopilot.exception.AutoPilotException;
-import com.kshrd.autopilot.exception.OTPException;
-import com.kshrd.autopilot.exception.UserNotFoundException;
-import com.kshrd.autopilot.exception.UsernameAlreadyExistsException;
+import com.kshrd.autopilot.exception.BadRequestException;
+import com.kshrd.autopilot.exception.NotFoundException;
+import com.kshrd.autopilot.exception.ForbiddenException;
 import com.kshrd.autopilot.repository.OTPRepository;
 import com.kshrd.autopilot.repository.UserRepository;
 import com.kshrd.autopilot.entities.request.AuthenticationRequest;
@@ -16,7 +16,6 @@ import com.kshrd.autopilot.entities.user.User;
 import com.kshrd.autopilot.util.CurrentUserUtil;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,8 +23,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -72,9 +69,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto registration(AuthenticationRequest request) {
         if (userRepository.findByUsername(request.getUsername()) != null) {
-            throw new UsernameAlreadyExistsException("Username is token", "That Username is taken. Try another");
+            throw new ForbiddenException("Username is token", "That Username is taken. Try another");
         } else if (userRepository.findUsersByEmail(request.getEmail()) != null) {
-            throw new UsernameAlreadyExistsException("Email is already exist", "Email " + request.getEmail() + " is already exist");
+            throw new ForbiddenException("Email is already exist", "Email " + request.getEmail() + " is already exist");
         } else {
             User user = new User();
             user.setEmail(request.getEmail());
@@ -106,7 +103,7 @@ public class UserServiceImpl implements UserService {
 
         int port = 0;
         if (user == null) {
-            throw new UserNotFoundException("User not found!", "This email not found!");
+            throw new NotFoundException("User not found!", "This email not found!");
         }
         String appUrl =
                 "http://" + request.getServerName() +
@@ -140,9 +137,9 @@ public class UserServiceImpl implements UserService {
         Optional<OTPstore> otPstore = otpRepository.findByUserId(user.getId());
         Integer expired = now.getMinute() - otPstore.get().getCreated_at().getMinute();
         if (expired > 4 && otp.equals(otPstore.get().getOtp_code())) {
-            throw new OTPException("Expired OTP", "Your OTP is expired");
+            throw new BadRequestException("Expired OTP", "Your OTP is expired");
         } else if (!otp.equals(otPstore.get().getOtp_code())) {
-            throw new OTPException("Incorrect OTP", "Your OTP is incorrect!");
+            throw new BadRequestException("Incorrect OTP", "Your OTP is incorrect!");
         } else {
             OTPstore update_verify = otPstore.get();
             update_verify.setIs_verify(true);

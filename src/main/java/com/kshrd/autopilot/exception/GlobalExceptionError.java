@@ -22,17 +22,17 @@ public class GlobalExceptionError extends ResponseEntityExceptionHandler {
         body.put("error",ex.getFieldError().getDefaultMessage());
         return ResponseEntity.ok(body);
     }
-    @ExceptionHandler(UsernameAlreadyExistsException.class)
-    public ProblemDetail userExist(UsernameAlreadyExistsException usernameAlreadyExistsException){
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail forbiddenException(ForbiddenException forbiddenException){
         ProblemDetail problemDetail=ProblemDetail.forStatusAndDetail(
-                HttpStatus.FORBIDDEN,usernameAlreadyExistsException.getMessage()
+                HttpStatus.FORBIDDEN, forbiddenException.getMessage()
         );
         problemDetail.setType(URI.create("http://localhost:8080/errors/"));
-        problemDetail.setTitle(usernameAlreadyExistsException.getTitle());
+        problemDetail.setTitle(forbiddenException.getTitle());
         return  problemDetail;
     }
-    @ExceptionHandler(UserNotFoundException.class)
-    public ProblemDetail notFoundUser(UserNotFoundException e){
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail notFoundException(NotFoundException e){
         ProblemDetail problemDetail=ProblemDetail.forStatusAndDetail(
                 HttpStatus.NOT_FOUND, e.getMessage()
         );
@@ -40,12 +40,12 @@ public class GlobalExceptionError extends ResponseEntityExceptionHandler {
         problemDetail.setTitle(problemDetail.getTitle());
         return problemDetail;
     }
-    @ExceptionHandler(OTPException.class)
-    public ProblemDetail incorrectOTP(OTPException otpException){
+    @ExceptionHandler(BadRequestException.class)
+    public ProblemDetail badRequestException(BadRequestException badRequestException){
         ProblemDetail problemDetail=ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,otpException.getMessage()
+                HttpStatus.BAD_REQUEST, badRequestException.getMessage()
         );
-        problemDetail.setTitle(otpException.getTitle());
+        problemDetail.setTitle(badRequestException.getTitle());
         problemDetail.setType(URI.create("http://localhost:8080/errors/"));
         return problemDetail;
     }

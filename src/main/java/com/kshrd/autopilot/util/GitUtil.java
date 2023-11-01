@@ -1,7 +1,7 @@
 package com.kshrd.autopilot.util;
 
 
-import com.kshrd.autopilot.exception.UserNotFoundException;
+import com.kshrd.autopilot.exception.NotFoundException;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -85,7 +85,7 @@ public class GitUtil {
 
     public static int createSpringDeployment(String reposName, String deploymentName, String label, int replicaCount, String containerName, String image, int port) throws IOException, InterruptedException {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
-            throw new UserNotFoundException("Repository not found.", "This repository does not exist.");
+            throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
         String deployment = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-deployment.yaml");
@@ -119,9 +119,9 @@ public class GitUtil {
         return response.statusCode();
     }
 
-    public static int createSpringService(String reposName, String serviceName, String label, int nodeport, int targetPort, int port) throws IOException, InterruptedException {
+    public static int createSpringService(String reposName, String serviceName, String label, int targetPort, int port) throws IOException, InterruptedException {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
-            throw new UserNotFoundException("Repository not found.", "This repository does not exist.");
+            throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
         String serviceYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-service.yaml");
@@ -130,7 +130,6 @@ public class GitUtil {
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("s-name", serviceName);
         replaceString.put("d-label", label);
-        replaceString.put("s-nodeport", String.valueOf(nodeport));
         replaceString.put("s-target-port", String.valueOf(targetPort));
         replaceString.put("d-port", String.valueOf(port));
         // replace string operation
@@ -156,9 +155,9 @@ public class GitUtil {
         return response.statusCode();
     }
 
-    public static int createApplication(String reposName, String appName, String cdRepos, String nameSpace) throws IOException, InterruptedException {
+    public static int createApplication(String reposName, String appName, String nameSpace) throws IOException, InterruptedException {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
-            throw new UserNotFoundException("Repository not found.", "This repository does not exist.");
+            throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
         String applicationYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/application.yaml");
@@ -166,7 +165,7 @@ public class GitUtil {
         // List spring to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("app-name", appName);
-        replaceString.put("app-repos", cdRepos);
+        replaceString.put("app-repos", "https://github.com/KSGA-Autopilot/"+reposName);
         replaceString.put("namespace", nameSpace);
         // replace string operation
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
@@ -193,7 +192,7 @@ public class GitUtil {
 
     public static int createIngress(String reposName, String ingressName, String nameSpace, String domainName, String path, String serviceName, String port) throws IOException, InterruptedException {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
-            throw new UserNotFoundException("Repository not found.", "This repository does not exist.");
+            throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
         String ingressYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/ingress.yaml");
