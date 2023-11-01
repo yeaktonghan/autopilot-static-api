@@ -184,7 +184,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             GitUtil.createSpringDeployment(cdRepos, username + "-" + projectName + "-deployment", projectName, 2, projectName, image, request.getProject_port());
             GitUtil.createSpringService(cdRepos, username + "-" + projectName + "-service", projectName, request.getProject_port(), request.getProject_port());
             GitUtil.createIngress(cdRepos, username + "-" + projectName + "-ingress", username, "controlplane.hanyeaktong.site", request.getPath(), username + "-" + projectName + "-service", request.getProject_port().toString());
-            cli.createReactJobConfig(request.getGit_src_url(), pathUsernmae, request.getBuild_tool(), request.getBranch(), request.getAppName());
+            cli.createReactJobConfig(request.getGit_src_url(), username + "-" + projectName, request.getBranch());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -193,6 +193,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // make argo cd connect to cd repos
         // add domain and secure ssl
         // setup monitoring: server up -> send alert
+        return null;
     }
-
 }

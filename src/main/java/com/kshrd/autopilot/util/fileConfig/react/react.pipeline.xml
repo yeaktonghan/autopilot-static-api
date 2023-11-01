@@ -1,13 +1,5 @@
-<flow-definition plugin="workflow-job@1348.v32a_a_f150910e">
-    <actions>
-        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40"/>
-        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40">
-            <jobProperties/>
-            <triggers/>
-            <parameters/>
-            <options/>
-        </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
-    </actions>
+<flow-definition plugin="workflow-job@1360.vc6700e3136f5">
+    <actions/>
     <description/>
     <keepDependencies>false</keepDependencies>
     <properties>
@@ -21,113 +13,14 @@
         </jenkins.model.BuildDiscarderProperty>
         <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
             <triggers>
-                <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3">
+                <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3.1">
                     <spec/>
                 </com.cloudbees.jenkins.GitHubPushTrigger>
             </triggers>
         </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
     </properties>
-    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3802.vd42b_fcf00b_a_c">
-        <script>
-            pipeline {
-            agent {
-            node{
-            label 'worker1'
-            }
-            }
-            tools{
-            toolChange 'toolChange'
-            }
-
-            environment{
-            CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
-            GITHUB_REPO = 'path-repository'
-            }
-
-            stages {
-
-            stage('Clone Repository') {
-            steps {
-            script{
-
-            checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'gitUrl']]])
-            }
-            }
-            }
-            stage('Buid Project'){
-            steps{
-            script{
-            sh 'buildtool build'
-            echo "Build successfully"
-            }
-            }
-            }
-
-            stage('Add Dockerfile') {
-            steps {
-            script {
-            def dockerfileContent = """
-            fordockerfile
-
-            """
-
-            writeFile file: 'Dockerfile', text: dockerfileContent
-            }
-            }
-            }
-
-            stage('build to docker images') {
-            steps {
-            script{
-
-            sh 'docker build -t kshrdautopilot/appname:${CURRENT_DATETIME} .'
-
-            sh 'docker push kshrdautopilot/appname:${CURRENT_DATETIME}'
-
-            echo "build images successfully"
-
-            }
-
-            }
-            }
-            stage('go to repository'){
-
-            steps {
-            script {
-            // Clone the GitHub repository
-            checkout([$class: 'GitSCM',
-            branches: [[name: '*/main']],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
-            submoduleCfg: [],
-            userRemoteConfigs: [[url: "https://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@github.com/${GITHUB_REPO}"]]])
-            }
-            }
-            }
-            stage('Modify File') {
-            steps {
-            script {
-            // Modify the content of the file
-            sh "sed -i 's+kshrdautopilot/appname.*+kshrdautopilot/appname:${CURRENT_DATETIME}+g' app/deployment.yaml"
-            }
-            }
-            }
-            stage('Commit and Push') {
-            steps {
-            script {
-            // Commit the changes
-            sh 'git add .'
-            sh 'git commit -m "Updated images version"'
-
-            // Push the changes back to GitHub
-            sh 'git push https://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@@github.com/${GITHUB_REPO} HEAD:main'
-            }
-            }
-            }
-            }
-            }
-
-        </script>
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3806.va_3a_6988277b_2">
+        <script>pipeline { agent { node{ label 'worker1' } } tools{ nodejs 'npm' } environment{ CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss") GITHUB_REPO = '/KSGA-Autopilot/autopilot-cd.git' } stages { stage('Clone Repository') { steps { script{ checkout([$class: 'GitSCM', branches: [[name: 'var-branch']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'var-git_src_url']]]) } } } stage('Add Dockerfile') { steps { script { def dockerfileContent = """ FROM node:14-alpine as build WORKDIR /app COPY package*.json ./ RUN npm install --force COPY . . RUN npm run build FROM nginx:alpine COPY --from=build /app/build /usr/share/nginx/html EXPOSE 80 CMD ["nginx", "-g", "daemon off;"] """ writeFile file: 'Dockerfile', text: dockerfileContent } } } stage('build to docker images') { steps { script{ sh 'docker build -t kshrdautopilot/var-image:${CURRENT_DATETIME} .' sh 'docker push kshrdautopilot/var-image:${CURRENT_DATETIME}' echo "build images successfully" } } } stage('go to repository'){ steps { script { // Clone the GitHub repository checkout([$class: 'GitSCM', branches: [[name: '*/var-branch']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[url: "var-git_src_url-cd"]]]) } } } stage('Modify File') { steps { script { sh "sed -i 's/var-image/autopilot:${CURRENT_DATETIME}/g' app/deployment.yaml" } } } stage('Commit and Push') { steps { script { // Commit the changes sh 'git add .' sh 'git commit -m "Updated images version" ' sh 'git push https://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@github.com/KSGA-Autopilot/var-git_src_url-cd.git HEAD:main' } } } } }</script>
         <sandbox>true</sandbox>
     </definition>
     <triggers/>
