@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 
@@ -58,23 +59,30 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectDto> getProjectByUser() {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
-        List<ProjectDetails> projectDetails = projectDetailRepository.findAllByUser(user);
-        ProjectDto projectDto = null;
-        List<ProjectDto> projects = new ArrayList<>();
-        List<User> users=new ArrayList<>();
-        List<UserDto> userDtos =new ArrayList<>();
-        for (ProjectDetails pro : projectDetails) {
-            Project project = projectRepository.findById(pro.getProject().getId()).get();
-            projectDto = project.toProjectDto();
-            List<ProjectDetails> projectDetailsList=projectDetailRepository.findAllByProject(project);
-            for (ProjectDetails pd:projectDetailsList){
-                User us=userRepository.findById(pd.getUser().getId()).get();
-                users.add(us);
-            }
-            projects.add(projectDto);
-        }
-        //List<User> users=projectDetailRepository.findAllByProject()
-        return projects;
+        List<Optional<User>> userList=new ArrayList<>();
+        List<Optional<Project>> optionalList=new ArrayList<>();
+        List<ProjectDetails> projectDetails=projectDetailRepository.findAllByUser(user);
+         for (ProjectDetails pd:projectDetails){
+
+                 userList.add(userRepository.findById(pd.getUser().getId()));
+                 optionalList.add(projectRepository.findById(pd.getProject().getId()));
+         }
+         List<ProjectDto> projectDtos=new ArrayList<>();
+         List<UserDto> userDtoList=new ArrayList<>();
+        //System.out.println(userList);
+         for (Optional<User> usr:userList){
+             userDtoList.add(usr.get().toUserDto());
+         }
+
+         for (Optional<Project> project:optionalList){
+             projectDtos.add(project.get().toProjectDto());
+         }
+         for (ProjectDto projectDto:projectDtos){
+             projectDto.setMembers(userDtoList);
+         }
+
+       // reurn projects;
+        return projectDtos;
     }
 
     @Override
