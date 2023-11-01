@@ -31,7 +31,7 @@ public class User implements UserDetails {
     private String password;
     @Enumerated(EnumType.STRING)
     private Gender gender;
-
+    private boolean isEnabled =false;
 
     @OneToMany(mappedBy = "user",cascade =CascadeType.ALL)
     private final Set<ProjectDetails> projectDetails =new HashSet<>();
@@ -72,6 +72,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return isEnabled;
     }
 }
