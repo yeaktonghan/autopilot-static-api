@@ -166,7 +166,7 @@ public class GitUtil {
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("app-name", appName);
         replaceString.put("app-repos", "https://github.com/KSGA-Autopilot/"+reposName);
-        replaceString.put("namespace", nameSpace);
+        replaceString.put("app-namespace", nameSpace);
         // replace string operation
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             applicationYamlFile = applicationYamlFile.replace(entry.getKey(), entry.getValue());

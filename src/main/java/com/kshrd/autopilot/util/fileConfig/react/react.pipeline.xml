@@ -1,0 +1,135 @@
+<flow-definition plugin="workflow-job@1348.v32a_a_f150910e">
+    <actions>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40"/>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40">
+            <jobProperties/>
+            <triggers/>
+            <parameters/>
+            <options/>
+        </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+    </actions>
+    <description/>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <jenkins.model.BuildDiscarderProperty>
+            <strategy class="hudson.tasks.LogRotator">
+                <daysToKeep>-1</daysToKeep>
+                <numToKeep>-1</numToKeep>
+                <artifactDaysToKeep>-1</artifactDaysToKeep>
+                <artifactNumToKeep>-1</artifactNumToKeep>
+            </strategy>
+        </jenkins.model.BuildDiscarderProperty>
+        <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+            <triggers>
+                <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3">
+                    <spec/>
+                </com.cloudbees.jenkins.GitHubPushTrigger>
+            </triggers>
+        </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+    </properties>
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3802.vd42b_fcf00b_a_c">
+        <script>
+            pipeline {
+            agent {
+            node{
+            label 'worker1'
+            }
+            }
+            tools{
+            toolChange 'toolChange'
+            }
+
+            environment{
+            CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
+            GITHUB_REPO = 'path-repository'
+            }
+
+            stages {
+
+            stage('Clone Repository') {
+            steps {
+            script{
+
+            checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'gitUrl']]])
+            }
+            }
+            }
+            stage('Buid Project'){
+            steps{
+            script{
+            sh 'buildtool build'
+            echo "Build successfully"
+            }
+            }
+            }
+
+            stage('Add Dockerfile') {
+            steps {
+            script {
+            def dockerfileContent = """
+            fordockerfile
+
+            """
+
+            writeFile file: 'Dockerfile', text: dockerfileContent
+            }
+            }
+            }
+
+            stage('build to docker images') {
+            steps {
+            script{
+
+            sh 'docker build -t kshrdautopilot/appname:${CURRENT_DATETIME} .'
+
+            sh 'docker push kshrdautopilot/appname:${CURRENT_DATETIME}'
+
+            echo "build images successfully"
+
+            }
+
+            }
+            }
+            stage('go to repository'){
+
+            steps {
+            script {
+            // Clone the GitHub repository
+            checkout([$class: 'GitSCM',
+            branches: [[name: '*/main']],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
+            submoduleCfg: [],
+            userRemoteConfigs: [[url: "https://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@github.com/${GITHUB_REPO}"]]])
+            }
+            }
+            }
+            stage('Modify File') {
+            steps {
+            script {
+            // Modify the content of the file
+            sh "sed -i 's+kshrdautopilot/appname.*+kshrdautopilot/appname:${CURRENT_DATETIME}+g' app/deployment.yaml"
+            }
+            }
+            }
+            stage('Commit and Push') {
+            steps {
+            script {
+            // Commit the changes
+            sh 'git add .'
+            sh 'git commit -m "Updated images version"'
+
+            // Push the changes back to GitHub
+            sh 'git push https://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@@github.com/${GITHUB_REPO} HEAD:main'
+            }
+            }
+            }
+            }
+            }
+
+        </script>
+        <sandbox>true</sandbox>
+    </definition>
+    <triggers/>
+    <disabled>false</disabled>
+</flow-definition>
