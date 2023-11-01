@@ -4,11 +4,17 @@ import com.kshrd.autopilot.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
 
 @Service
 @AllArgsConstructor
@@ -34,8 +40,11 @@ public class EmailServiceImpl implements EmailService {
     public void confirmEmail(String email, String url) throws MessagingException {
         MimeMessage mimeMailMessage=javaMailSender.createMimeMessage();
         MimeMessageHelper helper=new MimeMessageHelper(mimeMailMessage,true);
+
+
         helper.setTo(email);
         helper.setSubject("Complete Registration!");
+        helper.addInline("logo",new ClassPathResource("static/logo.svg"));
         Context context=new Context();
         context.setVariable("url",url);
         String html=templateEngine.process("confirm-email",context);
