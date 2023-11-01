@@ -41,6 +41,7 @@ pipeline {
 
     environment{
     CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
+    GITHUB_REPO = 'path-repository'
     }
 
     stages {
@@ -89,6 +90,40 @@ pipeline {
 
             }
         }
+        stage('go to repository'){
+
+                    steps {
+                        script {
+                            // Clone the GitHub repository
+                            checkout([$class: 'GitSCM',
+                                branches: [[name: '*/main']],
+                                doGenerateSubmoduleConfigurations: false,
+                                extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
+                                submoduleCfg: [],
+                                userRemoteConfigs: [[url: "https://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@github.com/${GITHUB_REPO}"]]])
+                        }
+                    }
+                }
+                stage('Modify File') {
+                    steps {
+                        script {
+                            // Modify the content of the file
+                            sh "sed -i 's+kshrdautopilot/appname.*+kshrdautopilot/appname:${CURRENT_DATETIME}+g' app/deployment.yaml"
+                        }
+                    }
+                }
+                 stage('Commit and Push') {
+                    steps {
+                        script {
+                            // Commit the changes
+                            sh 'git add .'
+                            sh 'git commit -m "Updated images version"'
+
+                            // Push the changes back to GitHub
+                            sh 'git push https://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@@github.com/${GITHUB_REPO} HEAD:main'
+                        }
+                    }
+                }
 }
 }
 

@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.swing.*;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,6 +23,8 @@ public class DeploymentAppRequest {
     private String description;
     private String git_platform;
     private String git_src_url;
+    private Integer project_port;
+    private String path;
     private Integer depends_on;
     private String branch;
 

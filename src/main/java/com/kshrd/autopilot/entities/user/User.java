@@ -32,6 +32,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+
     @OneToMany(mappedBy = "user",cascade =CascadeType.ALL)
     private final Set<ProjectDetails> projectDetails =new HashSet<>();
 

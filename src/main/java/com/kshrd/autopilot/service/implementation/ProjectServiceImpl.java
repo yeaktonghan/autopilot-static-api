@@ -3,6 +3,7 @@ package com.kshrd.autopilot.service.implementation;
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.ProjectDetails;
 import com.kshrd.autopilot.entities.dto.ProjectDto;
+import com.kshrd.autopilot.entities.dto.UserDto;
 import com.kshrd.autopilot.entities.request.CreateTeamRequest;
 import com.kshrd.autopilot.entities.user.User;
 import com.kshrd.autopilot.exception.AutoPilotException;
@@ -58,13 +59,25 @@ public class ProjectServiceImpl implements ProjectService {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         List<ProjectDetails> projectDetails = projectDetailRepository.findAllByUser(user);
+        ProjectDto projectDto = null;
         List<ProjectDto> projects = new ArrayList<>();
+        List<User> users=new ArrayList<>();
+        List<UserDto> userDtos =new ArrayList<>();
         for (ProjectDetails pro : projectDetails) {
             Project project = projectRepository.findById(pro.getProject().getId()).get();
-            ProjectDto projectDto = project.toProjectDto();
-            projectDto.setMember(projectDetailRepository.countAllByProject(project));
+            projectDto = project.toProjectDto();
+            List<ProjectDetails> projectDetailsList=projectDetailRepository.findAllByProject(project);
+            for (ProjectDetails pd:projectDetailsList){
+                User us=userRepository.findById(pd.getUser().getId()).get();
+                users.add(us);
+            }
             projects.add(projectDto);
         }
+        for (User usr:users){
+            userDtos.add(usr.toUserDto());
+        }
+        projectDto.setMembers(userDtos);
+        //List<User> users=projectDetailRepository.findAllByProject()
         return projects;
     }
 

@@ -47,7 +47,7 @@ public class Jenkins {
 
     }
 
-    public void createJobConfig(String gitUrl, String tool, String branch, String project_name) {
+    public void createJobConfig(String gitUrl,String repoPath, String tool, String branch, String project_name) {
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
@@ -73,6 +73,7 @@ public class Jenkins {
             replacement.put("fordockerfile",dockerfile);
             replacement.put("gitUrl",gitUrl);
             replacement.put("buildtool",build_tool);
+            replacement.put("path-repository",repoPath);
             String jobConfig = FileUtil.replaceText(file, replacement);
             System.out.println(jobConfig);
             String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);

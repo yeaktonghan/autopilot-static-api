@@ -41,6 +41,7 @@ pipeline {
 
     environment{
     CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
+    GITHUB_REPO = '/ksga-11th-generation-advance-course/auto-pilot-api.git'
     }
 
     stages {
@@ -49,7 +50,7 @@ pipeline {
             steps {
                  script{
 
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://string@github.com/KSGA-Autopilot/somnang.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://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@github.com/ksga-11th-generation-advance-course/auto-pilot-api.git']]])
             }
         }
         }
@@ -71,11 +72,11 @@ pipeline {
 
 WORKDIR /app
 
-COPY build/libs/fintrack-0.0.1-SNAPSHOT.jar fintrack-0.0.1-SNAPSHOT.jar
+COPY build/libs/autopilot-0.0.1-SNAPSHOT.jar autopilot-0.0.1-SNAPSHOT.jar
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "fintrack-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "autopilot-0.0.1-SNAPSHOT.jar"]
 
 
                                             """
@@ -89,9 +90,9 @@ CMD ["java", "-jar", "fintrack-0.0.1-SNAPSHOT.jar"]
             steps {
                 script{
 
-                sh 'docker build -t kshrdautopilot/fintrack:${CURRENT_DATETIME} .'
+                sh 'docker build -t kshrdautopilot/autopilot:${CURRENT_DATETIME} .'
 
-                 sh 'docker push kshrdautopilot/fintrack:${CURRENT_DATETIME}'
+                 sh 'docker push kshrdautopilot/autopilot:${CURRENT_DATETIME}'
 
                     echo "build images successfully"
 
@@ -99,6 +100,40 @@ CMD ["java", "-jar", "fintrack-0.0.1-SNAPSHOT.jar"]
 
             }
         }
+        stage('go to repository'){
+
+                    steps {
+                        script {
+                            // Clone the GitHub repository
+                            checkout([$class: 'GitSCM',
+                                branches: [[name: '*/main']],
+                                doGenerateSubmoduleConfigurations: false,
+                                extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
+                                submoduleCfg: [],
+                                userRemoteConfigs: [[url: "https://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@github.com/${GITHUB_REPO}"]]])
+                        }
+                    }
+                }
+                stage('Modify File') {
+                    steps {
+                        script {
+                            // Modify the content of the file
+                            sh "sed -i 's+kshrdautopilot/autopilot.*+kshrdautopilot/autopilot:${CURRENT_DATETIME}+g' app/deployment.yaml"
+                        }
+                    }
+                }
+                 stage('Commit and Push') {
+                    steps {
+                        script {
+                            // Commit the changes
+                            sh 'git add .'
+                            sh 'git commit -m "Updated images version"'
+
+                            // Push the changes back to GitHub
+                            sh 'git push https://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@@github.com/${GITHUB_REPO} main'
+                        }
+                    }
+                }
 }
 }
 

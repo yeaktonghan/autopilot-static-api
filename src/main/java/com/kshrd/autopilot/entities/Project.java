@@ -1,6 +1,8 @@
 package com.kshrd.autopilot.entities;
 
 import com.kshrd.autopilot.entities.dto.ProjectDto;
+import com.kshrd.autopilot.entities.dto.UserDto;
+import com.kshrd.autopilot.entities.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
