@@ -1,11 +1,13 @@
 package com.kshrd.autopilot.service.implementation;
 
+import com.kshrd.autopilot.entities.ConfirmationEmail;
 import com.kshrd.autopilot.entities.dto.UserDto;
 import com.kshrd.autopilot.entities.OTPstore;
 import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.exception.OTPException;
 import com.kshrd.autopilot.exception.UserNotFoundException;
 import com.kshrd.autopilot.exception.UsernameAlreadyExistsException;
+import com.kshrd.autopilot.repository.ConfirmationEmailRepository;
 import com.kshrd.autopilot.repository.OTPRepository;
 import com.kshrd.autopilot.repository.UserRepository;
 import com.kshrd.autopilot.entities.request.AuthenticationRequest;
@@ -16,7 +18,6 @@ import com.kshrd.autopilot.entities.user.User;
 import com.kshrd.autopilot.util.CurrentUserUtil;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,8 +25,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -42,12 +41,14 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final OTPRepository otpRepository;
+    private final ConfirmationEmailRepository confirmationEmailRepository;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService, OTPRepository otpRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService, OTPRepository otpRepository, ConfirmationEmailRepository confirmationEmailRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.otpRepository = otpRepository;
+        this.confirmationEmailRepository = confirmationEmailRepository;
     }
 
     @Override
@@ -62,15 +63,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserByUsername(String username) {
-        User user=userRepository.findByUsername(username);
-        if (user==null){ throw new AutoPilotException("Username not found", HttpStatus.NOT_FOUND,
-                urlError, "Username is not registered yet!");}
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new AutoPilotException("Username not found", HttpStatus.NOT_FOUND,
+                    urlError, "Username is not registered yet!");
+        }
         return user.toUserDto();
 
     }
 
     @Override
-    public UserDto registration(AuthenticationRequest request) {
+    public UserDto registration(AuthenticationRequest request, HttpServletRequest requestSer) throws MessagingException {
         if (userRepository.findByUsername(request.getUsername()) != null) {
             throw new UsernameAlreadyExistsException("Username is token", "That Username is taken. Try another");
         } else if (userRepository.findUsersByEmail(request.getEmail()) != null) {
@@ -81,9 +84,29 @@ public class UserServiceImpl implements UserService {
             user.setUsername(request.getUsername());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(user);
+            ConfirmationEmail confirmationEmail = new ConfirmationEmail(user);
+            confirmationEmailRepository.save(confirmationEmail);
+            String appUrl =
+                    "http://localhost:5173/signin?token=" + confirmationEmail.getConfirmationToken();
+            emailService.confirmEmail(request.getEmail(),appUrl);
         }
 
         return userRepository.findByUsername(request.getUsername()).toUserDto();
+    }
+
+    @Override
+    public UserDto confirmEmail(String emailtoken) {
+        ConfirmationEmail token = confirmationEmailRepository.findByConfirmationToken(emailtoken);
+        if(token != null)
+        {
+           Optional< User> user = userRepository.findById(token.getUser().getId());
+            user.get().setEnabled(true);
+            userRepository.save(user.get());
+            return user.get().toUserDto();
+        }else {
+            throw new AutoPilotException("Not found",HttpStatus.NOT_FOUND,urlError,"Error: Couldn't verify email");
+        }
+
     }
 
     public static int generateUniqueSixDigitNumber() {
@@ -113,22 +136,22 @@ public class UserServiceImpl implements UserService {
                         ":" + request.getServerPort() +
                         request.getContextPath()+"/api/v1/auth/verifyOTP?otp="+otp_code;
         System.out.println(appUrl);
-        //System.out.println(protocol+"://"+host+":"+String.valueOf(port));
-//        Optional<OTPstore> otpOptional = otpRepository.findByUserId(user.getId());
-//        if (otpOptional.isPresent()) {
-//            OTPstore updateOtp = otpOptional.get();
-//            updateOtp.setOtp_code(otp_code);
-//            updateOtp.setCreated_at(LocalDateTime.now());
-//            otpRepository.save(updateOtp);
-//            emailService.sendOTPEmail(username, user.getUsername(), appUrl);
-//        } else {
-//            OTPstore otPstore = new OTPstore();
-//            otPstore.setUser(user);
-//            otPstore.setOtp_code(otp_code);
-//            otPstore.setCreated_at(LocalDateTime.now());
-//            otpRepository.save(otPstore);
-//            emailService.sendOTPEmail(username, user.getUsername(), appUrl);
-//        }
+       // System.out.println(protocol+"://"+host+":"+String.valueOf(port));
+        Optional<OTPstore> otpOptional = otpRepository.findByUserId(user.getId());
+        if (otpOptional.isPresent()) {
+            OTPstore updateOtp = otpOptional.get();
+            updateOtp.setOtp_code(otp_code);
+            updateOtp.setCreated_at(LocalDateTime.now());
+            otpRepository.save(updateOtp);
+            emailService.sendOTPEmail(username, user.getUsername(), appUrl);
+        } else {
+            OTPstore otPstore = new OTPstore();
+            otPstore.setUser(user);
+            otPstore.setOtp_code(otp_code);
+            otPstore.setCreated_at(LocalDateTime.now());
+            otpRepository.save(otPstore);
+            emailService.sendOTPEmail(username, user.getUsername(), appUrl);
+      }
 
     }
 

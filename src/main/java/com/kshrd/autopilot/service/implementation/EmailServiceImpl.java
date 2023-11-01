@@ -29,4 +29,17 @@ public class EmailServiceImpl implements EmailService {
         javaMailSender.send(mimeMailMessage);
 
     }
+
+    @Override
+    public void confirmEmail(String email, String url) throws MessagingException {
+        MimeMessage mimeMailMessage=javaMailSender.createMimeMessage();
+        MimeMessageHelper helper=new MimeMessageHelper(mimeMailMessage,true);
+        helper.setTo(email);
+        helper.setSubject("Complete Registration!");
+        Context context=new Context();
+        context.setVariable("url",url);
+        String html=templateEngine.process("confirm-email",context);
+        helper.setText(html,true);
+        javaMailSender.send(mimeMailMessage);
+    }
 }

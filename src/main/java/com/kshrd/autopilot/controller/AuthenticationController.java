@@ -70,7 +70,15 @@ public class AuthenticationController {
                 .payload(userDto).build();
         return ResponseEntity.ok(response);
     }
-
+    @GetMapping("/confirm-email")
+    public ResponseEntity<?> confirmEmail(@RequestParam("token") String token){
+         UserDto userDto=service.confirmEmail(token);
+        AutoPilotResponse<UserDto> response = AutoPilotResponse.<UserDto>builder()
+                .success(true)
+                .message("Email verified successfully!")
+                .payload(userDto).build();
+        return ResponseEntity.ok(response);
+    }
     @PostMapping("/refreshToken")
     public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
         AtomicReference<UserDto> userDto = new AtomicReference<>(new UserDto());
@@ -89,8 +97,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AutoPilotResponse<UserDto>> registration(@Valid @RequestBody AuthenticationRequest request) {
-        UserDto userDto = service.registration(request);
+    public ResponseEntity<AutoPilotResponse<UserDto>> registration(@Valid @RequestBody AuthenticationRequest request,HttpServletRequest httpServletRequest) throws MessagingException {
+        UserDto userDto = service.registration(request,httpServletRequest);
         AutoPilotResponse<UserDto> response = AutoPilotResponse.<UserDto>builder()
                 .message("Your registration was successfully")
                 .success(true)
