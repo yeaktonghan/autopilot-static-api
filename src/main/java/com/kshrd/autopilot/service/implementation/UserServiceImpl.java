@@ -90,8 +90,8 @@ public class UserServiceImpl implements UserService {
             emailService.confirmEmail(request.getEmail(),appUrl);
         }
 
-        //return userRepository.findByUsername(request.getUsername()).toUserDto();
-        return  null;
+        return userRepository.findByUsername(request.getUsername()).toUserDto();
+       // return  null;
     }
 
     @Override
