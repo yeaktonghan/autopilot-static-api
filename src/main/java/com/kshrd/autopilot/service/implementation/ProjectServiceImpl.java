@@ -73,10 +73,6 @@ public class ProjectServiceImpl implements ProjectService {
             }
             projects.add(projectDto);
         }
-        for (User usr:users){
-            userDtos.add(usr.toUserDto());
-        }
-        projectDto.setMembers(userDtos);
         //List<User> users=projectDetailRepository.findAllByProject()
         return projects;
     }
