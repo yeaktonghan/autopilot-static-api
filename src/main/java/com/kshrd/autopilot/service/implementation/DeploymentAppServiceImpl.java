@@ -7,6 +7,7 @@ import com.kshrd.autopilot.entities.dto.DeploymentAppDto;
 import com.kshrd.autopilot.entities.request.DeploymentAppRequest;
 import com.kshrd.autopilot.entities.user.User;
 import com.kshrd.autopilot.exception.AutoPilotException;
+import com.kshrd.autopilot.exception.BadRequestException;
 import com.kshrd.autopilot.repository.DeploymentAppRepository;
 import com.kshrd.autopilot.repository.ProjectDetailRepository;
 import com.kshrd.autopilot.repository.ProjectRepository;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,6 +46,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
     @Override
     public DeploymentAppDto createDeploymentApp(DeploymentAppRequest request) {
+        // check valid project id
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Optional<Project> project = Optional.ofNullable(projectRepository.findById(request.getProject_id())
@@ -52,6 +55,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (projectDetails == null) {
             throw new AutoPilotException("Not owner!", HttpStatus.BAD_REQUEST, urlError, "You are not owner this project");
         }
+        // insert to database
         DeploymentApp deploymentApp = new DeploymentApp();
         deploymentApp.setAppName(request.getAppName());
         deploymentApp.setProject(project.get());
@@ -75,7 +79,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 //       }else {
 //           deploymentApp.setPort(deployment.get().getPort()+1);
 //       }
-
+        // build url for repos (public or private)
         String newUrl = null;
         String path = "";
         String protocol = "";
@@ -95,6 +99,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
                 deploymentSpring(request);
                 break;
             case "react":
+
                 break;
         }
 
@@ -116,10 +121,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     }
 
     public DeploymentAppDto deploymentSpring(DeploymentAppRequest request) {
-
-
-
-
         String repoName = "https://github.com/KSGA-Autopilot/" + request.getAppName() + "-cd" + ".git";
         try {
             Jenkins cli = new Jenkins();
@@ -129,21 +130,19 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             String pathUsernmae = url.getPath();
             String[] arrayPath = pathUsernmae.split("/");
             String username = arrayPath[1];
-            String repository=request.getAppName() + "-cd";
+            String repository = request.getAppName() + "-cd";
             String image = "autopilot/" + appName + ":1";
             GitUtil.createGitRepos(repository);
-            GitUtil.createApplication(repository, appName, repoName, username);
+//            GitUtil.createApplication(repository, appName, repoName, username);
             GitUtil.createSpringDeployment(repository, request.getAppName() + "-deployment", username, 2, appName, request.getAppName(), 3000);
-            GitUtil.createSpringService(repository,request.getAppName() + "-service",username,30000,30000,30001);
-            GitUtil.createIngress(repository,request.getAppName()+"-ingress",username,"controlplane.hanyeaktong.site",appName,request.getAppName() + "-service","30000");
-            cli.createJobConfig(request.getGit_src_url(),pathUsernmae,request.getBuild_tool(),request.getBranch(),request.getAppName());
+//            GitUtil.createSpringService(repository, request.getAppName() + "-service", username, 30000, 30000, 30001);
+            GitUtil.createIngress(repository, request.getAppName() + "-ingress", username, "controlplane.hanyeaktong.site", appName, request.getAppName() + "-service", "30000");
+            cli.createSpringJobConfig(request.getGit_src_url(), pathUsernmae, request.getBuild_tool(), request.getBranch(), request.getAppName());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
 
-
-        // to db
         // create cd repos
         // create job: build, test, and push image, update cd repos image
         // check if job is built successfully
@@ -160,6 +159,40 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // create cd repos
         // create deployment
         // create service
+        return null;
+    }
+
+    public DeploymentAppDto deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
+        // create cd repos
+        URL url = new URL(request.getGit_src_url());
+        String cdRepos = url.getPath();
+        String[] arrayPath = cdRepos.split("/");
+        String username = arrayPath[0];
+        String projectName = arrayPath[1];
+        cdRepos = username + "-" + projectName + "-" + "cd";
+        int cdResponse = GitUtil.createGitRepos(cdRepos);
+        if (cdResponse != 203) {
+            throw new BadRequestException("Unable to create.", "Enable to create git repository." + cdRepos);
+        }
+        // create job: build, test, and push image, update cd repos image
+        try {
+            Jenkins cli = new Jenkins();
+            String appName = url.getPath();
+            appName = appName.replaceAll("/", "").replaceAll(".git", "");
+            String image = "autopilot/" + cdRepos + ":1";
+            GitUtil.createApplication(cdRepos, appName, username);
+            GitUtil.createSpringDeployment(cdRepos, username + "-" + projectName + "-deployment", projectName, 2, projectName, image, request.getProject_port());
+            GitUtil.createSpringService(cdRepos, username + "-" + projectName + "-service", projectName, request.getProject_port(), request.getProject_port());
+            GitUtil.createIngress(cdRepos, username + "-" + projectName + "-ingress", username, "controlplane.hanyeaktong.site", request.getPath(), username + "-" + projectName + "-service", request.getProject_port().toString());
+            cli.createReactJobConfig(request.getGit_src_url(), username + "-" + projectName, request.getBranch());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // check if job is built successfully
+        // generate cert for namespace
+        // make argo cd connect to cd repos
+        // add domain and secure ssl
+        // setup monitoring: server up -> send alert
         return null;
     }
 }
