@@ -1,8 +1,8 @@
 package com.kshrd.autopilot.exception;
 
-public class UsernameAlreadyExistsException extends RuntimeException {
+public class BadRequestException extends RuntimeException{
     private String title;
-    public UsernameAlreadyExistsException(String title,String message) {
+    public BadRequestException(String title, String message) {
         super(message);
         this.title=title;
     }
@@ -11,4 +11,3 @@ public class UsernameAlreadyExistsException extends RuntimeException {
         return title;
     }
 }
-

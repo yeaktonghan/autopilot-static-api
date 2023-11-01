@@ -1,7 +1,6 @@
 package com.kshrd.autopilot.util;
 
 import com.offbytwo.jenkins.JenkinsServer;
-import com.offbytwo.jenkins.model.Job;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +46,7 @@ public class Jenkins {
 
     }
 
-    public void createJobConfig(String gitUrl,String repoPath, String tool, String branch, String project_name) {
+    public void createSpringJobConfig(String gitUrl, String repoPath, String tool, String branch, String project_name) {
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
@@ -78,6 +77,31 @@ public class Jenkins {
             System.out.println(jobConfig);
             String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);
             jenkins.createJob(jobName, jobConfig);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createReactJobConfig(String git_src_url, String image, String branch) {
+        try {
+            String jenkinsUrl = "http://188.166.179.13:8080/";
+            String username = "kshrd";
+            String apiToken = "112de5f0b04bb2ad66d7f233a445f6b0fd";
+            String toolType="";
+            String build_tool="npm";
+            JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
+            String configXML = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/react/react.pipeline.xml");
+            System.out.println(configXML);
+            Map<String, String> replaceString = new HashMap<>();
+            replaceString.put("var-git_src_url", git_src_url);
+            replaceString.put("var-image", image);
+            replaceString.put("var-branch", branch);
+            // replace string operation
+            for (Map.Entry<String, String> entry : replaceString.entrySet()) {
+                configXML = configXML.replace(entry.getKey(), entry.getValue());
+            }
+            String jobName = git_src_url + UUID.randomUUID().toString().substring(0, 4);
+            jenkins.createJob(jobName, configXML);
         } catch (Exception e) {
             e.printStackTrace();
         }
