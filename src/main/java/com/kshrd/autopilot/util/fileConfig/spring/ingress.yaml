@@ -4,6 +4,10 @@ metadata:
   name: i-name
   namespace: i-namespace
 spec:
+  tls:
+    - hosts:
+        - i-domain
+      secretName: tls-cert
   rules:
     - host: i-domain
       http:

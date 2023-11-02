@@ -82,11 +82,11 @@ public class Jenkins {
         }
     }
 
-    public void createReactJobConfig(String git_src_url, String image, String branch) {
+    public void createReactJobConfig(String git_src_url, String image, String branch, String cdRepos, String jobName) {
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
-            String apiToken = "112de5f0b04bb2ad66d7f233a445f6b0fd";
+            String apiToken = "11ea48669bc5b21f56e116d00868fa669d";
             String toolType="";
             String build_tool="npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
@@ -96,11 +96,11 @@ public class Jenkins {
             replaceString.put("var-git_src_url", git_src_url);
             replaceString.put("var-image", image);
             replaceString.put("var-branch", branch);
+            replaceString.put("var-application.yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/"+ cdRepos +"/main/argo-application.yaml");
             // replace string operation
             for (Map.Entry<String, String> entry : replaceString.entrySet()) {
                 configXML = configXML.replace(entry.getKey(), entry.getValue());
             }
-            String jobName = git_src_url + UUID.randomUUID().toString().substring(0, 4);
             jenkins.createJob(jobName, configXML);
         } catch (Exception e) {
             e.printStackTrace();

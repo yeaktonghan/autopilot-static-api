@@ -228,6 +228,75 @@ public class GitUtil {
         return response.statusCode();
     }
 
+    public static int createArgoApp(String reposName, String appName, String nameSpace) throws IOException, InterruptedException {
+        if (GitUtil.checkGitReposExist(reposName) != 200) {
+            throw new NotFoundException("Repository not found.", "This repository does not exist.");
+        }
+        // find template deployment file
+        String argoAppYaml = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/argo-application.yaml");
+        System.out.println(argoAppYaml);
+        // List spring to replace on the sameple file
+        Map<String, String> replaceString = new HashMap<>();
+        replaceString.put("var-app-name", appName);
+        replaceString.put("var-cd-repos", reposName);
+        replaceString.put("var-namespace", nameSpace);
+        // replace string operation
+        for (Map.Entry<String, String> entry : replaceString.entrySet()) {
+            argoAppYaml = argoAppYaml.replace(entry.getKey(), entry.getValue());
+        }
+        System.out.println(argoAppYaml);
+        // encode string to base64 for github api
+        String encodedArgoAppYamlFile = Base64.getEncoder().encodeToString(argoAppYaml.getBytes());
+        System.out.println(encodedArgoAppYamlFile);
+        // build http request client
+        HttpClient httpClient = HttpClient.newBuilder().build();
+        String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/argo-application.yaml";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(gitEndpoint))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/vnd.github+json")
+                .header("Authorization", "Bearer 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")
+                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create argo-app.yaml\",  \"content\": \"" + encodedArgoAppYamlFile + "\" }"))
+                .build();
+        // send http request
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.statusCode();
+    }
+
+    public static int createNamespaceTlsCertificate(String reposName, String dns, String nameSpace) throws IOException, InterruptedException {
+        if (GitUtil.checkGitReposExist(reposName) != 200) {
+            throw new NotFoundException("Repository not found.", "This repository does not exist.");
+        }
+        // find template deployment file
+        String certYaml = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/certificate.yaml");
+        System.out.println(certYaml);
+        // List spring to replace on the sameple file
+        Map<String, String> replaceString = new HashMap<>();
+        replaceString.put("dns-name", dns);
+        replaceString.put("cert-namespace", nameSpace);
+        // replace string operation
+        for (Map.Entry<String, String> entry : replaceString.entrySet()) {
+            certYaml = certYaml.replace(entry.getKey(), entry.getValue());
+        }
+        System.out.println(certYaml);
+        // encode string to base64 for github api
+        String certYamlFile = Base64.getEncoder().encodeToString(certYaml.getBytes());
+        System.out.println(certYamlFile);
+        // build http request client
+        HttpClient httpClient = HttpClient.newBuilder().build();
+        String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/app/certificate.yaml";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(gitEndpoint))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/vnd.github+json")
+                .header("Authorization", "Bearer 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")
+                .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create certificate.yaml\",  \"content\": \"" + certYamlFile + "\" }"))
+                .build();
+        // send http request
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.statusCode();
+    }
+
     private static int checkGitReposExist(String reposName) throws IOException, InterruptedException {
         HttpClient httpClient = HttpClient.newBuilder().build();
 

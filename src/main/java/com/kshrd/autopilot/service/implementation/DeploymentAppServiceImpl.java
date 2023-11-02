@@ -15,6 +15,7 @@ import com.kshrd.autopilot.repository.UserRepository;
 import com.kshrd.autopilot.service.DeploymentAppService;
 import com.kshrd.autopilot.util.CurrentUserUtil;
 import com.kshrd.autopilot.util.GitUtil;
+import com.kshrd.autopilot.util.HttpUtil;
 import com.kshrd.autopilot.util.Jenkins;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class DeploymentAppServiceImpl implements DeploymentAppService {
@@ -163,12 +165,13 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     }
 
     public DeploymentAppDto deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
+        String jobName = request.getGit_src_url() + UUID.randomUUID().toString().substring(0, 4);
         // create cd repos
         URL url = new URL(request.getGit_src_url());
         String cdRepos = url.getPath();
         String[] arrayPath = cdRepos.split("/");
-        String username = arrayPath[0];
-        String projectName = arrayPath[1];
+        String username = arrayPath[0].toLowerCase();
+        String projectName = arrayPath[1].toLowerCase();
         cdRepos = username + "-" + projectName + "-" + "cd";
         int cdResponse = GitUtil.createGitRepos(cdRepos);
         if (cdResponse != 203) {
@@ -179,18 +182,36 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             Jenkins cli = new Jenkins();
             String appName = url.getPath();
             appName = appName.replaceAll("/", "").replaceAll(".git", "");
+            System.out.println("Appname=" + appName);
             String image = "autopilot/" + cdRepos + ":1";
+            // create application for argocd
             GitUtil.createApplication(cdRepos, appName, username);
+            // create deployment file
             GitUtil.createSpringDeployment(cdRepos, username + "-" + projectName + "-deployment", projectName, 2, projectName, image, request.getProject_port());
+            // create service file
             GitUtil.createSpringService(cdRepos, username + "-" + projectName + "-service", projectName, request.getProject_port(), request.getProject_port());
+            // create ingress file
             GitUtil.createIngress(cdRepos, username + "-" + projectName + "-ingress", username, "controlplane.hanyeaktong.site", request.getPath(), username + "-" + projectName + "-service", request.getProject_port().toString());
-            cli.createReactJobConfig(request.getGit_src_url(), username + "-" + projectName, request.getBranch());
+//            GitUtil.createArgoApp(cdRepos, appName, username);
+            // create certificate for namespace
+            if (request.getDomain()==null) {
+                GitUtil.createNamespaceTlsCertificate(cdRepos, "controlplane.hanyeaktong.site", username);
+            }
+            else {
+                GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain(), username);
+            }
+            cli.createReactJobConfig(request.getGit_src_url(), username + "-" + projectName, request.getBranch(), cdRepos, jobName);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // build job
+        if (HttpUtil.buildJob(jobName) != 201){
+            throw new BadRequestException("Fail to build job", "Job have not been build successfully.");
+        }
         // check if job is built successfully
+
         // generate cert for namespace
-        // make argo cd connect to cd repos
+        // make argo cd create application
         // add domain and secure ssl
         // setup monitoring: server up -> send alert
         return null;
