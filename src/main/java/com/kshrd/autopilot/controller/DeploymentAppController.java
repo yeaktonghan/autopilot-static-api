@@ -21,7 +21,7 @@ public class DeploymentAppController {
         this.service = service;
     }
     @PostMapping("/deployment")
-    public ResponseEntity<AutoPilotResponse<DeploymentAppDto>> createDeploymentApp(@RequestBody @Valid DeploymentAppRequest request) throws IOException {
+    public ResponseEntity<AutoPilotResponse<DeploymentAppDto>> createDeploymentApp(@RequestBody @Valid DeploymentAppRequest request) throws IOException, InterruptedException {
         AutoPilotResponse<DeploymentAppDto> response = AutoPilotResponse.<DeploymentAppDto>builder()
                 .success(true)
                 .message("DeploymentApp has created successfully")

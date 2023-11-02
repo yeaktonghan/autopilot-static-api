@@ -47,7 +47,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     }
 
     @Override
-    public DeploymentAppDto createDeploymentApp(DeploymentAppRequest request) {
+    public DeploymentAppDto createDeploymentApp(DeploymentAppRequest request) throws IOException, InterruptedException {
         // check valid project id
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
@@ -101,7 +101,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
                 deploymentSpring(request);
                 break;
             case "react":
-
+                deployReactJs(request);
                 break;
         }
 
