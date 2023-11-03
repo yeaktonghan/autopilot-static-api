@@ -41,10 +41,9 @@ public class ProjectServiceImpl implements ProjectService {
     public static String generateRandomColor() {
         Random random = new Random();
         String[] colorNames = {
-                "00c6ff", "c000ff", "ff0086", "ffd600", "00ff2e", "#00ffa6", "009fff"
+                "00c6ff", "c000ff", "ff0086", "ffd600", "00ff2e", "00ffa6", "009fff"
         };
         int index=random.nextInt(colorNames.length);
-
         return colorNames[index] ;
     }
 
@@ -93,6 +92,12 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         return projectDtoList;
+    }
+
+    @Override
+    public ProjectDto getProjectById(Integer id) {
+        Optional<Project> project=projectRepository.findById(id);
+      return null;
     }
 
 
