@@ -96,9 +96,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectDto getProjectById(Integer id) {
-        Optional<Project> project=projectRepository.findById(id);
-        if (!project.isPresent())
-        return null;
+        Optional<Project> project = projectRepository.findById(id);
+
+            return null;
+
     }
 
 
