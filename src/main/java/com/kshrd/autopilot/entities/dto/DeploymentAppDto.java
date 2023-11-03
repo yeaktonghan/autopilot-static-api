@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -15,17 +14,16 @@ public class DeploymentAppDto {
     private String domain;
     private String ipAddress;
     private String port;
-    private Integer project_port;
+    private Integer projectPort;
     private String path;
     private String framework;
-    private String build_tool;
+    private String buildTool;
     private String email;
     private String description;
-    private String git_platform;
-    private String git_src_url;
-    private String token;
-    private Integer depends_on;
+    private String gitPlatform;
+    private String gitSrcUrl;
+    private Integer dependsOn;
     private  String project;
     private String branch;
-    private LocalDateTime create_at;
+    private LocalDateTime createAt;
 }

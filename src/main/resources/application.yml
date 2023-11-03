@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5431/autopilot
+    url: jdbc:postgresql://localhost:5432/autopilot
     username: postgres
     password: 12345
 

@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface DeploymentAppRepository extends JpaRepository<DeploymentApp,Integer> {
     List<DeploymentApp> findAllByProject(Project project);
    // Optional<DeploymentApp> findTopByOrderByCreate_atDesc();
+
+    DeploymentApp findByGitSrcUrl(String gitSrcUrl);
 }

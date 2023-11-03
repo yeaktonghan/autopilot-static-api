@@ -1,12 +1,9 @@
 package com.kshrd.autopilot.entities.request;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.swing.*;
 
 @Data
 @AllArgsConstructor
@@ -14,18 +11,18 @@ import javax.swing.*;
 public class DeploymentAppRequest {
     private String appName;
     @NotNull
-    private Integer project_id;
+    private Integer projectId;
     private String domain;
     private String token;
     private String framework;
-    private String build_tool;
+    private String buildTool;
     private String email;
     private String description;
-    private String git_platform;
-    private String git_src_url;
-    private Integer project_port;
+    private String gitPlatform;
+    private String gitSrcUrl;
+    private Integer projectPort;
     private String path;
-    private Integer depends_on;
+    private Integer dependsOn;
     private String branch;
 
 }

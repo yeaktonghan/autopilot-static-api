@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -16,29 +15,30 @@ import java.util.List;
 public class DeploymentApp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
     private String appName;
     private String domain;
     private String ipAddress;
     private String port;
-    private Integer project_port;
+    private Integer projectPort;
     private String path;
     private String framework;
-    private String build_tool;
+    private String buildTool;
     private String email;
     private String description;
-    private String git_platform;
-    private String git_src_url;
+    private String gitPlatform;
+    @Column(unique = true)
+    private String gitSrcUrl;
     private String token;
     private Boolean status;
-    private Integer depends_on;
+    private Integer dependsOn;
     private String branch;
-    private LocalDateTime create_at;
+    private LocalDateTime createAt;
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "id")
     private Project project;
 
     public DeploymentAppDto toDeploymentAppDto() {
-        return new DeploymentAppDto(this.appName, this.domain, this.ipAddress, this.port,this.project_port,this.path, this.framework, this.build_tool, this.email, this.description, this.git_platform, this.git_src_url, this.token, this.depends_on, this.project.getName(), this.branch, this.create_at);
+        return new DeploymentAppDto(this.appName, this.domain, this.ipAddress, this.port,this.projectPort,this.path, this.framework, this.buildTool, this.email, this.description, this.gitPlatform, this.gitSrcUrl, this.dependsOn, this.project.getName(), this.branch, this.createAt);
     }
 }
