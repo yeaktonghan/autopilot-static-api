@@ -6,7 +6,7 @@ import com.kshrd.autopilot.entities.request.UpdateUserRequest;
 import com.kshrd.autopilot.entities.user.User;
 import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.repository.UserRepository;
-import com.kshrd.autopilot.service.SetUpProfileService;
+import com.kshrd.autopilot.service.UserProfileService;
 import com.kshrd.autopilot.util.CurrentUserUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -14,15 +14,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
-public class SetUpProfileServiceImp implements SetUpProfileService {
+public class UserProfileServiceImp implements UserProfileService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     @Value("${error.url}")
     private String urlError;
 
-    public SetUpProfileServiceImp(UserRepository repository, PasswordEncoder passwordEncoder) {
+    public UserProfileServiceImp(UserRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -59,5 +60,18 @@ public class SetUpProfileServiceImp implements SetUpProfileService {
         user.setImageUrl(request.getImageUrl());
         repository.save(user);
         return user.toUserDto();
+    }
+
+    @Override
+    public UserDto getCurrentUser() {
+        String email= CurrentUserUtil.getEmail();
+        User user=repository.findUsersByEmail(email);
+        return user.toUserDto();
+    }
+
+    @Override
+    public UserDto getUserById(Integer id) {
+
+        return null;
     }
 }

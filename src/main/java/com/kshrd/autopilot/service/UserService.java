@@ -16,4 +16,5 @@ public interface UserService extends UserDetailsService {
     void verifyOTP(Integer otp);
     UserDto resetPassword(ResetPasswordRequest request);
 
+
 }

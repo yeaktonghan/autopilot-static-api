@@ -24,6 +24,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -117,8 +121,7 @@ public class AuthenticationController {
 
     @GetMapping("/verifyOTP")
     public ResponseEntity<?> verifyOTP(@RequestParam("otp") Integer otp) {
-        System.out.println("This otp=" + otp);
-        // service.verifyOTP(otp);
+        service.verifyOTP(otp);
         OtpResponse response = OtpResponse.builder().status(true).message("OTP has been verified").build();
         return ResponseEntity.ok(response);
     }
@@ -133,7 +136,6 @@ public class AuthenticationController {
                 .build();
         return ResponseEntity.ok(response);
     }
-
     private void authenticate(String username, String password) throws Exception {
         try {
             UserDetails userDetails=service.loadUserByUsername(username);

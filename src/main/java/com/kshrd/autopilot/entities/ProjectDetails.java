@@ -1,10 +1,15 @@
 package com.kshrd.autopilot.entities;
 
+import com.kshrd.autopilot.entities.dto.ProjectDetailDto;
+import com.kshrd.autopilot.entities.dto.ProjectDto;
+import com.kshrd.autopilot.entities.dto.UserDto;
 import com.kshrd.autopilot.entities.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name = "project_detail")
@@ -23,4 +28,7 @@ public class ProjectDetails {
     private Project project;
     private Boolean is_owner=false;
 
+    public ProjectDetailDto projectDetailDto(List<ProjectDto> projectDtos, List<UserDto> userDtos){
+        return new ProjectDetailDto(projectDtos, userDtos ,is_owner);
+    }
 }
