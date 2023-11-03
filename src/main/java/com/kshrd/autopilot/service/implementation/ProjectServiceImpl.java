@@ -17,10 +17,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 
@@ -36,16 +38,27 @@ public class ProjectServiceImpl implements ProjectService {
         this.userRepository = userRepository;
         this.projectDetailRepository = projectDetailRepository;
     }
+    public static String generateRandomColor() {
+        Random random = new Random();
+        String[] colorNames = {
+                "00c6ff", "c000ff", "ff0086", "ffd600", "00ff2e", "#00ffa6", "009fff"
+        };
+        int index=random.nextInt(colorNames.length);
+
+        return colorNames[index] ;
+    }
 
     @Override
     public ProjectDto createProject(CreateTeamRequest request) {
         String code_team = ProjectCodeGenerator.generateUniqueCode();
+        String color=generateRandomColor();
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = new Project();
         project.setName(request.getName());
         project.setProject_code(code_team);
         project.setCreated_at(LocalDateTime.now());
+         project.setColor(color);
         projectRepository.save(project);
         ProjectDetails projectDetails = new ProjectDetails();
         projectDetails.setProject(project);
@@ -59,31 +72,29 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectDto> getProjectByUser() {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
-        List<Optional<User>> userList=new ArrayList<>();
-        List<Optional<Project>> optionalList=new ArrayList<>();
-        List<ProjectDetails> projectDetails=projectDetailRepository.findAllByUser(user);
-         for (ProjectDetails pd:projectDetails){
 
-                 userList.add(userRepository.findById(pd.getUser().getId()));
-                 optionalList.add(projectRepository.findById(pd.getProject().getId()));
-         }
-         List<ProjectDto> projectDtos=new ArrayList<>();
-         List<UserDto> userDtoList=new ArrayList<>();
-        //System.out.println(userList);
-         for (Optional<User> usr:userList){
-             userDtoList.add(usr.get().toUserDto());
-         }
+        List<ProjectDetails> projectDetails = projectDetailRepository.findAllByUser(user);
 
-         for (Optional<Project> project:optionalList){
-             projectDtos.add(project.get().toProjectDto());
-         }
-         for (ProjectDto projectDto:projectDtos){
-             projectDto.setMembers(userDtoList);
-         }
+        List<ProjectDto> projectDtoList = new ArrayList<>();
 
-       // reurn projects;
-        return projectDtos;
+        for (ProjectDetails projectDetail : projectDetails) {
+            ProjectDto projectDto = projectDetail.getProject().toProjectDto();
+            projectDto.setIsOwner(projectDetail.getIs_owner());
+
+            List<UserDto> userDtos = new ArrayList<>();
+            List<ProjectDetails> projectDetailsList = projectDetailRepository.findAllByProject(projectDetail.getProject());
+            for (ProjectDetails member : projectDetailsList) {
+                userDtos.add(member.getUser().toUserDto());
+            }
+
+            projectDto.setMembers(userDtos);
+
+            projectDtoList.add(projectDto);
+        }
+
+        return projectDtoList;
     }
+
 
     @Override
     public ProjectDto editProject(CreateTeamRequest request, Integer id) {

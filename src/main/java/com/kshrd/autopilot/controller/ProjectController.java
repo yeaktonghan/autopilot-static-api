@@ -1,6 +1,7 @@
 package com.kshrd.autopilot.controller;
 
 import com.kshrd.autopilot.entities.Project;
+import com.kshrd.autopilot.entities.ProjectDetails;
 import com.kshrd.autopilot.entities.dto.ProjectDto;
 import com.kshrd.autopilot.entities.request.CreateTeamRequest;
 import com.kshrd.autopilot.response.AutoPilotResponse;

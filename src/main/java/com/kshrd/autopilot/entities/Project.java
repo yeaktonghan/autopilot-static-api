@@ -2,7 +2,7 @@ package com.kshrd.autopilot.entities;
 
 import com.kshrd.autopilot.entities.dto.ProjectDto;
 import com.kshrd.autopilot.entities.dto.UserDto;
-import com.kshrd.autopilot.entities.user.User;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +25,8 @@ public class Project {
     private String name;
     @Column(unique = true)
     private String project_code;
+    private String project_pf;
+    private String color;
     private LocalDateTime created_at=LocalDateTime.now();
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
     private final Set<ProjectDetails> projectDetails =new HashSet<>();
@@ -32,7 +34,11 @@ public class Project {
     private List<DeploymentApp> deploymentApps=new ArrayList<>();
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
     private List<DeploymentDb> deploymentDbs=new ArrayList<>();
+    public ProjectDto toProjectDto(List<UserDto> userDtos, Boolean isOwner){
+        return new ProjectDto(this.id,this.name,this.project_code, userDtos,created_at,isOwner,color,project_pf);
+    }
+
     public ProjectDto toProjectDto(){
-        return new ProjectDto(this.id,this.name,this.project_code,this.created_at);
+        return new ProjectDto(this.id,this.name,this.project_code ,this.created_at,color,project_pf);
     }
 }

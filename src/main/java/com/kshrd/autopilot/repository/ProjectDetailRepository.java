@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface ProjectDetailRepository extends JpaRepository<ProjectDetails,Integer> {
@@ -15,6 +16,7 @@ public interface ProjectDetailRepository extends JpaRepository<ProjectDetails,In
     ProjectDetails findByProject(Project project);
     ProjectDetails findByUserAndProject(User user,Project project);
     void deleteById(Integer id);
-    List<ProjectDetails> findAllByProject(Project project);
 
+
+    List<ProjectDetails> findAllByProject(Project project);
 }
