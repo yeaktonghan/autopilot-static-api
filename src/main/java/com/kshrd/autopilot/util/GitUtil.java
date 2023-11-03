@@ -76,7 +76,7 @@ public class GitUtil {
                 .uri(URI.create("https://api.github.com/user/repos"))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer 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")
-                .POST(HttpRequest.BodyPublishers.ofString("{ \"name\": \"" + name + "\",  \"private\": true }"))
+                .POST(HttpRequest.BodyPublishers.ofString("{ \"name\": \"" + name + "\",  \"private\": false }"))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -164,7 +164,7 @@ public class GitUtil {
         System.out.println(applicationYamlFile);
         // List spring to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
-        replaceString.put("app-name", appName);
+        replaceString.put("app-name", appName.toLowerCase());
         replaceString.put("app-repos", "https://github.com/KSGA-Autopilot/"+reposName);
         replaceString.put("app-namespace", nameSpace);
         // replace string operation
