@@ -11,6 +11,7 @@ public interface ProjectService {
     ProjectDto createProject(CreateTeamRequest request);
 
     List<ProjectDto> getProjectByUser();
+    ProjectDto getProjectById(Integer id);
 
     ProjectDto editProject(CreateTeamRequest request, Integer id);
 
