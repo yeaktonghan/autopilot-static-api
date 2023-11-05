@@ -136,7 +136,6 @@ public class UserServiceImpl implements UserService {
                 "http://" + request.getServerName() +
                         ":" + request.getServerPort() +
                         request.getContextPath()+"/api/v1/auth/verifyOTP?otp="+otp_code;
-        System.out.println(appUrl);
        // System.out.println(protocol+"://"+host+":"+String.valueOf(port));
         Optional<OTPstore> otpOptional = otpRepository.findByUserId(user.getId());
         if (otpOptional.isPresent()) {

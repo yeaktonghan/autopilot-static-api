@@ -24,8 +24,8 @@ public class Project {
     private Integer id;
     private String name;
     @Column(unique = true)
-    private String project_code;
-    private String project_pf;
+    private String projectCode;
+    private String projectPf;
     private String color;
     private LocalDateTime created_at=LocalDateTime.now();
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
@@ -35,10 +35,10 @@ public class Project {
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
     private List<DeploymentDb> deploymentDbs=new ArrayList<>();
     public ProjectDto toProjectDto(List<UserDto> userDtos, Boolean isOwner){
-        return new ProjectDto(this.id,this.name,this.project_code, userDtos,created_at,isOwner,color,project_pf);
+        return new ProjectDto(this.id,this.name,this.projectCode, userDtos,created_at,isOwner,color, projectPf);
     }
 
     public ProjectDto toProjectDto(){
-        return new ProjectDto(this.id,this.name,this.project_code ,this.created_at,color,project_pf);
+        return new ProjectDto(this.id,this.name,this.projectCode,this.created_at,color, projectPf);
     }
 }

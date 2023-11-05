@@ -26,12 +26,22 @@ public class ProjectController {
     }
 
     @PostMapping("/project")
-    public ResponseEntity<AutoPilotResponse<ProjectDto>> createTeam(@Valid @RequestBody CreateTeamRequest request) {
+    public ResponseEntity<AutoPilotResponse<ProjectDto>> createProject(@Valid @RequestBody CreateTeamRequest request) {
         ProjectDto project = service.createProject(request);
         AutoPilotResponse<ProjectDto> response = AutoPilotResponse.<ProjectDto>
                         builder()
                 .success(true)
-                .message("Team has bean created successfully")
+                .message("Project has bean created successfully")
+                .payload(project).build();
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping ("/project/{id}")
+    public ResponseEntity<AutoPilotResponse<ProjectDto>> getProject(@PathVariable("id") Integer id) {
+        ProjectDto project = service.getProjectById(id);
+        AutoPilotResponse<ProjectDto> response = AutoPilotResponse.<ProjectDto>
+                        builder()
+                .success(true)
+                .message("Get project by project id is successfully")
                 .payload(project).build();
         return ResponseEntity.ok(response);
     }

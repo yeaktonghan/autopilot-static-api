@@ -2,9 +2,11 @@ package com.kshrd.autopilot.service.implementation;
 
 import com.kshrd.autopilot.entities.RefreshToken;
 import com.kshrd.autopilot.entities.user.User;
+import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.repository.RefreshTokenRepository;
 import com.kshrd.autopilot.repository.UserRepository;
 import com.kshrd.autopilot.service.RefreshTokenService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -36,7 +38,6 @@ public class RefreshTokenServiceImp implements RefreshTokenService {
                     .expireDate(Instant.now().plusMillis(60000))
                     .build();
 
-
         return repository.save(refreshToken);
         }
 
@@ -51,8 +52,8 @@ public class RefreshTokenServiceImp implements RefreshTokenService {
     public RefreshToken verifyToken(RefreshToken token) {
       // Optional<RefreshToken> refreshToken=repository.findByToken(token.getToken());
         if(token.getExpireDate().compareTo(Instant.now())<0){
-            repository.delete(token);
-            throw new RuntimeException(token.getToken()+ "Refresh token expired");
+           // repository.delete(token);
+            throw new AutoPilotException("Expire", HttpStatus.BAD_REQUEST, "http://localhost:8080/errors/", "Token expired");
         }
         return token;
     }
