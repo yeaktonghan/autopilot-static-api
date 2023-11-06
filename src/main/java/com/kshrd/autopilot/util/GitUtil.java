@@ -76,7 +76,7 @@ public class GitUtil {
                 .uri(URI.create("https://api.github.com/user/repos"))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer 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")
-                .POST(HttpRequest.BodyPublishers.ofString("{ \"name\": \"" + name + "\",  \"private\": true }"))
+                .POST(HttpRequest.BodyPublishers.ofString("{ \"name\": \"" + name + "\",  \"private\": false }"))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -119,7 +119,7 @@ public class GitUtil {
         return response.statusCode();
     }
 
-    public static int createSpringService(String reposName, String serviceName, String label, int targetPort, int port) throws IOException, InterruptedException {
+    public static int createSpringService(String reposName, String serviceName, String deploymentLabel, int targetPort, int port) throws IOException, InterruptedException {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
@@ -129,7 +129,7 @@ public class GitUtil {
         // List spring to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("s-name", serviceName);
-        replaceString.put("d-label", label);
+        replaceString.put("d-label", deploymentLabel);
         replaceString.put("s-target-port", String.valueOf(targetPort));
         replaceString.put("d-port", String.valueOf(port));
         // replace string operation
@@ -164,7 +164,7 @@ public class GitUtil {
         System.out.println(applicationYamlFile);
         // List spring to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
-        replaceString.put("app-name", appName);
+        replaceString.put("app-name", appName.toLowerCase());
         replaceString.put("app-repos", "https://github.com/KSGA-Autopilot/"+reposName);
         replaceString.put("app-namespace", nameSpace);
         // replace string operation
@@ -200,7 +200,7 @@ public class GitUtil {
         // List spring to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("i-name", ingressName);
-        replaceString.put("i-namespace", nameSpace);
+        replaceString.put("cert-namespace", nameSpace);
         replaceString.put("i-domain", domainName);
         replaceString.put("i-path", path);
         replaceString.put("service-name", serviceName);

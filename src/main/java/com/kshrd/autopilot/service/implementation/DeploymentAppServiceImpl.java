@@ -165,47 +165,57 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     }
 
     public DeploymentAppDto deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
-        String jobName = request.getGitSrcUrl() + UUID.randomUUID().toString().substring(0, 4);
         // create cd repos
         URL url = new URL(request.getGitSrcUrl());
         String cdRepos = url.getPath();
         String[] arrayPath = cdRepos.split("/");
-        String username = arrayPath[0].toLowerCase();
-        String projectName = arrayPath[1].toLowerCase();
-        cdRepos = username + "-" + projectName + "-" + "cd";
+        String username = arrayPath[1].toLowerCase();
+        System.out.println("Username: " + username);
+        String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
+        System.out.println("Project Name: " + projectName);
+
+        String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
+        System.out.println("Application name: " + applicationName);
+        cdRepos = applicationName + "-cd";
+        String namespace = username.toLowerCase().replaceAll("_", "");
+        String serviceName = applicationName + "-svc";
+        String deploymentName = applicationName + "-deployment";
+        String deploymentLabel = applicationName;
+        String containerName = applicationName;
+        String ingressName = applicationName + "-ingress";
+
+        String image = "kshrdautopilot/" + applicationName;
+        System.out.println("Image: " + image);
+        System.out.println("cd repos: " + cdRepos);
+
+        String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
+        // need to verify here
         int cdResponse = GitUtil.createGitRepos(cdRepos);
-        if (cdResponse != 203) {
+
+        if (cdResponse != 201) {
             throw new BadRequestException("Unable to create.", "Enable to create git repository." + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
         try {
             Jenkins cli = new Jenkins();
-            String appName = url.getPath();
-            appName = appName.replaceAll("/", "").replaceAll(".git", "");
-            System.out.println("Appname=" + appName);
-            String image = "autopilot/" + cdRepos + ":1";
             // create application for argocd
-            GitUtil.createApplication(cdRepos, appName, username);
+            GitUtil.createApplication(cdRepos, applicationName, namespace);
             // create deployment file
-            GitUtil.createSpringDeployment(cdRepos, username + "-" + projectName + "-deployment", projectName, 2, projectName, image, request.getProjectPort());
+            GitUtil.createSpringDeployment(cdRepos, deploymentName, deploymentLabel, 2, containerName, image, request.getProjectPort());
             // create service file
-            GitUtil.createSpringService(cdRepos, username + "-" + projectName + "-service", projectName, request.getProjectPort(), request.getProjectPort());
+            GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
-            GitUtil.createIngress(cdRepos, username + "-" + projectName + "-ingress", username, "controlplane.hanyeaktong.site", request.getPath(), username + "-" + projectName + "-service", request.getProjectPort().toString());
+            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
 //            GitUtil.createArgoApp(cdRepos, appName, username);
             // create certificate for namespace
-            if (request.getDomain()==null) {
-                GitUtil.createNamespaceTlsCertificate(cdRepos, "controlplane.hanyeaktong.site", username);
-            }
-            else {
-                GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain(), username);
-            }
-            cli.createReactJobConfig(request.getGitSrcUrl(), username + "-" + projectName, request.getBranch(), cdRepos, jobName);
+            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+            // create jenkins job
+            cli.createReactJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace);
         } catch (Exception e) {
             e.printStackTrace();
         }
         // build job
-        if (HttpUtil.buildJob(jobName) != 201){
+        if (HttpUtil.buildJob(jobName) != 201) {
             throw new BadRequestException("Fail to build job", "Job have not been build successfully.");
         }
         // check if job is built successfully
@@ -215,6 +225,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // add domain and secure ssl
         // setup monitoring: server up -> send alert
         DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
-        return deploymentApp.toDeploymentAppDto();
+//        return deploymentApp.toDeploymentAppDto();
+        return null;
     }
 }

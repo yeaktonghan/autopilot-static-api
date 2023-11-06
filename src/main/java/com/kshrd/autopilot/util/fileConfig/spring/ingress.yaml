@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: i-name
-  namespace: i-namespace
+  namespace: cert-namespace
 spec:
   tls:
     - hosts:

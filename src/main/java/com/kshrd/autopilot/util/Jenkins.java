@@ -19,7 +19,7 @@ public class Jenkins {
             // store this in application.yml
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
-            String token = "112c1c4092c8db6fb4e74c976f6e5d1ace";
+            String token = "11ea48669bc5b21f56e116d00868fa669d";
 
             String apiUrl = jenkinsUrl + "/job/" + jobName + "/buildWithParameters?appname=" + appName + "&giturl=" + gitUrl;
             URL url = new URL(apiUrl);
@@ -82,26 +82,32 @@ public class Jenkins {
         }
     }
 
-    public void createReactJobConfig(String git_src_url, String image, String branch, String cdRepos, String jobName) {
+    public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace) {
+        System.out.println("Run create react job");
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
-            String apiToken = "11ea48669bc5b21f56e116d00868fa669d";
+            String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
             String toolType="";
             String build_tool="npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             String configXML = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/react/react.pipeline.xml");
             System.out.println(configXML);
             Map<String, String> replaceString = new HashMap<>();
-            replaceString.put("var-git_src_url", git_src_url);
+            replaceString.put("var-git_src_url", customerRepository);
+            replaceString.put("${GITHUB_REPO}", cdRepos);
             replaceString.put("var-image", image);
             replaceString.put("var-branch", branch);
-            replaceString.put("var-application.yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/"+ cdRepos +"/main/argo-application.yaml");
+            replaceString.put("argo-namespace", namespace);
+            replaceString.put("argo-application-yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/"+ cdRepos +"/main/application.yaml");
             // replace string operation
             for (Map.Entry<String, String> entry : replaceString.entrySet()) {
                 configXML = configXML.replace(entry.getKey(), entry.getValue());
             }
+            System.out.println("Job name: " +jobName);
+            System.out.println("Job config xml");
             jenkins.createJob(jobName, configXML);
+            System.out.println("End job create");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -29,7 +29,117 @@
         </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
     </properties>
     <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3806.va_3a_6988277b_2">
-        <script>pipeline { agent { node{ label 'worker1' } } tools{ nodejs 'npm' } environment{ CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss") GITHUB_REPO = '/KSGA-Autopilot/autopilot-cd.git' } stages { stage('Clone Repository') { steps { script{ checkout([$class: 'GitSCM', branches: [[name: 'var-branch']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'var-git_src_url']]]) } } } stage('Add Dockerfile') { steps { script { def dockerfileContent = """ FROM node:14-alpine as build WORKDIR /app COPY package*.json ./ RUN npm install --force COPY . . RUN npm run build FROM nginx:alpine COPY --from=build /app/build /usr/share/nginx/html EXPOSE 80 CMD ["nginx", "-g", "daemon off;"] """ writeFile file: 'Dockerfile', text: dockerfileContent } } } stage('build to docker images') { steps { script{ sh 'docker build -t kshrdautopilot/var-image:${CURRENT_DATETIME} .' sh 'docker push kshrdautopilot/var-image:${CURRENT_DATETIME}' echo "build images successfully" } } } stage('go to repository'){ steps { script { // Clone the GitHub repository checkout([$class: 'GitSCM', branches: [[name: '*/var-branch']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[url: "var-git_src_url-cd"]]]) } } } stage('Modify File') { steps { script { sh "sed -i 's/kshrdautopilot/var-image:${CURRENT_DATETIME}/g' app/deployment.yaml" } } } stage('Commit and Push') { steps { script { // Commit the changes sh 'git add .' sh 'git commit -m "Updated images version" ' sh 'git push https://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@github.com/KSGA-Autopilot/var-git_src_url-cd.git HEAD:main' } } } stage('Create argo application') { steps{ ssh(host: 'server_hostname', user: 'username', password: 'password') { sh 'argocd app create -f var-application.yaml' } } } } }</script>
+        <script>
+            pipeline {
+            agent {
+            node {
+            label 'worker1'
+            }
+            }
+            tools {
+            nodejs 'npm'
+            }
+            environment {
+            CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
+            }
+            stages {
+            stage('Clone Repository') {
+            steps {
+            script {
+            checkout([$class: 'GitSCM', branches: [
+            [name: 'var-branch']
+            ], doGenerateSubmoduleConfigurations: false, extensions: [
+            [$class: 'CleanBeforeCheckout']
+            ], userRemoteConfigs: [
+            [url: 'var-git_src_url']
+            ]])
+            }
+            }
+            }
+            stage('Add Dockerfile') {
+            steps {
+            script {
+            def dockerfileContent = """
+            FROM node:14-alpine as build
+
+            WORKDIR /app
+
+            COPY package*.json ./
+
+            RUN npm install --force
+
+            COPY . .
+
+            RUN npm run build
+
+            FROM nginx:alpine
+
+            COPY --from=build /app/build /usr/share/nginx/html
+
+            EXPOSE 80
+
+            CMD ["nginx", "-g", "daemon off;"]
+            """
+            writeFile file: 'Dockerfile', text: dockerfileContent
+            }
+            }
+            }
+            stage('build to docker images') {
+            steps {
+            script {
+            sh 'docker build -t var-image:${CURRENT_DATETIME} .'
+            sh 'docker push var-image:${CURRENT_DATETIME}'
+            echo "build images successfully"
+            }
+            }
+            }
+            stage('go to repository'){
+
+            steps {
+            script {
+            // Clone the GitHub repository
+            checkout([$class: 'GitSCM',
+            branches: [[name: '*/main']],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
+            submoduleCfg: [],
+            userRemoteConfigs: [[url: "https://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@github.com/KSGA-Autopilot/${GITHUB_REPO}"]]])
+            }
+            }
+            }
+            stage('Modify File') {
+            steps {
+            script {
+            // Modify the content of the file
+            sh "sed -i 's+var-image.*+var-image:${CURRENT_DATETIME}+g' app/deployment.yaml"
+            sh "cat app/deployment.yaml"
+            }
+            }
+            }
+            stage('Commit and Push') {
+            steps {
+            script {
+            // Commit the changes
+            sh 'git add .'
+            sh 'git commit -m "Updated images version" || true'
+
+            // Push the changes back to GitHub
+            sh 'git push https://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@github.com/KSGA-Autopilot/phsamnang-uihomework-cd HEAD:main'
+            }
+            }
+            }
+            stage('Start argo application') {
+            steps {
+            sshagent(['ssh-keygen']) {
+            sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 "argocd login 167.71.220.235:31144 --username admin --password YOUR-PASSWORD-HERE --insecure"'
+            sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 kubectl create ns argo-namespace || true'
+            sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 argocd app create -f argo-application-yaml --upsert'
+            }
+            }
+            }
+            }
+            }
+        </script>
         <sandbox>true</sandbox>
     </definition>
     <triggers/>
