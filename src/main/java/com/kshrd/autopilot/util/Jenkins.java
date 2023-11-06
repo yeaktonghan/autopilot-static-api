@@ -82,7 +82,7 @@ public class Jenkins {
         }
     }
 
-    public void createReactJobConfig(String git_src_url, String image, String branch, String cdRepos, String jobName) {
+    public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace) {
         System.out.println("Run create react job");
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
@@ -94,14 +94,12 @@ public class Jenkins {
             String configXML = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/react/react.pipeline.xml");
             System.out.println(configXML);
             Map<String, String> replaceString = new HashMap<>();
-            replaceString.put("var-git_src_url", git_src_url);
+            replaceString.put("var-git_src_url", customerRepository);
             replaceString.put("${GITHUB_REPO}", cdRepos);
             replaceString.put("var-image", image);
             replaceString.put("var-branch", branch);
-            replaceString.put("server_hostname", "167.71.220.235");
-            replaceString.put("ssh-username", "root");
-            replaceString.put("ssh-password", "#KSHRD2023");
-            replaceString.put("var-application.yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/"+ cdRepos +"/main/application.yaml");
+            replaceString.put("argo-namespace", namespace);
+            replaceString.put("argo-application-yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/"+ cdRepos +"/main/application.yaml");
             // replace string operation
             for (Map.Entry<String, String> entry : replaceString.entrySet()) {
                 configXML = configXML.replace(entry.getKey(), entry.getValue());

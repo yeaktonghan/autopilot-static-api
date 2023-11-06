@@ -119,7 +119,7 @@ public class GitUtil {
         return response.statusCode();
     }
 
-    public static int createSpringService(String reposName, String serviceName, String label, int targetPort, int port) throws IOException, InterruptedException {
+    public static int createSpringService(String reposName, String serviceName, String deploymentLabel, int targetPort, int port) throws IOException, InterruptedException {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
@@ -129,7 +129,7 @@ public class GitUtil {
         // List spring to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("s-name", serviceName);
-        replaceString.put("d-label", label);
+        replaceString.put("d-label", deploymentLabel);
         replaceString.put("s-target-port", String.valueOf(targetPort));
         replaceString.put("d-port", String.valueOf(port));
         // replace string operation
