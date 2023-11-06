@@ -210,7 +210,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create certificate for namespace
             GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
             // create jenkins job
-            cli.createReactJobConfig(request.getGitSrcUrl(), "autopilot/" + cdRepos, request.getBranch(), cdRepos, jobName, namespace);
+            cli.createReactJobConfig(request.getGitSrcUrl(), applicationName, request.getBranch(), cdRepos, jobName, namespace);
         } catch (Exception e) {
             e.printStackTrace();
         }
