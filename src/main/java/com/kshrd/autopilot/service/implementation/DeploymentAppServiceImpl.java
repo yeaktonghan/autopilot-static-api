@@ -184,7 +184,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String containerName = applicationName;
         String ingressName = applicationName + "-ingress";
 
-        String image = "autopilot/" + applicationName + ":1";
+        String image = "kshrdautopilot/" + applicationName;
         System.out.println("Image: " + image);
         System.out.println("cd repos: " + cdRepos);
 
@@ -210,7 +210,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create certificate for namespace
             GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
             // create jenkins job
-            cli.createReactJobConfig(request.getGitSrcUrl(), applicationName, request.getBranch(), cdRepos, jobName, namespace);
+            cli.createReactJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -225,6 +225,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // add domain and secure ssl
         // setup monitoring: server up -> send alert
         DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
-        return deploymentApp.toDeploymentAppDto();
+//        return deploymentApp.toDeploymentAppDto();
+        return null;
     }
 }

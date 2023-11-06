@@ -200,7 +200,7 @@ public class GitUtil {
         // List spring to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("i-name", ingressName);
-        replaceString.put("i-namespace", nameSpace);
+        replaceString.put("cert-namespace", nameSpace);
         replaceString.put("i-domain", domainName);
         replaceString.put("i-path", path);
         replaceString.put("service-name", serviceName);

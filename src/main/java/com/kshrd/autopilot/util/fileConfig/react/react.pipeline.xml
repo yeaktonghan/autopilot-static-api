@@ -87,8 +87,8 @@
             stage('build to docker images') {
             steps {
             script {
-            sh 'docker build -t kshrdautopilot/var-image:${CURRENT_DATETIME} .'
-            sh 'docker push kshrdautopilot/var-image:${CURRENT_DATETIME}'
+            sh 'docker build -t var-image:${CURRENT_DATETIME} .'
+            sh 'docker push var-image:${CURRENT_DATETIME}'
             echo "build images successfully"
             }
             }
@@ -107,7 +107,27 @@
             }
             }
             }
+            stage('Modify File') {
+            steps {
+            script {
+            // Modify the content of the file
+            sh "sed -i 's+var-image.*+var-image:${CURRENT_DATETIME}+g' app/deployment.yaml"
+            sh "cat app/deployment.yaml"
+            }
+            }
+            }
+            stage('Commit and Push') {
+            steps {
+            script {
+            // Commit the changes
+            sh 'git add .'
+            sh 'git commit -m "Updated images version" || true'
 
+            // Push the changes back to GitHub
+            sh 'git push https://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@github.com/KSGA-Autopilot/phsamnang-uihomework-cd HEAD:main'
+            }
+            }
+            }
             stage('Start argo application') {
             steps {
             sshagent(['ssh-keygen']) {
