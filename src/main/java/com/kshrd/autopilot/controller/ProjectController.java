@@ -1,7 +1,5 @@
 package com.kshrd.autopilot.controller;
 
-import com.kshrd.autopilot.entities.Project;
-import com.kshrd.autopilot.entities.ProjectDetails;
 import com.kshrd.autopilot.entities.dto.ProjectDto;
 import com.kshrd.autopilot.entities.request.CreateTeamRequest;
 import com.kshrd.autopilot.response.AutoPilotResponse;
@@ -9,7 +7,6 @@ import com.kshrd.autopilot.service.ProjectService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
