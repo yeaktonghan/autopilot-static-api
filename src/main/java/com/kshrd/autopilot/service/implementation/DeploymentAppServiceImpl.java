@@ -183,7 +183,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String containerName = applicationName;
         String ingressName = applicationName + "-ingress";
 
-        String image = "autopilot/" + cdRepos + ":1";
+        String image = "autopilot/" + applicationName + ":1";
 
         String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
         // need to verify here
