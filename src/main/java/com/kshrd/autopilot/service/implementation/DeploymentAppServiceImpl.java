@@ -175,6 +175,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         System.out.println("Project Name: " + projectName);
 
         String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
+        System.out.println("Application name: " + applicationName);
         cdRepos = applicationName + "-cd";
         String namespace = username.toLowerCase().replaceAll("_", "");
         String serviceName = applicationName + "-svc";
@@ -184,6 +185,8 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String ingressName = applicationName + "-ingress";
 
         String image = "autopilot/" + applicationName + ":1";
+        System.out.println("Image: " + image);
+        System.out.println("cd repos: " + cdRepos);
 
         String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
         // need to verify here
