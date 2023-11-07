@@ -21,7 +21,7 @@ import java.util.Set;
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
     private String name;
     @Column(unique = true)
     private String projectCode;
@@ -37,7 +37,6 @@ public class Project {
     public ProjectDto toProjectDto(List<UserDto> userDtos, Boolean isOwner){
         return new ProjectDto(this.id,this.name,this.projectCode, userDtos,created_at,isOwner,color, projectPf);
     }
-
     public ProjectDto toProjectDto(){
         return new ProjectDto(this.id,this.name,this.projectCode,this.created_at,color, projectPf);
     }

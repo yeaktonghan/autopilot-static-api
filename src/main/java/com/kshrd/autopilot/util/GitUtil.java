@@ -88,7 +88,7 @@ public class GitUtil {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
-        String deployment = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/spring-gradle.pipeline.xml-deployment.yaml");
+        String deployment = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-deployment.yaml");
         // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("d-name", deploymentName);
@@ -124,7 +124,7 @@ public class GitUtil {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
-        String serviceYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/spring-gradle.pipeline.xml-service.yaml");
+        String serviceYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-service.yaml");
         System.out.println(serviceYamlFile);
         // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
@@ -160,7 +160,7 @@ public class GitUtil {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
-        String applicationYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/application.yaml");
+        String applicationYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/application.yaml");
         System.out.println(applicationYamlFile);
         // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
@@ -195,7 +195,7 @@ public class GitUtil {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
-        String ingressYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/ingress.yaml");
+        String ingressYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/ingress.yaml");
         System.out.println(ingressYamlFile);
         // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();

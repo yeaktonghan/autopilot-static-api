@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeploymentDBRequest {
     private String dbType;
-    private Integer project_id;
+    private Long project_id;
     private String name;
     private String username;
     private String password;

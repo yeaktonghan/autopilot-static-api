@@ -48,7 +48,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
     @Override
     public DeploymentAppDto createDeploymentApp(DeploymentAppRequest request) throws IOException, InterruptedException {
-        // check valid project id
+
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Optional<Project> project = Optional.ofNullable(projectRepository.findById(request.getProjectId())
@@ -57,6 +57,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (projectDetails == null) {
             throw new AutoPilotException("Not owner!", HttpStatus.BAD_REQUEST, urlError, "You are not owner this project");
         }
+        System.out.println("this project"+project);
         // insert to database
         DeploymentApp deploymentApp = new DeploymentApp();
         deploymentApp.setAppName(request.getAppName());
@@ -77,16 +78,17 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setPath(request.getPath());
         System.out.println("all request" + deploymentApp);
         if (deploymentApp.getFramework() == "react") {
-            if (request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank()) {
+            if (request.getDomain() == null || request.getDomain().isEmpty()) {
+                request.setDomain("react.hanyeaktong.site");
                 deploymentApp.setDomain("react.hanyeaktong.site");
             }
-        } else if (deploymentApp.getFramework() == "spring-gradle.pipeline.xml") {
-            if (request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank()) {
+        } else if (request.getFramework() == "spring"||request.getDomain().isEmpty()) {
+            if (request.getDomain() == null) {
+                request.setDomain("spring.hanyeaktong.site");
                 deploymentApp.setDomain("spring.hanyeaktong.site");
             }
         }
-        // System.out.println("object deployment"+deploymentApp);
-//        Optional<DeploymentApp> deployment=deploymentAppRepository.findTopByOrderByCreate_atDesc();
+
 //       if (deployment==null){
 //           deploymentApp.setPort("30000");
 //       }else {
@@ -108,23 +110,23 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             request.setGitSrcUrl(protocol + "://" + request.getToken() + "@" + newUrl + path);
         }
 
-//        switch (request.getFramework().toLowerCase()) {
-//            case "spring-gradle.pipeline.xml":
-//                deploymentSpring(request);
-//                break;
-//            case "react":
-//
-//                deployReactJs(request);
-//                break;
-//        }
+        switch (request.getFramework().toLowerCase()) {
+            case "spring":
+                deploymentSpring(request);
+                break;
+            case "react":
+                deployReactJs(request);
+                break;
+        }
 
        // deploymentAppRepository.save(deploymentApp);
+        return null;
 
-        return deploymentApp.toDeploymentAppDto();
+       // return deploymentApp.toDeploymentAppDto();
     }
 
     @Override
-    public List<DeploymentAppDto> getAllDeploymentApps(Integer project_id) {
+    public List<DeploymentAppDto> getAllDeploymentApps(Long project_id) {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = projectRepository.findById(project_id)
@@ -137,26 +139,59 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         return deploymentApps;
     }
 
-    public void deploymentSpring(DeploymentAppRequest request) {
+    public void deploymentSpring(DeploymentAppRequest request) throws IOException, InterruptedException {
         String repoName = "https://github.com/KSGA-Autopilot/" + request.getAppName() + "-cd" + ".git";
+        URL url = new URL(request.getGitSrcUrl());
+        String cdRepos = url.getPath();
+        String[] arrayPath = cdRepos.split("/");
+        String username = arrayPath[1].toLowerCase();
+        System.out.println("Username: " + username);
+        String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
+        System.out.println("Project Name: " + projectName);
+
+        String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
+        System.out.println("Application name: " + applicationName);
+        cdRepos = applicationName + "-cd";
+        String namespace = username.toLowerCase().replaceAll("_", "");
+        String serviceName = applicationName + "-svc";
+        String deploymentName = applicationName + "-deployment";
+        String deploymentLabel = applicationName;
+        String containerName = applicationName;
+        String ingressName = applicationName + "-ingress";
+
+        String image = "kshrdautopilot/" + applicationName;
+        System.out.println("Image: " + image);
+        System.out.println("cd repos: " + cdRepos);
+
+        String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
+        // need to verify here
+        int cdResponse = GitUtil.createGitRepos(cdRepos);
+
+        if (cdResponse != 201) {
+            throw new BadRequestException("Unable to create.", "Enable to create git repository." + cdRepos);
+        }
+        // create job: build, test, and push image, update cd repos image
         try {
             Jenkins cli = new Jenkins();
-            URL url = new URL(request.getGitSrcUrl());
-            String appName = url.getPath();
-            appName = appName.replaceAll("/", "").replaceAll(".git", "");
-            String pathUsernmae = url.getPath();
-            String[] arrayPath = pathUsernmae.split("/");
-            String username = arrayPath[1];
-            String repository = request.getAppName() + "-cd";
-            String image = "autopilot/" + appName + ":1";
-            GitUtil.createGitRepos(repository);
-//            GitUtil.createApplication(repository, appName, repoName, username);
-            GitUtil.createSpringDeployment(repository, request.getAppName() + "-deployment", username, 2, appName, request.getAppName(), 3000);
-//            GitUtil.createSpringService(repository, request.getAppName() + "-service", username, 30000, 30000, 30001);
-            GitUtil.createIngress(repository, request.getAppName() + "-ingress", username, "controlplane.hanyeaktong.site", appName, request.getAppName() + "-service", "30000");
-            cli.createSpringJobConfig(request.getGitSrcUrl(), pathUsernmae, request.getBuildTool(), request.getBranch(), request.getAppName());
+            // create application for argocd
+            GitUtil.createApplication(cdRepos, applicationName, namespace);
+            // create deployment file
+            GitUtil.createSpringDeployment(cdRepos, deploymentName, deploymentLabel, 2, containerName, image, request.getProjectPort());
+            // create service file
+            GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
+            // create ingress file
+            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
+//            GitUtil.createArgoApp(cdRepos, appName, username);
+            // create certificate for namespace
+            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+            // create jenkins job
+            cli.createSpringJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace,request.getBuildTool());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        // build job
+        if (HttpUtil.buildJob(jobName) != 201) {
+            throw new BadRequestException("Fail to build job", "Job have not been build successfully.");
         }
 
 
@@ -168,7 +203,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
 
 
-        String image = "autopilot:customer-spring-gradle.pipeline.xml:2023-12-12-12:00";
+       // String image = "autopilot:customer-spring-gradle.pipeline.xml:2023-12-12-12:00";
 
 
         // cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
