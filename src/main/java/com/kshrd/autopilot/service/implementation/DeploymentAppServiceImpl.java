@@ -62,7 +62,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setAppName(request.getAppName());
         deploymentApp.setProject(project.get());
         deploymentApp.setIpAddress("139.59.243.4");
-        deploymentApp.setDomain("");
+        deploymentApp.setPort("3000");
         deploymentApp.setBranch(request.getBranch());
         deploymentApp.setDescription(request.getDescription());
         deploymentApp.setBuildTool(request.getBuildTool());
@@ -75,6 +75,17 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setToken(request.getToken());
         deploymentApp.setProjectPort(request.getProjectPort());
         deploymentApp.setPath(request.getPath());
+        System.out.println("all request" + deploymentApp);
+        if (deploymentApp.getFramework() == "react") {
+            if (request.getDomain() == null) {
+                deploymentApp.setDomain("react.hanyeaktong.site");
+            }
+        } else if (deploymentApp.getFramework() == "spring") {
+            if (request.getDomain() == null) {
+                deploymentApp.setDomain("spring.hanyeaktong.site");
+            }
+        }
+        // System.out.println("object deployment"+deploymentApp);
 //        Optional<DeploymentApp> deployment=deploymentAppRepository.findTopByOrderByCreate_atDesc();
 //       if (deployment==null){
 //           deploymentApp.setPort("30000");
@@ -96,16 +107,20 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (request.getToken() != null) {
             request.setGitSrcUrl(protocol + "://" + request.getToken() + "@" + newUrl + path);
         }
-        switch (request.getFramework().toLowerCase()) {
-            case "spring":
-                deploymentSpring(request);
-                break;
-            case "react":
-                deployReactJs(request);
-                break;
-        }
 
-        return null;
+//        switch (request.getFramework().toLowerCase()) {
+//            case "spring":
+//                deploymentSpring(request);
+//                break;
+//            case "react":
+//
+//                deployReactJs(request);
+//                break;
+//        }
+
+        //deploymentAppRepository.save(deploymentApp);
+
+        return deploymentApp.toDeploymentAppDto();
     }
 
     @Override
@@ -122,7 +137,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         return deploymentApps;
     }
 
-    public DeploymentAppDto deploymentSpring(DeploymentAppRequest request) {
+    public void deploymentSpring(DeploymentAppRequest request) {
         String repoName = "https://github.com/KSGA-Autopilot/" + request.getAppName() + "-cd" + ".git";
         try {
             Jenkins cli = new Jenkins();
@@ -161,10 +176,9 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // create cd repos
         // create deployment
         // create service
-        return null;
     }
 
-    public DeploymentAppDto deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
+    public void deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
         // create cd repos
         URL url = new URL(request.getGitSrcUrl());
         String cdRepos = url.getPath();
@@ -224,8 +238,8 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // make argo cd create application
         // add domain and secure ssl
         // setup monitoring: server up -> send alert
-        DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
+        //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-        return null;
+
     }
 }
