@@ -23,11 +23,11 @@ public class DeploymentDbController {
 
     @PostMapping("/database")
     public ResponseEntity<?> createDatabase(@RequestBody DeploymentDBRequest request){
-        service.creatDatabase(request);
+
         AutoPilotResponse<?> response = AutoPilotResponse.builder()
                 .success(true)
                 .message("Deployment database has created successfully")
-                .payload(null)
+                .payload( service.creatDatabase(request))
                 .build();
         return ResponseEntity.ok(response);
     }

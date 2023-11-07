@@ -1,7 +1,5 @@
 package com.kshrd.autopilot.controller;
 
-import com.kshrd.autopilot.entities.Project;
-import com.kshrd.autopilot.entities.ProjectDetails;
 import com.kshrd.autopilot.entities.dto.ProjectDto;
 import com.kshrd.autopilot.entities.request.CreateTeamRequest;
 import com.kshrd.autopilot.response.AutoPilotResponse;
@@ -9,7 +7,6 @@ import com.kshrd.autopilot.service.ProjectService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,12 +23,22 @@ public class ProjectController {
     }
 
     @PostMapping("/project")
-    public ResponseEntity<AutoPilotResponse<ProjectDto>> createTeam(@Valid @RequestBody CreateTeamRequest request) {
+    public ResponseEntity<AutoPilotResponse<ProjectDto>> createProject(@Valid @RequestBody CreateTeamRequest request) {
         ProjectDto project = service.createProject(request);
         AutoPilotResponse<ProjectDto> response = AutoPilotResponse.<ProjectDto>
                         builder()
                 .success(true)
-                .message("Team has bean created successfully")
+                .message("Project has bean created successfully")
+                .payload(project).build();
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping ("/project/{id}")
+    public ResponseEntity<AutoPilotResponse<ProjectDto>> getProject(@PathVariable("id") Integer id) {
+        ProjectDto project = service.getProjectById(id);
+        AutoPilotResponse<ProjectDto> response = AutoPilotResponse.<ProjectDto>
+                        builder()
+                .success(true)
+                .message("Get project by project id is successfully")
                 .payload(project).build();
         return ResponseEntity.ok(response);
     }

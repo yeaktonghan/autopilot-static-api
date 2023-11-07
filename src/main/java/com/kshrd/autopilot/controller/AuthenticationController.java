@@ -139,7 +139,10 @@ public class AuthenticationController {
     private void authenticate(String username, String password) throws Exception {
         try {
             UserDetails userDetails=service.loadUserByUsername(username);
-            System.out.println(userDetails.getPassword());
+            if (!userDetails.isEnabled()){
+                throw new AutoPilotException("Email confirm!", HttpStatus.UNAUTHORIZED, errorUrl, "Please confirm your account by email");
+
+            }else
             if (!passwordEncoder.matches(password, userDetails.getPassword())) {
                 throw new AutoPilotException("Incorrect Password!", HttpStatus.UNAUTHORIZED, errorUrl, "Your password is incorrect!");
             } else {

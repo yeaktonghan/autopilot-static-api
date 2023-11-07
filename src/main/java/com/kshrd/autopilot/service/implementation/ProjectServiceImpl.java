@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,33 +37,38 @@ public class ProjectServiceImpl implements ProjectService {
         this.userRepository = userRepository;
         this.projectDetailRepository = projectDetailRepository;
     }
+
     public static String generateRandomColor() {
         Random random = new Random();
         String[] colorNames = {
                 "00c6ff", "c000ff", "ff0086", "ffd600", "00ff2e", "00ffa6", "009fff"
         };
-        int index=random.nextInt(colorNames.length);
-        return colorNames[index] ;
+        int index = random.nextInt(colorNames.length);
+        return colorNames[index];
     }
 
     @Override
     public ProjectDto createProject(CreateTeamRequest request) {
         String code_team = ProjectCodeGenerator.generateUniqueCode();
-        String color=generateRandomColor();
+        String color = generateRandomColor();
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = new Project();
         project.setName(request.getName());
-        project.setProject_code(code_team);
+        project.setProjectCode(code_team);
         project.setCreated_at(LocalDateTime.now());
-         project.setColor(color);
+        project.setColor(color);
         projectRepository.save(project);
         ProjectDetails projectDetails = new ProjectDetails();
         projectDetails.setProject(project);
         projectDetails.setUser(user);
         projectDetails.setIs_owner(true);
         projectDetailRepository.save(projectDetails);
-        return project.toProjectDto();
+        List<UserDto> userDtos = new ArrayList<>();
+        UserDto userDto = userRepository.findById(projectDetails.getUser().getId()).get().toUserDto();
+        userDtos.add(userDto);
+
+        return project.toProjectDto(userDtos,true);
     }
 
     @Override
@@ -96,8 +100,19 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectDto getProjectById(Integer id) {
-        Optional<Project> project=projectRepository.findById(id);
-      return null;
+        Optional<Project> project = projectRepository.findById(id);
+        String email=CurrentUserUtil.getEmail();
+        User user=userRepository.findUsersByEmail(email);
+        if (!project.isPresent()){
+            throw new AutoPilotException("Project not found",HttpStatus.NOT_FOUND,urlError,"You project id  is not found!");
+        }
+        List<ProjectDetails> projectDetails=projectDetailRepository.findAllByProject(project.get());
+        List<UserDto> userDtos=new ArrayList<>();
+        for (ProjectDetails member:projectDetails){
+            userDtos.add(member.getUser().toUserDto());
+        }
+        ProjectDetails isOwner=projectDetailRepository.findByUserAndProject(user,project.get());
+        return project.get().toProjectDto(userDtos,isOwner.getIs_owner());
     }
 
 
@@ -116,15 +131,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectDto joinProject(String project_code) {
-        List<Project> projects = projectRepository.findAll();
-        Project project = new Project();
-        for (Project pro : projects) {
-            if (pro.getProject_code().equals(project_code)) {
-                project = pro;
-            } else {
-                project = null;
-            }
-        }
+        Project project = projectRepository.findByProjectCode(project_code);
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         ProjectDetails projectDetails = projectDetailRepository.findByProject(project);
