@@ -24,6 +24,6 @@ public class TestController {
 
 //    @PostMapping("/service")
 //    public Integer createService(String reposName) throws IOException, InterruptedException {
-//        return GitUtil.createSpringService(reposName, "spring-deployment", "d2", 30100, 8080, 8080);
+//        return GitUtil.createSpringService(reposName, "spring-gradle.pipeline.xml-deployment", "d2", 30100, 8080, 8080);
 //    }
 }

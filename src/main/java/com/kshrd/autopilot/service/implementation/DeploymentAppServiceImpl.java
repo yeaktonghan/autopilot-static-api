@@ -77,12 +77,12 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setPath(request.getPath());
         System.out.println("all request" + deploymentApp);
         if (deploymentApp.getFramework() == "react") {
-            if (request.getDomain() == null) {
+            if (request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank()) {
                 deploymentApp.setDomain("react.hanyeaktong.site");
             }
-        } else if (deploymentApp.getFramework() == "spring") {
-            if (request.getDomain() == null) {
-                deploymentApp.setDomain("spring.hanyeaktong.site");
+        } else if (deploymentApp.getFramework() == "spring-gradle.pipeline.xml") {
+            if (request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank()) {
+                deploymentApp.setDomain("spring-gradle.pipeline.xml.hanyeaktong.site");
             }
         }
         // System.out.println("object deployment"+deploymentApp);
@@ -104,12 +104,12 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (request.getToken() != null) {
+        if (request.getToken() != null || request.getDomain().isEmpty() || request.getDomain().isBlank()) {
             request.setGitSrcUrl(protocol + "://" + request.getToken() + "@" + newUrl + path);
         }
 
         switch (request.getFramework().toLowerCase()) {
-            case "spring":
+            case "spring-gradle.pipeline.xml":
                 deploymentSpring(request);
                 break;
             case "react":
@@ -168,7 +168,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
 
 
-        String image = "autopilot:customer-spring:2023-12-12-12:00";
+        String image = "autopilot:customer-spring-gradle.pipeline.xml:2023-12-12-12:00";
 
 
         // cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
@@ -219,10 +219,10 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create service file
             GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
-            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
+            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
 //            GitUtil.createArgoApp(cdRepos, appName, username);
             // create certificate for namespace
-            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
             // create jenkins job
             cli.createReactJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace);
         } catch (Exception e) {

@@ -65,7 +65,7 @@ public class Jenkins {
             docker.put("appname",project_name);
             String dockerfile=FileUtil.replaceText(fileDocker,docker);
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
-            File file = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring");
+            File file = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/spring-gradle.pipeline.xml");
             Map<String,String> replacement=new HashMap<>();
             replacement.put("toolChange",tool);
             replacement.put("appname",project_name);
@@ -91,7 +91,7 @@ public class Jenkins {
             String toolType="";
             String build_tool="npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
-            String configXML = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/react/react.pipeline.xml");
+            String configXML = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/react/react-npm.pipeline.xml");
             System.out.println(configXML);
             Map<String, String> replaceString = new HashMap<>();
             replaceString.put("var-git_src_url", customerRepository);

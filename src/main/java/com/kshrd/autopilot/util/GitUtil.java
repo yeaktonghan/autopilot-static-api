@@ -88,8 +88,8 @@ public class GitUtil {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
-        String deployment = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-deployment.yaml");
-        // List spring to replace on the sameple file
+        String deployment = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/spring-gradle.pipeline.xml-deployment.yaml");
+        // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("d-name", deploymentName);
         replaceString.put("d-label", label);
@@ -124,9 +124,9 @@ public class GitUtil {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
-        String serviceYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-service.yaml");
+        String serviceYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/spring-gradle.pipeline.xml-service.yaml");
         System.out.println(serviceYamlFile);
-        // List spring to replace on the sameple file
+        // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("s-name", serviceName);
         replaceString.put("d-label", deploymentLabel);
@@ -160,9 +160,9 @@ public class GitUtil {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
-        String applicationYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/application.yaml");
+        String applicationYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/application.yaml");
         System.out.println(applicationYamlFile);
-        // List spring to replace on the sameple file
+        // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("app-name", appName.toLowerCase());
         replaceString.put("app-repos", "https://github.com/KSGA-Autopilot/"+reposName);
@@ -195,9 +195,9 @@ public class GitUtil {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         // find template deployment file
-        String ingressYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/ingress.yaml");
+        String ingressYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/ingress.yaml");
         System.out.println(ingressYamlFile);
-        // List spring to replace on the sameple file
+        // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("i-name", ingressName);
         replaceString.put("cert-namespace", nameSpace);
@@ -235,7 +235,7 @@ public class GitUtil {
         // find template deployment file
         String argoAppYaml = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/argo-application.yaml");
         System.out.println(argoAppYaml);
-        // List spring to replace on the sameple file
+        // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("var-app-name", appName);
         replaceString.put("var-cd-repos", reposName);
@@ -270,7 +270,7 @@ public class GitUtil {
         // find template deployment file
         String certYaml = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/certificate.yaml");
         System.out.println(certYaml);
-        // List spring to replace on the sameple file
+        // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("dns-name", dns);
         replaceString.put("cert-namespace", nameSpace);
