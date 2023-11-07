@@ -108,17 +108,17 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             request.setGitSrcUrl(protocol + "://" + request.getToken() + "@" + newUrl + path);
         }
 
-//        switch (request.getFramework().toLowerCase()) {
-//            case "spring":
-//                deploymentSpring(request);
-//                break;
-//            case "react":
-//
-//                deployReactJs(request);
-//                break;
-//        }
+        switch (request.getFramework().toLowerCase()) {
+            case "spring":
+                deploymentSpring(request);
+                break;
+            case "react":
 
-        //deploymentAppRepository.save(deploymentApp);
+                deployReactJs(request);
+                break;
+        }
+
+        deploymentAppRepository.save(deploymentApp);
 
         return deploymentApp.toDeploymentAppDto();
     }
