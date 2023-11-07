@@ -82,7 +82,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             }
         } else if (deploymentApp.getFramework() == "spring-gradle.pipeline.xml") {
             if (request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank()) {
-                deploymentApp.setDomain("spring-gradle.pipeline.xml.hanyeaktong.site");
+                deploymentApp.setDomain("spring.hanyeaktong.site");
             }
         }
         // System.out.println("object deployment"+deploymentApp);
@@ -104,21 +104,21 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (request.getToken() != null || request.getDomain().isEmpty() || request.getDomain().isBlank()) {
+        if (request.getToken() != null) {
             request.setGitSrcUrl(protocol + "://" + request.getToken() + "@" + newUrl + path);
         }
 
-        switch (request.getFramework().toLowerCase()) {
-            case "spring-gradle.pipeline.xml":
-                deploymentSpring(request);
-                break;
-            case "react":
+//        switch (request.getFramework().toLowerCase()) {
+//            case "spring-gradle.pipeline.xml":
+//                deploymentSpring(request);
+//                break;
+//            case "react":
+//
+//                deployReactJs(request);
+//                break;
+//        }
 
-                deployReactJs(request);
-                break;
-        }
-
-        deploymentAppRepository.save(deploymentApp);
+       // deploymentAppRepository.save(deploymentApp);
 
         return deploymentApp.toDeploymentAppDto();
     }
