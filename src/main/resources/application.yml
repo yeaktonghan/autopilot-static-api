@@ -3,7 +3,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/autopilot
     username: postgres
     password: 1234
-
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

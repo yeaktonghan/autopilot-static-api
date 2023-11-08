@@ -68,13 +68,11 @@ pipeline {
                 script {
                    def jarFile = sh(script: 'find . -name *.jar | grep build/libs', returnStdout: true).trim()
 
-                    def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
+  def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
 
 
-                   def dockerfileContent = """
-                  FROM openjdk:19-jdk
-
-
+  def dockerfileContent = """
+  FROM openjdk:19-jdk
 WORKDIR /app
 
 COPY build/libs/${jarFileName} ${jarFileName}

@@ -1,14 +1,12 @@
  def jarFile = sh(script: 'find . -name *.jar | grep build/libs', returnStdout: true).trim()
 
-                    def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
+def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
 
-
-                   def dockerfileContent = """
+def dockerfileContent = """
 FROM openjdk:19-jdk
 WORKDIR /app
 COPY target/${jarFileName} /app
-EXPOSE 8080
+EXPOSE x-port
 CMD ["java", "-jar", "/app/${jarFileName}"]
                                           """
-
-                   writeFile file: 'Dockerfile', text: dockerfileContent
+writeFile file: 'Dockerfile', text: dockerfileContent

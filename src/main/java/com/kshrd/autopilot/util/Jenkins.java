@@ -46,7 +46,7 @@ public class Jenkins {
 
     }
 
-    public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String tool) {
+    public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String port,String tool) {
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
@@ -62,7 +62,7 @@ public class Jenkins {
             File fileDocker = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/"+toolType);
 
             Map<String,String> docker=new HashMap<>();
-            //docker.put("appname",project_name);
+            docker.put("x-port",port);
             String dockerfile=FileUtil.replaceText(fileDocker,docker);
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             File file = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-gradle.pipeline.xml");

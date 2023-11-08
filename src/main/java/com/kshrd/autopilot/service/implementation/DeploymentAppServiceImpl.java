@@ -57,13 +57,12 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (projectDetails == null) {
             throw new AutoPilotException("Not owner!", HttpStatus.BAD_REQUEST, urlError, "You are not owner this project");
         }
-        System.out.println("this project"+project);
+        System.out.println("this project" + project);
         // insert to database
         DeploymentApp deploymentApp = new DeploymentApp();
         deploymentApp.setAppName(request.getAppName());
         deploymentApp.setProject(project.get());
         deploymentApp.setIpAddress("139.59.243.4");
-        deploymentApp.setPort("3000");
         deploymentApp.setBranch(request.getBranch());
         deploymentApp.setDescription(request.getDescription());
         deploymentApp.setBuildTool(request.getBuildTool());
@@ -76,25 +75,12 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setToken(request.getToken());
         deploymentApp.setProjectPort(request.getProjectPort());
         deploymentApp.setPath(request.getPath());
-        System.out.println("all request" + deploymentApp);
-        if (deploymentApp.getFramework() == "react") {
-            if (request.getDomain() == null || request.getDomain().isEmpty()) {
-                request.setDomain("react.hanyeaktong.site");
-                deploymentApp.setDomain("react.hanyeaktong.site");
-            }
-        } else if (request.getFramework() == "spring"||request.getDomain().isEmpty()) {
-            if (request.getDomain() == null) {
-                request.setDomain("spring.hanyeaktong.site");
-                deploymentApp.setDomain("spring.hanyeaktong.site");
-            }
-        }
+        //System.out.println("all request" + deploymentApp);
+        deploymentApp.setDomain(request.getDomain());
 
-//       if (deployment==null){
-//           deploymentApp.setPort("30000");
-//       }else {
-//           deploymentApp.setPort(deployment.get().getPort()+1);
-//       }
+
         // build url for repos (public or private)
+        String jobName = "";
         String newUrl = null;
         String path = "";
         String protocol = "";
@@ -112,17 +98,15 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
         switch (request.getFramework().toLowerCase()) {
             case "spring":
-                deploymentSpring(request);
+                jobName = deploymentSpring(request);
                 break;
             case "react":
-                deployReactJs(request);
+                jobName = deployReactJs(request);
                 break;
         }
-
-       // deploymentAppRepository.save(deploymentApp);
-        return null;
-
-       // return deploymentApp.toDeploymentAppDto();
+        deploymentApp.setJobName(jobName);
+        deploymentAppRepository.save(deploymentApp);
+        return deploymentApp.toDeploymentAppDto();
     }
 
     @Override
@@ -135,12 +119,35 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (projectDetails == null && project != null) {
             throw new AutoPilotException("Not Owner", HttpStatus.BAD_REQUEST, urlError, "You are not project owner");
         }
+        // if status == null then check last build and update sy
+
         List<DeploymentAppDto> deploymentApps = deploymentAppRepository.findAllByProject(project).stream().map(DeploymentApp::toDeploymentAppDto).toList();
         return deploymentApps;
     }
 
-    public void deploymentSpring(DeploymentAppRequest request) throws IOException, InterruptedException {
-        String repoName = "https://github.com/KSGA-Autopilot/" + request.getAppName() + "-cd" + ".git";
+    @Override
+    public DeploymentAppDto getDeploymentAppById(Integer id) {
+        DeploymentApp deploymentApp = deploymentAppRepository.findById(id).get();
+        if (deploymentApp == null) {
+            throw new AutoPilotException("Not Found", HttpStatus.BAD_REQUEST, urlError, "Deployment is not found!");
+        }
+        String result = HttpUtil.getLastBuildJob(deploymentApp.getJobName());
+        if (result == "PENDING") {
+            deploymentApp.setStatus(null);
+            deploymentAppRepository.save(deploymentApp);
+        } else if (result == "SUCCESS") {
+            deploymentApp.setStatus(true);
+            deploymentAppRepository.save(deploymentApp);
+        } else {
+            deploymentApp.setStatus(false);
+            deploymentAppRepository.save(deploymentApp);
+            //throw new AutoPilotException("Unsuccessful", HttpStatus.BAD_REQUEST, urlError, "Your Deployment is not yet success !");
+        }
+        return deploymentApp.toDeploymentAppDto();
+    }
+
+    public String deploymentSpring(DeploymentAppRequest request) throws IOException, InterruptedException {
+        // String repoName = "https://github.com/KSGA-Autopilot/" + request.getAppName() + "-cd" + ".git";
         URL url = new URL(request.getGitSrcUrl());
         String cdRepos = url.getPath();
         String[] arrayPath = cdRepos.split("/");
@@ -185,7 +192,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create certificate for namespace
             GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
             // create jenkins job
-            cli.createSpringJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace,request.getBuildTool());
+            cli.createSpringJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getProjectPort().toString(), request.getBuildTool());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -203,7 +210,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
 
 
-       // String image = "autopilot:customer-spring-gradle.pipeline.xml:2023-12-12-12:00";
+        // String image = "autopilot:customer-spring-gradle.pipeline.xml:2023-12-12-12:00";
 
 
         // cli.createJobConfig(request.getGit_src_url(),request.getBuild_tool(),request.getBranch(),request.getAppName());
@@ -211,9 +218,10 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // create cd repos
         // create deployment
         // create service
+        return jobName;
     }
 
-    public void deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
+    public String deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
         // create cd repos
         URL url = new URL(request.getGitSrcUrl());
         String cdRepos = url.getPath();
@@ -275,6 +283,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-
+        return jobName;
     }
 }
