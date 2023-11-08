@@ -22,6 +22,7 @@ public class DeploymentAppController {
     }
     @PostMapping("/deployment")
     public ResponseEntity<AutoPilotResponse<DeploymentAppDto>> createDeploymentApp(@RequestBody @Valid DeploymentAppRequest request) throws IOException, InterruptedException {
+        //System.out.println("what wrong");
         AutoPilotResponse<DeploymentAppDto> response = AutoPilotResponse.<DeploymentAppDto>builder()
                 .success(true)
                 .message("DeploymentApp has created successfully")
@@ -29,14 +30,23 @@ public class DeploymentAppController {
                 .build();
         return ResponseEntity.ok(response);
     }
-    @GetMapping("/project/{project_id}")
-    public ResponseEntity<AutoPilotResponse<List<DeploymentAppDto>>>getAllDeployment(@PathVariable("project_id") Integer project_id ){
+    @GetMapping("/project/deployment/{project_id}")
+    public ResponseEntity<AutoPilotResponse<List<DeploymentAppDto>>>getAllDeployment(@PathVariable("project_id") Long project_id ){
         List<DeploymentAppDto> deploymentAppDtos=service.getAllDeploymentApps(project_id);
         AutoPilotResponse<List<DeploymentAppDto>>response=AutoPilotResponse.<List<DeploymentAppDto>>
                 builder()
                 .success(true)
                 .message("Get all deployments by project")
                 .payload(deploymentAppDtos).build();
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/deployment/{id}")
+    public ResponseEntity<?>getDeploymentById(@PathVariable("id") Integer id){
+        AutoPilotResponse<DeploymentAppDto>response=AutoPilotResponse.<DeploymentAppDto>
+                        builder()
+                .success(true)
+                .message("Get  deployments by ID successfully")
+                .payload(service.getDeploymentAppById(id)).build();
         return ResponseEntity.ok(response);
     }
 }

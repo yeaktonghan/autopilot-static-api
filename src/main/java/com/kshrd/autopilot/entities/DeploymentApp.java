@@ -22,6 +22,7 @@ public class DeploymentApp {
     private String port;
     private Integer projectPort;
     private String path;
+    private String jobName;
     private String framework;
     private String buildTool;
     private String email;
@@ -37,8 +38,7 @@ public class DeploymentApp {
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "id")
     private Project project;
-
     public DeploymentAppDto toDeploymentAppDto() {
-        return new DeploymentAppDto(this.appName, this.domain, this.ipAddress, this.port,this.projectPort,this.path, this.framework, this.buildTool, this.email, this.description, this.gitPlatform, this.gitSrcUrl, this.dependsOn, this.project.getName(), this.branch, this.createAt);
+        return new DeploymentAppDto(this.appName, this.domain, this.ipAddress, this.port,this.projectPort,this.path, this.framework, this.buildTool, this.email, this.description, this.gitPlatform, this.gitSrcUrl, this.dependsOn, this.project.getName(), this.branch, this.status,this.createAt);
     }
 }

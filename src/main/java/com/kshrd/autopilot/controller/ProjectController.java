@@ -33,7 +33,7 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
     @GetMapping ("/project/{id}")
-    public ResponseEntity<AutoPilotResponse<ProjectDto>> getProject(@PathVariable("id") Integer id) {
+    public ResponseEntity<AutoPilotResponse<ProjectDto>> getProject(@PathVariable("id") Long id) {
         ProjectDto project = service.getProjectById(id);
         AutoPilotResponse<ProjectDto> response = AutoPilotResponse.<ProjectDto>
                         builder()
@@ -54,7 +54,7 @@ public class ProjectController {
     }
 
     @PutMapping("/project/{id}")
-    public ResponseEntity<AutoPilotResponse<ProjectDto>> editProjectByUser(@Valid @RequestBody CreateTeamRequest request, @PathVariable("id") Integer id) {
+    public ResponseEntity<AutoPilotResponse<ProjectDto>> editProjectByUser(@Valid @RequestBody CreateTeamRequest request, @PathVariable("id") Long id) {
         ProjectDto project = service.editProject(request, id);
         AutoPilotResponse<ProjectDto> response = AutoPilotResponse.<ProjectDto>
                         builder()
@@ -73,7 +73,7 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
     @DeleteMapping("/project/{id}")
-    public ResponseEntity<AutoPilotResponse<ProjectDto>> removeProject(@PathVariable("id") Integer id) {
+    public ResponseEntity<AutoPilotResponse<ProjectDto>> removeProject(@PathVariable("id") Long id) {
         service.removeProject(id);
         AutoPilotResponse<ProjectDto> response = AutoPilotResponse.<ProjectDto>builder()
                 .success(true)

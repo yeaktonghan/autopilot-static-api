@@ -21,23 +21,22 @@ import java.util.Set;
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
     private String name;
     @Column(unique = true)
     private String projectCode;
     private String projectPf;
     private String color;
     private LocalDateTime created_at=LocalDateTime.now();
-    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project")
     private final Set<ProjectDetails> projectDetails =new HashSet<>();
+    @OneToMany(mappedBy = "project")
+    private Set<DeploymentApp> deploymentApps=new HashSet<>();
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
-    private List<DeploymentApp> deploymentApps=new ArrayList<>();
-    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
-    private List<DeploymentDb> deploymentDbs=new ArrayList<>();
+    private Set<DeploymentDb> deploymentDbs=new HashSet<>();
     public ProjectDto toProjectDto(List<UserDto> userDtos, Boolean isOwner){
         return new ProjectDto(this.id,this.name,this.projectCode, userDtos,created_at,isOwner,color, projectPf);
     }
-
     public ProjectDto toProjectDto(){
         return new ProjectDto(this.id,this.name,this.projectCode,this.created_at,color, projectPf);
     }

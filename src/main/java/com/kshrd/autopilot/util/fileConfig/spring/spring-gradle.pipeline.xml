@@ -50,14 +50,14 @@ pipeline {
             steps {
                  script{
 
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'gitUrl']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'var-branch']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'gitUrl']]])
             }
         }
         }
         stage('Buid Project'){
             steps{
                 script{
-                    sh 'buildtool build'
+                    sh 'b-project'
                     echo "Build successfully"
                 }
             }
@@ -66,12 +66,7 @@ pipeline {
          stage('Add Dockerfile') {
             steps {
                 script {
-                   def dockerfileContent = """
                   fordockerfile
-
-                                            """
-
-                   writeFile file: 'Dockerfile', text: dockerfileContent
                 }
             }
          }
@@ -80,9 +75,9 @@ pipeline {
             steps {
                 script{
 
-                sh 'docker build -t kshrdautopilot/appname:${CURRENT_DATETIME} .'
+                sh 'docker build -t var-image:${CURRENT_DATETIME} .'
 
-                 sh 'docker push kshrdautopilot/appname:${CURRENT_DATETIME}'
+                 sh 'docker push var-image:${CURRENT_DATETIME}'
 
                     echo "build images successfully"
 
@@ -100,32 +95,41 @@ pipeline {
                                 doGenerateSubmoduleConfigurations: false,
                                 extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
                                 submoduleCfg: [],
-                                userRemoteConfigs: [[url: "https://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@github.com/${GITHUB_REPO}"]]])
+                                userRemoteConfigs: [[url: "https://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@github.com/KSGA-Autopilot/${GITHUB_REPO}"]]])
                         }
                     }
                 }
-                stage('Modify File') {
+        stage('Modify File') {
                     steps {
                         script {
                             // Modify the content of the file
-                            sh "sed -i 's+kshrdautopilot/appname.*+kshrdautopilot/appname:${CURRENT_DATETIME}+g' app/deployment.yaml"
-                        }
-                    }
+                            sh "sed -i 's+var-image.*+var-image:${CURRENT_DATETIME}+g' app/deployment.yaml"
+                            sh "cat app/deployment.yaml"
+                                }
+                            }
                 }
                  stage('Commit and Push') {
                     steps {
                         script {
-                            // Commit the changes
-                            sh 'git add .'
-                            sh 'git commit -m "Updated images version"'
-
-                            // Push the changes back to GitHub
-                            sh 'git push https://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@@github.com/${GITHUB_REPO} HEAD:main'
+    // Commit the changes
+    sh 'git add .'
+    sh 'git commit -m "Updated images version" || true'
+    // Push the changes back to GitHub
+    sh 'git push https://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@github.com/KSGA-Autopilot/${GITHUB_REPO} HEAD:main'
                         }
                     }
                 }
-}
-}
+                stage('Start argo application') {
+                    steps {
+                        sshagent(['ssh-keygen']) {
+                             sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 "argocd login 167.71.220.235:31144 --username admin --password YOUR-PASSWORD-HERE --insecure"'
+                                sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 kubectl create ns argo-namespace || true'
+                        sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 argocd app create -f argo-application-yaml --upsert'
+                        }
+                    }
+                }
+                }
+                }
 
 </script>
 <sandbox>true</sandbox>

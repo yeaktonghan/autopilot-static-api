@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface DeploymentAppService {
     DeploymentAppDto createDeploymentApp(DeploymentAppRequest request) throws IOException, InterruptedException;
-    List<DeploymentAppDto>getAllDeploymentApps(Integer project_id);
+    List<DeploymentAppDto>getAllDeploymentApps(Long project_id);
+    DeploymentAppDto getDeploymentAppById(Integer id);
 }

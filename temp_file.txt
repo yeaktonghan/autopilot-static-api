@@ -36,12 +36,12 @@ pipeline {
         }
     }
    tools{
-        npm 'npm'
+        maven 'maven'
     }
 
     environment{
     CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
-    GITHUB_REPO = '/Phsamnang/ui_homework.git'
+    GITHUB_REPO = 'phsamnang-demomavean-cd'
     }
 
     stages {
@@ -50,14 +50,14 @@ pipeline {
             steps {
                  script{
 
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/Phsamnang/ui_homework.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/Phsamnang/demomavean.git']]])
             }
         }
         }
         stage('Buid Project'){
             steps{
                 script{
-                    sh 'gradle build'
+                    sh 'mvn package'
                     echo "Build successfully"
                 }
             }
@@ -66,160 +66,19 @@ pipeline {
          stage('Add Dockerfile') {
             steps {
                 script {
-                   def dockerfileContent = """
-                  <flow-definition plugin="workflow-job@1348.v32a_a_f150910e">
-<actions>
-<org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40"/>
-<org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40">
-<jobProperties/>
-<triggers/>
-<parameters/>
-<options/>
-</org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
-</actions>
-<description/>
-<keepDependencies>false</keepDependencies>
-<properties>
-<jenkins.model.BuildDiscarderProperty>
-<strategy class="hudson.tasks.LogRotator">
-<daysToKeep>-1</daysToKeep>
-<numToKeep>-1</numToKeep>
-<artifactDaysToKeep>-1</artifactDaysToKeep>
-<artifactNumToKeep>-1</artifactNumToKeep>
-</strategy>
-</jenkins.model.BuildDiscarderProperty>
-<org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
-<triggers>
-<com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3">
-<spec/>
-</com.cloudbees.jenkins.GitHubPushTrigger>
-</triggers>
-</org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
-</properties>
-<definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3802.vd42b_fcf00b_a_c">
-<script>
-pipeline {
-    agent {
-        node{
-            label 'worker1'
-        }
-    }
-   tools{
-        npm 'npm'
-    }
+                   def jarFile = sh(script: 'find . -name *-0.0.1-SNAPSHOT.jar' , returnStdout: true).trim()
 
-    environment{
-    CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
-    GITHUB_REPO = '/Phsamnang/ui_homework.git'
-    }
+def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
 
-    stages {
-
-        stage('Clone Repository') {
-            steps {
-                 script{
-
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/Phsamnang/ui_homework.git']]])
-            }
-        }
-        }
-        stage('Buid Project'){
-            steps{
-                script{
-                    sh 'gradle build'
-                    echo "Build successfully"
-                }
-            }
-        }
-
-         stage('Add Dockerfile') {
-            steps {
-                script {
-                   def dockerfileContent = """
-                  <flow-definition plugin="workflow-job@1348.v32a_a_f150910e">
-<actions>
-<org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40"/>
-<org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40">
-<jobProperties/>
-<triggers/>
-<parameters/>
-<options/>
-</org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
-</actions>
-<description/>
-<keepDependencies>false</keepDependencies>
-<properties>
-<jenkins.model.BuildDiscarderProperty>
-<strategy class="hudson.tasks.LogRotator">
-<daysToKeep>-1</daysToKeep>
-<numToKeep>-1</numToKeep>
-<artifactDaysToKeep>-1</artifactDaysToKeep>
-<artifactNumToKeep>-1</artifactNumToKeep>
-</strategy>
-</jenkins.model.BuildDiscarderProperty>
-<org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
-<triggers>
-<com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3">
-<spec/>
-</com.cloudbees.jenkins.GitHubPushTrigger>
-</triggers>
-</org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
-</properties>
-<definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3802.vd42b_fcf00b_a_c">
-<script>
-pipeline {
-    agent {
-        node{
-            label 'worker1'
-        }
-    }
-   tools{
-        gradle 'gradle'
-    }
-
-    environment{
-    CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
-    GITHUB_REPO = '/ksga-11th-generation-advance-course/auto-pilot-api.git'
-    }
-
-    stages {
-
-        stage('Clone Repository') {
-            steps {
-                 script{
-
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://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@github.com/ksga-11th-generation-advance-course/auto-pilot-api.git']]])
-            }
-        }
-        }
-        stage('Buid Project'){
-            steps{
-                script{
-                    sh 'gradle build'
-                    echo "Build successfully"
-                }
-            }
-        }
-
-         stage('Add Dockerfile') {
-            steps {
-                script {
-                   def dockerfileContent = """
-                  FROM openjdk:19-jdk
-
-
+def dockerfileContent = """
+FROM openjdk:19-jdk
 WORKDIR /app
-
-COPY build/libs/autopilot-0.0.1-SNAPSHOT.jar autopilot-0.0.1-SNAPSHOT.jar
-
+COPY target/${jarFileName} /app
 EXPOSE 8080
+CMD ["java", "-jar", "/app/${jarFileName}"]
+                                          """
+writeFile file: 'Dockerfile', text: dockerfileContent
 
-CMD ["java", "-jar", "autopilot-0.0.1-SNAPSHOT.jar"]
-
-
-                                            """
-
-                   writeFile file: 'Dockerfile', text: dockerfileContent
                 }
             }
          }
@@ -228,9 +87,9 @@ CMD ["java", "-jar", "autopilot-0.0.1-SNAPSHOT.jar"]
             steps {
                 script{
 
-                sh 'docker build -t kshrdautopilot/autopilot:${CURRENT_DATETIME} .'
+                sh 'docker build -t kshrdautopilot/phsamnang-demomavean:${CURRENT_DATETIME} .'
 
-                 sh 'docker push kshrdautopilot/autopilot:${CURRENT_DATETIME}'
+                 sh 'docker push kshrdautopilot/phsamnang-demomavean:${CURRENT_DATETIME}'
 
                     echo "build images successfully"
 
@@ -248,164 +107,41 @@ CMD ["java", "-jar", "autopilot-0.0.1-SNAPSHOT.jar"]
                                 doGenerateSubmoduleConfigurations: false,
                                 extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
                                 submoduleCfg: [],
-                                userRemoteConfigs: [[url: "https://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@github.com/${GITHUB_REPO}"]]])
+                                userRemoteConfigs: [[url: "https://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@github.com/KSGA-Autopilot/${GITHUB_REPO}"]]])
                         }
                     }
                 }
-                stage('Modify File') {
+        stage('Modify File') {
                     steps {
                         script {
                             // Modify the content of the file
-                            sh "sed -i 's+kshrdautopilot/autopilot.*+kshrdautopilot/autopilot:${CURRENT_DATETIME}+g' app/deployment.yaml"
-                        }
-                    }
+                            sh "sed -i 's+kshrdautopilot/phsamnang-demomavean.*+kshrdautopilot/phsamnang-demomavean:${CURRENT_DATETIME}+g' app/deployment.yaml"
+                            sh "cat app/deployment.yaml"
+                                }
+                            }
                 }
                  stage('Commit and Push') {
                     steps {
                         script {
-                            // Commit the changes
-                            sh 'git add .'
-                            sh 'git commit -m "Updated images version"'
-
-                            // Push the changes back to GitHub
-                            sh 'git push https://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@@github.com/${GITHUB_REPO} main'
+    // Commit the changes
+    sh 'git add .'
+    sh 'git commit -m "Updated images version" || true'
+    // Push the changes back to GitHub
+    sh 'git push https://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@github.com/KSGA-Autopilot/${GITHUB_REPO} HEAD:main'
                         }
                     }
                 }
-}
-}
-
-</script>
-<sandbox>true</sandbox>
-</definition>
-<triggers/>
-<disabled>false</disabled>
-</flow-definition>
-
-
-                                            """
-
-                   writeFile file: 'Dockerfile', text: dockerfileContent
-                }
-            }
-         }
-
-             stage('build to docker images') {
-            steps {
-                script{
-
-                sh 'docker build -t kshrdautopilot/ui_homework:${CURRENT_DATETIME} .'
-
-                 sh 'docker push kshrdautopilot/ui_homework:${CURRENT_DATETIME}'
-
-                    echo "build images successfully"
-
-                }
-
-            }
-        }
-        stage('go to repository'){
-
+                stage('Start argo application') {
                     steps {
-                        script {
-                            // Clone the GitHub repository
-                            checkout([$class: 'GitSCM',
-                                branches: [[name: '*/main']],
-                                doGenerateSubmoduleConfigurations: false,
-                                extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
-                                submoduleCfg: [],
-                                userRemoteConfigs: [[url: "https://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@github.com/${GITHUB_REPO}"]]])
+                        sshagent(['ssh-keygen']) {
+                             sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 "argocd login 167.71.220.235:31144 --username admin --password YOUR-PASSWORD-HERE --insecure"'
+                                sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 kubectl create ns phsamnang || true'
+                        sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 argocd app create -f https://raw.githubusercontent.com/KSGA-Autopilot/phsamnang-demomavean-cd/main/application.yaml --upsert'
                         }
                     }
                 }
-                stage('Modify File') {
-                    steps {
-                        script {
-                            // Modify the content of the file
-                            sh "sed -i 's+kshrdautopilot/ui_homework.*+kshrdautopilot/ui_homework:${CURRENT_DATETIME}+g' app/deployment.yaml"
-                        }
-                    }
                 }
-                 stage('Commit and Push') {
-                    steps {
-                        script {
-                            // Commit the changes
-                            sh 'git add .'
-                            sh 'git commit -m "Updated images version"'
-
-                            // Push the changes back to GitHub
-                            sh 'git push https://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@@github.com/${GITHUB_REPO} HEAD:main'
-                        }
-                    }
                 }
-}
-}
-
-</script>
-<sandbox>true</sandbox>
-</definition>
-<triggers/>
-<disabled>false</disabled>
-</flow-definition>
-
-
-                                            """
-
-                   writeFile file: 'Dockerfile', text: dockerfileContent
-                }
-            }
-         }
-
-             stage('build to docker images') {
-            steps {
-                script{
-
-                sh 'docker build -t kshrdautopilot/ui_homework:${CURRENT_DATETIME} .'
-
-                 sh 'docker push kshrdautopilot/ui_homework:${CURRENT_DATETIME}'
-
-                    echo "build images successfully"
-
-                }
-
-            }
-        }
-        stage('go to repository'){
-
-                    steps {
-                        script {
-                            // Clone the GitHub repository
-                            checkout([$class: 'GitSCM',
-                                branches: [[name: '*/main']],
-                                doGenerateSubmoduleConfigurations: false,
-                                extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
-                                submoduleCfg: [],
-                                userRemoteConfigs: [[url: "https://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@github.com/${GITHUB_REPO}"]]])
-                        }
-                    }
-                }
-                stage('Modify File') {
-                    steps {
-                        script {
-                            // Modify the content of the file
-                            sh "sed -i 's+kshrdautopilot/ui_homework.*+kshrdautopilot/ui_homework:${CURRENT_DATETIME}+g' app/deployment.yaml"
-                        }
-                    }
-                }
-                 stage('Commit and Push') {
-                    steps {
-                        script {
-                            // Commit the changes
-                            sh 'git add .'
-                            sh 'git commit -m "Updated images version"'
-
-                            // Push the changes back to GitHub
-                            sh 'git push https://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@@github.com/${GITHUB_REPO} HEAD:main'
-                        }
-                    }
-                }
-}
-}
 
 </script>
 <sandbox>true</sandbox>

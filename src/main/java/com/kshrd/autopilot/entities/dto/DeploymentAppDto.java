@@ -25,5 +25,6 @@ public class DeploymentAppDto {
     private Integer dependsOn;
     private  String project;
     private String branch;
+    private Boolean status;
     private LocalDateTime createAt;
 }

@@ -1,10 +1,17 @@
-FROM openjdk:19-jdk
+ def jarFile = sh(script: 'find . -name *-0.0.1-SNAPSHOT.jar | grep build/libs', returnStdout: true).trim()
 
+  def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
+  def dockerfileContent = """
+  FROM openjdk:19-jdk
 WORKDIR /app
 
-COPY build/libs/appname-0.0.1-SNAPSHOT.jar appname-0.0.1-SNAPSHOT.jar
-COPY bbuild\/libs\/*SNAPSHOT.jar appname-0.0.1-SNAPSHOT.jar
+COPY build/libs/${jarFileName} ${jarFileName}
 
-EXPOSE 8080
+EXPOSE x-port
 
-CMD ["java", "-jar", "appname-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "${jarFileName}"]
+
+
+                                            """
+
+                   writeFile file: 'Dockerfile', text: dockerfileContent

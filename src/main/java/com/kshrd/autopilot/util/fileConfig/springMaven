@@ -1,0 +1,12 @@
+ def jarFile = sh(script: 'find . -name *-0.0.1-SNAPSHOT.jar' , returnStdout: true).trim()
+
+def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
+
+def dockerfileContent = """
+FROM openjdk:19-jdk
+WORKDIR /app
+COPY target/${jarFileName} /app
+EXPOSE x-port
+CMD ["java", "-jar", "/app/${jarFileName}"]
+                                          """
+writeFile file: 'Dockerfile', text: dockerfileContent

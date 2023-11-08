@@ -99,7 +99,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectDto getProjectById(Integer id) {
+    public ProjectDto getProjectById(Long id) {
         Optional<Project> project = projectRepository.findById(id);
         String email=CurrentUserUtil.getEmail();
         User user=userRepository.findUsersByEmail(email);
@@ -117,8 +117,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    public ProjectDto editProject(CreateTeamRequest request, Integer id) {
-        Project project = projectRepository.findAllById(id);
+    public ProjectDto editProject(CreateTeamRequest request, Long id) {
+        Project project = projectRepository.findById(id).get();
         if (project == null) {
             throw new AutoPilotException("Not found", HttpStatus.NOT_FOUND
                     , urlError, "Project ID: " + id + " not found"
@@ -149,10 +149,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void removeProject(Integer id) {
+    public void removeProject(Long id) {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
-        Project project = projectRepository.findAllById(id);
+        Project project = projectRepository.findById(id).get();
         ProjectDetails projectDetails = projectDetailRepository.findByUserAndProject(user, project);
         if (projectDetails == null) {
             throw new AutoPilotException("Not found", HttpStatus.NOT_FOUND, urlError, "Project not found");

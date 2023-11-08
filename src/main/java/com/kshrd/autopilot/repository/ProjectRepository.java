@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project, Integer> {
-    Project findAllById(Integer id);
+public interface ProjectRepository extends JpaRepository<Project, Long> {
+
     Project findByProjectCode(String code);
-    void deleteById(Integer id);
+    void deleteById(Long id);
 }

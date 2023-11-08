@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeploymentAppRequest {
     private String appName;
-    @NotNull
-    private Integer projectId;
+    private Long projectId;
     private String domain;
     private String token;
     private String framework;

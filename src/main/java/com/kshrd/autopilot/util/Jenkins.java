@@ -46,36 +46,45 @@ public class Jenkins {
 
     }
 
-    public void createSpringJobConfig(String gitUrl, String repoPath, String tool, String branch, String project_name) {
+    public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String port,String tool) {
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
-            String apiToken = "112de5f0b04bb2ad66d7f233a445f6b0fd";
+            String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
             String toolType="";
             String build_tool="gradle";
+            String b_project="";
             switch (tool){
                 case "gradle" : toolType="springGradle";
+                              b_project="gradle build";
                 break;
-                case "mavean" : toolType="springMavean"; build_tool="mvn";
+                case "maven" : toolType="springMaven";
+                   b_project="mvn package";
+                build_tool="maven";
                 break;
             }
             File fileDocker = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/"+toolType);
 
             Map<String,String> docker=new HashMap<>();
-            docker.put("appname",project_name);
+            docker.put("x-port",port);
             String dockerfile=FileUtil.replaceText(fileDocker,docker);
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
-            File file = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/spring-gradle.pipeline.xml/spring-gradle.pipeline.xml");
+            File file = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-gradle.pipeline.xml");
             Map<String,String> replacement=new HashMap<>();
             replacement.put("toolChange",tool);
-            replacement.put("appname",project_name);
+           // replacement.put("appname",project_name);
             replacement.put("fordockerfile",dockerfile);
-            replacement.put("gitUrl",gitUrl);
+            replacement.put("b-project",b_project);
+            replacement.put("gitUrl",customerRepository);
             replacement.put("buildtool",build_tool);
-            replacement.put("path-repository",repoPath);
+            replacement.put("var-image",image);
+            replacement.put("path-repository",cdRepos);
+            replacement.put("var-branch",branch);
+            replacement.put("argo-namespace", namespace);
+            replacement.put("argo-application-yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/"+ cdRepos +"/main/application.yaml");
             String jobConfig = FileUtil.replaceText(file, replacement);
-            System.out.println(jobConfig);
-            String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);
+         //   System.out.println(jobConfig);
+            //String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);
             jenkins.createJob(jobName, jobConfig);
         } catch (Exception e) {
             e.printStackTrace();
