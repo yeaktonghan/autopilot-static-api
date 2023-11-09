@@ -1,19 +1,16 @@
 package com.kshrd.autopilot.service.implementation;
 
+import com.jcraft.jsch.*;
 import com.kshrd.autopilot.entities.DeploymentDb;
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.dto.DeploymentDBDto;
-import com.kshrd.autopilot.entities.dto.ProjectDto;
 import com.kshrd.autopilot.entities.request.DeploymentDBRequest;
 import com.kshrd.autopilot.repository.DeploymentDbRepository;
 import com.kshrd.autopilot.repository.ProjectRepository;
 import com.kshrd.autopilot.service.DeploymentDBService;
-import com.kshrd.autopilot.util.DatabaseUtil;
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Build;
-import com.offbytwo.jenkins.model.BuildResult;
 import com.offbytwo.jenkins.model.JobWithDetails;
-import com.offbytwo.jenkins.model.QueueReference;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -68,10 +65,10 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
             params.put("DB_PASSWORD", deploymentDb.getDbPassword());
             job.build(params);
             Build build = job.getLastBuild();
-           String result= String.valueOf(build.details().getResult());
+            String result = String.valueOf(build.details().getResult());
 
             // Check the build status
-            if (result=="SUCCESS") {
+            if (result == "SUCCESS") {
                 repository.save(deploymentDb);
                 System.out.println("Jenkins job build was successful.");
             } else {
@@ -84,4 +81,56 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         }
         return deploymentDb.toDeploymentDBDto();
     }
+
+    @Override
+    public DeploymentDBDto deployDatabase(DeploymentDBRequest request) throws JSchException {
+//        DeploymentDb deploymentDbTemp = repository.findTopDeploymentDbByProjectOrderByCreated_atDesc(projectRepository.findAllById(request.getProject_id()));
+        // check db
+//        Integer lastPort = Integer.parseInt(deploymentDbTemp.getPort());
+        Integer lastPort = repository.findLastPort(request.getProject_id());
+        if (lastPort.equals(null)) {
+            lastPort = 5432;
+        } else {
+            lastPort++;
+        }
+        // if not this name
+        request.setDbType(request.getDbType().toLowerCase().trim());
+        String databaseImage = "";
+        String databasePath = "";
+        String databasePort = "";
+        switch (request.getDbType()) {
+            case "postgres":
+                databaseImage = "postgres:15-alpine";
+                databasePath = "/var/lib/postgresql/data";
+                databasePort = "5432";
+        }
+
+        // ssh and create db
+        String username = "root";
+        String hostname = "128.199.138.228";
+        int port = 22;
+        JSch jSch = new JSch();
+        Session session = jSch.getSession(username, hostname, port);
+        session.setPassword("#KSHRD2023");
+        Channel channel = session.openChannel("exec");
+        String createPostgresDB = "docker run -d -p " + lastPort + ":"+databasePort+" --restart --name=" + request.getName() + " -e POSTGRES_DB=" + request.getName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getUsername() + ":" + databasePath + " "+ databaseImage;
+        ((ChannelExec) channel).setCommand(createPostgresDB);
+        channel.connect();
+
+
+        // save to db
+        DeploymentDb deploymentDb = new DeploymentDb();
+        deploymentDb.setCreated_at(LocalDateTime.now());
+        deploymentDb.setPort(lastPort.toString());
+        deploymentDb.setDbType(request.getDbType());
+        deploymentDb.setDbUsername(request.getUsername());
+        deploymentDb.setDbName(request.getName());
+        deploymentDb.setDbPassword(request.getPassword());
+        deploymentDb.setProject(projectRepository.findAllById(request.getProject_id()));
+        deploymentDb.setIpAddress("128.199.138.228");
+        repository.save(deploymentDb);
+        return repository.findDeploymentDbByPort(lastPort.toString()).toDeploymentDBDto();
+    }
+
+
 }

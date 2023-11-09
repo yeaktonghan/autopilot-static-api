@@ -1,5 +1,9 @@
 package com.kshrd.autopilot.controller;
 
+import com.jcraft.jsch.JSchException;
+import com.kshrd.autopilot.entities.dto.DeploymentDBDto;
+import com.kshrd.autopilot.entities.request.DeploymentDBRequest;
+import com.kshrd.autopilot.service.DeploymentDBService;
 import com.kshrd.autopilot.util.GitUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +16,12 @@ import java.io.IOException;
 @RequestMapping("/api/v1/file/test")
 @SecurityRequirement(name = "auth")
 public class TestController {
+    private final DeploymentDBService deploymentDBService;
+
+    public TestController(DeploymentDBService deploymentDBService) {
+        this.deploymentDBService = deploymentDBService;
+    }
+
     @PostMapping("/create")
     public Integer createGit(String name) throws IOException, InterruptedException {
         return GitUtil.createGitRepos(name);
@@ -20,6 +30,11 @@ public class TestController {
     @PostMapping("/deployment")
     public Integer test(String reposName) throws IOException, InterruptedException {
         return GitUtil.createSpringDeployment(reposName, "d1", "d2", 2, "d3", "d4", 1234);
+    }
+
+    @PostMapping("/deployDb")
+    public DeploymentDBDto createDB(DeploymentDBRequest request) throws JSchException {
+        return deploymentDBService.deployDatabase(request);
     }
 
 //    @PostMapping("/service")
