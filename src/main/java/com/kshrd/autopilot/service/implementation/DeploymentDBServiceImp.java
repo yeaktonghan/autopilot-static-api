@@ -166,7 +166,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         deploymentDb.setDbUsername(request.getUsername());
         deploymentDb.setDbName(request.getName());
         deploymentDb.setDbPassword(request.getPassword());
-        deploymentDb.setProject(projectRepository.findAllById(request.getProject_id()));
+        deploymentDb.setProject(projectRepository.findById(request.getProject_id()).get());
         deploymentDb.setIpAddress("128.199.138.228");
         repository.save(deploymentDb);
         return repository.findDeploymentDbByPort(lastPort.toString()).toDeploymentDBDto();

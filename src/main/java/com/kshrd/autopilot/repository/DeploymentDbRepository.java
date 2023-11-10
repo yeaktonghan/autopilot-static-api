@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DeploymentDbRepository extends JpaRepository<DeploymentDb, Integer> {
     @Query(value = "SELECT port FROM deployment_db WHERE project_id = :projectId ORDER BY created_at DESC LIMIT 1", nativeQuery = true)
-    Integer findLastPort(Integer projectId);
+    Integer findLastPort(Long projectId);
 //    DeploymentDb findTopDeploymentDbByProjectOrderByCreated_atDesc(Project project);
 
     DeploymentDb findDeploymentDbByPort(String port);
