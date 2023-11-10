@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeploymentAppDto {
+    private Long id;
     private String appName;
     private String domain;
     private String ipAddress;

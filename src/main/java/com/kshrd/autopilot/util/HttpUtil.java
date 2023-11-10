@@ -3,8 +3,10 @@ package com.kshrd.autopilot.util;
 import com.kshrd.autopilot.exception.BadRequestException;
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Build;
+import com.offbytwo.jenkins.model.BuildResult;
 import com.offbytwo.jenkins.model.JobWithDetails;
 
+import javax.xml.transform.Result;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -62,16 +64,22 @@ public class HttpUtil {
         try {
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             JobWithDetails job = jenkins.getJob(jobName);
-            Build build = job.getLastBuild();
-            if (job.isBuildable()){
-                result="PENDING";
+
+             if (job.isBuildable()||job.isInQueue()) {
+                result = "PENDING";
             }
-            result = String.valueOf(build.details().getResult());
+            Build build = job.getLastBuild();
+            BuildResult rs=build.details().getResult();
+            if (rs==BuildResult.SUCCESS) {
+                result = "SUCCESS";
+            }
+
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        System.out.println("message" + result);
         return result;
     }
 }
