@@ -124,7 +124,7 @@
             sh 'git commit -m "Updated images version" || true'
 
             // Push the changes back to GitHub
-            sh 'git push https://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@github.com/KSGA-Autopilot/phsamnang-uihomework-cd HEAD:main'
+            sh 'git push https://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@github.com/KSGA-Autopilot/${GITHUB_REPO} HEAD:main'
             }
             }
             }
