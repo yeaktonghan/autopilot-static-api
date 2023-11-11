@@ -15,4 +15,6 @@ public interface DeploymentDbRepository extends JpaRepository<DeploymentDb, Inte
 //    DeploymentDb findTopDeploymentDbByProjectOrderByCreated_atDesc(Project project);
 
     DeploymentDb findDeploymentDbByPort(String port);
+
+    DeploymentDb findDeploymentDbByDbNameAndProject(String dbName, Project project);
 }

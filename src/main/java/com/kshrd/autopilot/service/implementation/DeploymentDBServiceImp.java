@@ -5,6 +5,7 @@ import com.kshrd.autopilot.entities.DeploymentDb;
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.dto.DeploymentDBDto;
 import com.kshrd.autopilot.entities.request.DeploymentDBRequest;
+import com.kshrd.autopilot.exception.ConflictException;
 import com.kshrd.autopilot.repository.DeploymentDbRepository;
 import com.kshrd.autopilot.repository.ProjectRepository;
 import com.kshrd.autopilot.service.DeploymentDBService;
@@ -87,47 +88,38 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
     @Override
     public DeploymentDBDto deployDatabase(DeploymentDBRequest request) throws JSchException, InterruptedException {
         // verify not duplicate
-//        repository
+        if (repository.findDeploymentDbByDbNameAndProject(request.getName(), projectRepository.findById(request.getProject_id()).get()) != null){
+            throw new ConflictException("Database name "+request.getName()+" already exist in this project.", "Please choose different name for database");
+        }
 
-        // check db
-//        Integer lastPort = Integer.parseInt(deploymentDbTemp.getPort());
+        // check db port
         Integer lastPort = repository.findLastPort(request.getProject_id());
         if (lastPort == null) {
-            lastPort = 5432;
+            lastPort = 5433;
         } else {
             lastPort++;
         }
-        // if not this name
+
+        // setup for deployment
+        String username = "root";
+        String hostname = "128.199.138.228";
+        int port = 22;
+        String createPostgresDB = "";
         request.setDbType(request.getDbType().toLowerCase().trim());
         String databaseImage = "";
         String databasePath = "";
         String databasePort = "";
-        switch (request.getDbType()) {
+        switch (request.getDbType().toLowerCase().trim()) {
             case "postgres":
                 databaseImage = "postgres:15-alpine";
                 databasePath = "/var/lib/postgresql/data";
                 databasePort = "5432";
                 request.setUsername("postgres");
+                createPostgresDB = "docker run -d -p " + lastPort + ":"+databasePort+" --restart always --name="+request.getProject_id().toString() + request.getName() + " -e POSTGRES_DB=" + request.getName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getUsername() + ":" + databasePath + " "+ databaseImage;
+//            case "mysql":
         }
 
         // ssh and create db
-        String username = "root";
-        String hostname = "128.199.138.228";
-        int port = 22;
-//        JSch jSch = new JSch();
-//        Session session = jSch.getSession(username, hostname, port);
-//        session.setPassword("#KSHRD2023");
-//        Properties properties = new Properties();
-//        properties.put("StrictHostKeyChecking", "no");
-//        session.setConfig(properties);
-//        Channel channel = session.openChannel("exec");
-        String createPostgresDB = "docker run -d -p " + lastPort + ":"+databasePort+" --restart always --name=" + request.getName() + " -e POSTGRES_DB=" + request.getName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getUsername() + ":" + databasePath + " "+ databaseImage;
-        System.out.println(createPostgresDB);
-//        ((ChannelExec) channel).setCommand(createPostgresDB);
-//        channel.connect();
-//        session.disconnect();
-//        channel.disconnect();
-
         Session session = null;
         ChannelExec channel = null;
 
@@ -157,6 +149,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
                 channel.disconnect();
             }
         }
+        // create jenkins job to backup database
 
         // save to db
         DeploymentDb deploymentDb = new DeploymentDb();
