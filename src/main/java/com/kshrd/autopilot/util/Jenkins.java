@@ -91,7 +91,7 @@ public class Jenkins {
         }
     }
 
-    public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace) {
+    public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String projectPort) {
         System.out.println("Run create react job");
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
@@ -108,6 +108,7 @@ public class Jenkins {
             replaceString.put("var-image", image);
             replaceString.put("var-branch", branch);
             replaceString.put("argo-namespace", namespace);
+            replaceString.put("x-port",projectPort);
             replaceString.put("argo-application-yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/"+ cdRepos +"/main/application.yaml");
             // replace string operation
             for (Map.Entry<String, String> entry : replaceString.entrySet()) {
