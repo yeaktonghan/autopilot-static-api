@@ -2,6 +2,7 @@ package com.kshrd.autopilot.controller;
 
 import com.kshrd.autopilot.entities.dto.ProjectDto;
 import com.kshrd.autopilot.entities.request.CreateTeamRequest;
+import com.kshrd.autopilot.entities.request.ProjectImageRequest;
 import com.kshrd.autopilot.response.AutoPilotResponse;
 import com.kshrd.autopilot.service.ProjectService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -79,6 +80,15 @@ public class ProjectController {
                 .success(true)
                 .message("Project has been removed successfully")
                 .payload(null).build();
+        return ResponseEntity.ok(response);
+    }
+    @PutMapping("/project/image")
+    public ResponseEntity<?>changeProjectImage(@RequestBody ProjectImageRequest request){
+
+        AutoPilotResponse<ProjectDto> response = AutoPilotResponse.<ProjectDto>builder()
+                .success(true)
+                .message("Project has been removed successfully")
+                .payload(service.changeImage(request.getId(),request.getImageUrl())).build();
         return ResponseEntity.ok(response);
     }
 }

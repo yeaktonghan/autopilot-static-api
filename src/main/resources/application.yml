@@ -37,3 +37,5 @@ error:
 file:
   uploadPath: src/main/resources/images/
 
+front:
+  url: http://localhost:5174/email-sending?otp=

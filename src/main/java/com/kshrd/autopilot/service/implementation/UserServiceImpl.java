@@ -36,6 +36,8 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
     @Value("${error.url}")
     private String urlError;
+    @Value("${front.url}")
+    private String frontUrl;
     private static final int MIN_VALUE = 100_000;
     private static final int MAX_VALUE = 999_999;
     private final UserRepository userRepository;
@@ -132,10 +134,11 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new NotFoundException("User not found!", "This email not found!");
         }
-        String appUrl =
-                "http://" + request.getServerName() +
-                        ":" + request.getServerPort() +
-                        request.getContextPath()+"/api/v1/auth/verifyOTP?otp="+otp_code;
+//        String appUrl =
+//                "http://" + request.getServerName() +
+//                        ":" + request.getServerPort() +
+//                        request.getContextPath()+"/api/v1/auth/verifyOTP?otp="+otp_code;
+        String appUrl=frontUrl+otp_code;
        // System.out.println(protocol+"://"+host+":"+String.valueOf(port));
         Optional<OTPstore> otpOptional = otpRepository.findByUserId(user.getId());
         if (otpOptional.isPresent()) {

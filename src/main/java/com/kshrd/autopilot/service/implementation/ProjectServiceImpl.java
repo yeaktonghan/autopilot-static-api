@@ -149,6 +149,17 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public ProjectDto changeImage(Long id,String url) {
+        Optional<Project> project=projectRepository.findById(id);
+        if (!project.isPresent()){
+            throw new AutoPilotException("Not Found!",HttpStatus.NOT_FOUND,urlError,"Your project not found");
+        }
+        project.get().setProjectPf(url);
+        projectRepository.save(project.get());
+        return project.get().toProjectDto();
+    }
+
+    @Override
     public void removeProject(Long id) {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
