@@ -28,7 +28,27 @@
         </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
     </properties>
     <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3806.va_3a_6988277b_2">
-        <script>pipeline { agent { node{ label 'db-node' } } environment{ CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss") } stages { stage('Backup database') { steps { sh 'docker exec docker-ps-name pg_dump -U postgres database-name > database-name${CURRENT_DATETIME}.sql' sh 'mkdir -p /home/sftpuser/sftp/new-database-location/' sh 'mv database-name${CURRENT_DATETIME}.sql /home/sftpuser/sftp/new-database-location/database-name${CURRENT_DATETIME}.sql' } } } }</script>
+        <script>
+            pipeline {
+            agent {
+            node{
+            label 'db-node'
+            }
+            }
+            environment{
+            CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
+            }
+            stages {
+            stage('Backup database') {
+            steps {
+            sh 'docker exec autopilot pg_dump -U postgres autopilot > db-name${CURRENT_DATETIME}.sql'
+            sh 'mkdir -p /home/sftpuser/sftp/new-database-location/'
+            sh 'mv db-name${CURRENT_DATETIME}.sql /home/sftpuser/sftp/new-database-location/db-name${CURRENT_DATETIME}.sql'
+            }
+            }
+            }
+            }
+        </script>
         <sandbox>true</sandbox>
     </definition>
     <triggers/>

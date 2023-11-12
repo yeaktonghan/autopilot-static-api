@@ -124,6 +124,7 @@ public class Jenkins {
             replaceString.put("docker-ps-name", projectId+databaseName);
             replaceString.put("database-name", databaseName);
             replaceString.put("new-database-location", projectId+databaseName);
+            replaceString.put("db-name", databaseName);
             // replace string operation
             for (Map.Entry<String, String> entry : replaceString.entrySet()) {
                 postgresDatabasePipeline = postgresDatabasePipeline.replace(entry.getKey(), entry.getValue());

@@ -1,5 +1,6 @@
 package com.kshrd.autopilot.controller;
 
+import com.jcraft.jsch.JSchException;
 import com.kshrd.autopilot.entities.dto.DeploymentAppDto;
 import com.kshrd.autopilot.entities.request.DeploymentDBRequest;
 import com.kshrd.autopilot.response.AutoPilotResponse;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("api/v1")
@@ -22,12 +25,12 @@ public class DeploymentDbController {
     }
 
     @PostMapping("/database")
-    public ResponseEntity<?> createDatabase(@RequestBody DeploymentDBRequest request){
+    public ResponseEntity<?> createDatabase(@RequestBody DeploymentDBRequest request) throws JSchException, IOException, InterruptedException {
 
         AutoPilotResponse<?> response = AutoPilotResponse.builder()
                 .success(true)
                 .message("Deployment database has created successfully")
-                .payload( service.creatDatabase(request))
+                .payload( service.deployDatabase(request))
                 .build();
         return ResponseEntity.ok(response);
     }

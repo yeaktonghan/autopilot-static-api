@@ -24,7 +24,7 @@ public class DeploymentDb {
     private Project project;
 
     public DeploymentDBDto toDeploymentDBDto(){
-        return new DeploymentDBDto(dbName,ipAddress,port,dbType,dbUsername,dbPassword,project.getName(),created_at);
+        return new DeploymentDBDto(dbName,ipAddress,port,dbType,dbUsername,project.getName(),created_at);
     }
 
 }

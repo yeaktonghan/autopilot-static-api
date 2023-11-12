@@ -50,9 +50,24 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         if (request.getDbType().equals("POSTGRES")) {
             jobName = "deployment-postgres";
         }
+        // verify string
+        // if database type is not correct
+        switch (request.getDbType().toLowerCase().trim()) {
+            case "postgres" -> {
+                request.setDbType(request.getDbType().toLowerCase().trim());
+                request.setUsername("postgres");
+            }
+            case "mysql" -> {
+                request.setDbType(request.getDbType().toLowerCase().trim());
+                request.setUsername("root");
+            }
+            default -> throw new UnsupportedOperationException("Database type not supported");
+        }
+
+
 
         DeploymentDb deploymentDb = new DeploymentDb();
-        deploymentDb.setDbName(request.getName());
+        deploymentDb.setDbName(request.getDbName());
         deploymentDb.setDbPassword(request.getPassword());
         deploymentDb.setDbUsername(request.getUsername());
         deploymentDb.setProject(project);
@@ -89,12 +104,17 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         return deploymentDb.toDeploymentDBDto();
     }
 
+    // real method
     @Override
     public DeploymentDBDto deployDatabase(DeploymentDBRequest request) throws JSchException, InterruptedException, IOException {
 
         // verify not duplicate
-        if (repository.findDeploymentDbByDbNameAndProject(request.getName(), projectRepository.findById(request.getProject_id()).get()) != null){
-            throw new ConflictException("Database name "+request.getName()+" already exist in this project.", "Please choose different name for database");
+        if (repository.findDeploymentDbByDbNameAndProject(request.getDbName(), projectRepository.findById(request.getProject_id()).get()) != null){
+            throw new ConflictException("Database name "+request.getDbName()+" already exist in this project.", "Please choose different name for database");
+        }
+        // verify input
+        if (!request.getDbName().matches("^[a-zA-Z0-9]+$")) {
+            throw new BadRequestException("Database name only accept numbers and letters.", "Special character(s) are not allowed.");
         }
 
         // check db port
@@ -114,15 +134,18 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         String databaseImage;
         String databasePath;
         String databasePort;
-        switch (request.getDbType().toLowerCase().trim()) {
+        switch (request.getDbType()) {
             case "postgres" -> {
                 databaseImage = "postgres:15-alpine";
                 databasePath = "/var/lib/postgresql/data";
                 databasePort = "5432";
                 request.setUsername("postgres");
-                createPostgresDB = "docker run -d -p " + lastPort + ":" + databasePort + " --restart always --name=" + request.getProject_id().toString() + request.getName() + " -e POSTGRES_DB=" + request.getName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getUsername() + ":" + databasePath + " " + databaseImage;
+                createPostgresDB = "docker run -d -p " + lastPort + ":" + databasePort + " --restart always --name=" + request.getProject_id().toString() + request.getDbName() + " -e POSTGRES_DB=" + request.getDbName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getUsername() + ":" + databasePath + " " + databaseImage;
             }
-//            case "mysql":
+          case "mysql" -> {
+                request.setUsername("root");
+            }
+            default -> throw new BadRequestException("Database type not supported.", "Supported database are 'postgres', and 'mysql'");
         }
 
         // ssh and create db
@@ -158,11 +181,11 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         // create jenkins job to backup database
         try{
             Jenkins jenkins = new Jenkins();
-            jenkins.backupPostgresDatabase(request.getProject_id(), lastPort, request.getName());
+            jenkins.backupPostgresDatabase(request.getProject_id(), lastPort, request.getDbName());
         } catch (Exception e){
             throw new RuntimeException();
         }
-        String jobName = request.getProject_id()+request.getName()+"-backup";
+        String jobName = request.getProject_id()+request.getDbName()+"-backup";
         if (HttpUtil.buildJob(jobName) != 201) {
             throw new BadRequestException("Fail to build job", "Job have not been build successfully.");
         }
@@ -174,7 +197,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         deploymentDb.setPort(lastPort.toString());
         deploymentDb.setDbType(request.getDbType());
         deploymentDb.setDbUsername(request.getUsername());
-        deploymentDb.setDbName(request.getName());
+        deploymentDb.setDbName(request.getDbName());
         deploymentDb.setDbPassword(request.getPassword());
         deploymentDb.setProject(projectRepository.findAllById(request.getProject_id()));
         deploymentDb.setIpAddress("128.199.138.228");
