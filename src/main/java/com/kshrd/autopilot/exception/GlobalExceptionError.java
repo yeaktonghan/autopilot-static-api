@@ -58,4 +58,14 @@ public class GlobalExceptionError extends ResponseEntityExceptionHandler {
         problemDetail.setType(URI.create(exception.getUrl()));
         return problemDetail;
     }
+
+    @ExceptionHandler(ConflictException.class)
+    public ProblemDetail conflictException(ConflictException conflictException){
+        ProblemDetail problemDetail= ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT, conflictException.getMessage()
+        );
+        problemDetail.setTitle(conflictException.getTitle());
+        problemDetail.setType(URI.create("http://localhost:8080/conflict/"));
+        return problemDetail;
+    }
 }

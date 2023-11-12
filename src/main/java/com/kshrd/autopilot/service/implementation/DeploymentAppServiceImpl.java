@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,7 +58,15 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (projectDetails == null) {
             throw new AutoPilotException("Not owner!", HttpStatus.BAD_REQUEST, urlError, "You are not owner this project");
         }
-        System.out.println("this project" + project);
+        // if framework not correct throw error
+        switch (request.getFramework().toLowerCase().trim()) {
+            case "react", "spring" -> {
+                request.setFramework(request.getFramework().toLowerCase().trim());
+            }
+            default ->
+                    throw new BadRequestException("Incorrect framework input.", "Available framworks are 'react', and 'spring'");
+        }
+
         // insert to database
         DeploymentApp deploymentApp = new DeploymentApp();
         deploymentApp.setAppName(request.getAppName());
@@ -240,6 +249,13 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String deploymentLabel = applicationName;
         String containerName = applicationName;
         String ingressName = applicationName + "-ingress";
+        if (Objects.equals(request.getDomain(), "string") || Objects.equals(request.getDomain(), null)) {
+            request.setDomain("");
+        } else if (Objects.equals(request.getToken(), "string") || Objects.equals(request.getToken(), null)) {
+            request.setToken("");
+        } else if (!(Objects.equals(request.getBuildTool().toLowerCase().trim(), "npm") || Objects.equals(request.getBuildTool().toLowerCase().trim(), "vite"))) {
+            throw new BadRequestException("Wrong build tool for react.", "React build tools are: npm and vite");
+        }
 
         String image = "kshrdautopilot/" + applicationName;
         System.out.println("Image: " + image);
@@ -250,7 +266,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         int cdResponse = GitUtil.createGitRepos(cdRepos);
 
         if (cdResponse != 201) {
-            throw new BadRequestException("Unable to create.", "Enable to create git repository." + cdRepos);
+            throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
         try {

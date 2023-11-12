@@ -33,7 +33,7 @@ public class TestController {
     }
 
     @PostMapping("/deployDb")
-    public DeploymentDBDto createDB(DeploymentDBRequest request) throws JSchException, InterruptedException {
+    public DeploymentDBDto createDB(DeploymentDBRequest request) throws JSchException, InterruptedException, IOException {
         return deploymentDBService.deployDatabase(request);
     }
 
