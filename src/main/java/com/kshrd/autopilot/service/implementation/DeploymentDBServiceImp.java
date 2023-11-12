@@ -1,14 +1,20 @@
 package com.kshrd.autopilot.service.implementation;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import com.kshrd.autopilot.entities.DeploymentDb;
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.dto.DeploymentDBDto;
 import com.kshrd.autopilot.entities.request.DeploymentDBRequest;
+import com.kshrd.autopilot.exception.BadRequestException;
 import com.kshrd.autopilot.exception.ConflictException;
 import com.kshrd.autopilot.repository.DeploymentDbRepository;
 import com.kshrd.autopilot.repository.ProjectRepository;
 import com.kshrd.autopilot.service.DeploymentDBService;
+import com.kshrd.autopilot.util.HttpUtil;
+import com.kshrd.autopilot.util.Jenkins;
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Build;
 import com.offbytwo.jenkins.model.JobWithDetails;
@@ -21,7 +27,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Objects;
 
 @Service
 public class DeploymentDBServiceImp implements DeploymentDBService {
@@ -71,22 +77,21 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
             String result = String.valueOf(build.details().getResult());
 
             // Check the build status
-            if (result == "SUCCESS") {
+            if (Objects.equals(result, "SUCCESS")) {
                 repository.save(deploymentDb);
                 System.out.println("Jenkins job build was successful.");
             } else {
                 System.out.println("Jenkins job build failed.");
             }
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             throw new RuntimeException(e);
         }
         return deploymentDb.toDeploymentDBDto();
     }
 
     @Override
-    public DeploymentDBDto deployDatabase(DeploymentDBRequest request) throws JSchException, InterruptedException {
+    public DeploymentDBDto deployDatabase(DeploymentDBRequest request) throws JSchException, InterruptedException, IOException {
+
         // verify not duplicate
         if (repository.findDeploymentDbByDbNameAndProject(request.getName(), projectRepository.findById(request.getProject_id()).get()) != null){
             throw new ConflictException("Database name "+request.getName()+" already exist in this project.", "Please choose different name for database");
@@ -106,16 +111,17 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         int port = 22;
         String createPostgresDB = "";
         request.setDbType(request.getDbType().toLowerCase().trim());
-        String databaseImage = "";
-        String databasePath = "";
-        String databasePort = "";
+        String databaseImage;
+        String databasePath;
+        String databasePort;
         switch (request.getDbType().toLowerCase().trim()) {
-            case "postgres":
+            case "postgres" -> {
                 databaseImage = "postgres:15-alpine";
                 databasePath = "/var/lib/postgresql/data";
                 databasePort = "5432";
                 request.setUsername("postgres");
-                createPostgresDB = "docker run -d -p " + lastPort + ":"+databasePort+" --restart always --name="+request.getProject_id().toString() + request.getName() + " -e POSTGRES_DB=" + request.getName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getUsername() + ":" + databasePath + " "+ databaseImage;
+                createPostgresDB = "docker run -d -p " + lastPort + ":" + databasePort + " --restart always --name=" + request.getProject_id().toString() + request.getName() + " -e POSTGRES_DB=" + request.getName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getUsername() + ":" + databasePath + " " + databaseImage;
+            }
 //            case "mysql":
         }
 
@@ -139,7 +145,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
                 Thread.sleep(100);
             }
 
-            String responseString = new String(responseStream.toByteArray());
+            String responseString = responseStream.toString();
             System.out.println(responseString);
         } finally {
             if (session != null) {
@@ -150,6 +156,17 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
             }
         }
         // create jenkins job to backup database
+        try{
+            Jenkins jenkins = new Jenkins();
+            jenkins.backupPostgresDatabase(request.getProject_id(), lastPort, request.getName());
+        } catch (Exception e){
+            throw new RuntimeException();
+        }
+        String jobName = request.getProject_id()+request.getName()+"-backup";
+        if (HttpUtil.buildJob(jobName) != 201) {
+            throw new BadRequestException("Fail to build job", "Job have not been build successfully.");
+        }
+
 
         // save to db
         DeploymentDb deploymentDb = new DeploymentDb();

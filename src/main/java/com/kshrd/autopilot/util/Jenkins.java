@@ -83,7 +83,6 @@ public class Jenkins {
     }
 
     public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace) {
-        System.out.println("Run create react job");
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
@@ -107,6 +106,30 @@ public class Jenkins {
             System.out.println("Job name: " +jobName);
             System.out.println("Job config xml");
             jenkins.createJob(jobName, configXML);
+            System.out.println("End job create");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void backupPostgresDatabase(Integer projectId, Integer port, String databaseName){
+        try {
+            String jenkinsUrl = "http://188.166.179.13:8080/";
+            String username = "kshrd";
+            String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+            JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
+            String postgresDatabasePipeline = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/DatabaseJenkinsPipeline/postgres-backup-pipeline.xml");
+            System.out.println(postgresDatabasePipeline);
+            Map<String, String> replaceString = new HashMap<>();
+            replaceString.put("docker-ps-name", projectId+databaseName);
+            replaceString.put("database-name", databaseName);
+            replaceString.put("new-database-location", projectId+databaseName);
+            // replace string operation
+            for (Map.Entry<String, String> entry : replaceString.entrySet()) {
+                postgresDatabasePipeline = postgresDatabasePipeline.replace(entry.getKey(), entry.getValue());
+            }
+            System.out.println("Job config xml");
+            jenkins.createJob(projectId+databaseName+"-backup", postgresDatabasePipeline);
             System.out.println("End job create");
         } catch (Exception e) {
             e.printStackTrace();
