@@ -143,14 +143,14 @@ public class UserServiceImpl implements UserService {
         Optional<OTPstore> otpOptional = otpRepository.findByUserId(user.getId());
         if (otpOptional.isPresent()) {
             OTPstore updateOtp = otpOptional.get();
-            updateOtp.setOtp_code(otp_code);
+            updateOtp.setOtpCode(otp_code);
             updateOtp.setCreated_at(LocalDateTime.now());
             otpRepository.save(updateOtp);
             emailService.sendOTPEmail(username, user.getUsername(), appUrl);
         } else {
             OTPstore otPstore = new OTPstore();
             otPstore.setUser(user);
-            otPstore.setOtp_code(otp_code);
+            otPstore.setOtpCode(otp_code);
             otPstore.setCreated_at(LocalDateTime.now());
             otpRepository.save(otPstore);
             emailService.sendOTPEmail(username, user.getUsername(), appUrl);
@@ -159,21 +159,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void verifyOTP(Integer otp) {
+    public UserDto verifyOTP(Integer otp) {
         LocalDateTime now = LocalDateTime.now();
-        String email = CurrentUserUtil.getEmail();
-        User user = userRepository.findUsersByEmail(email);
-        Optional<OTPstore> otPstore = otpRepository.findByUserId(user.getId());
+        Optional<OTPstore> otPstore=otpRepository.findByOtpCode(otp);
         Integer expired = now.getMinute() - otPstore.get().getCreated_at().getMinute();
-        if (expired > 4 && otp.equals(otPstore.get().getOtp_code())) {
+        if (expired > 4 && otp.equals(otPstore.get().getOtpCode())) {
             throw new NotFoundException("Expired OTP", "Your OTP is expired");
-        } else if (!otp.equals(otPstore.get().getOtp_code())) {
+        } else if (!otp.equals(otPstore.get().getOtpCode())) {
             throw new NotFoundException("Incorrect OTP", "Your OTP is incorrect!");
         } else {
             OTPstore update_verify = otPstore.get();
             update_verify.setIs_verify(true);
             otpRepository.save(update_verify);
         }
+        return userRepository.findById(otPstore.get().getUser().getId()).get().toUserDto();
     }
 
     @Override
