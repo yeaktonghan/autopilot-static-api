@@ -121,8 +121,11 @@ public class AuthenticationController {
 
     @GetMapping("/verifyOTP")
     public ResponseEntity<?> verifyOTP(@RequestParam("otp") Integer otp) {
-        service.verifyOTP(otp);
-        OtpResponse response = OtpResponse.builder().status(true).message("OTP has been verified").build();
+
+        AutoPilotResponse<UserDto> response = AutoPilotResponse.<UserDto>builder()
+                .message("Your otp was verified successfully")
+                .success(true)
+                .payload(service.verifyOTP(otp)).build();
         return ResponseEntity.ok(response);
     }
 

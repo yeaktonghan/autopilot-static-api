@@ -13,7 +13,7 @@ public interface UserService extends UserDetailsService {
     UserDto registration(AuthenticationRequest request,HttpServletRequest requestSer) throws MessagingException;
     UserDto confirmEmail(String token);
     void sendOTP(String username, HttpServletRequest request) throws MessagingException;
-    void verifyOTP(Integer otp);
+    UserDto verifyOTP(Integer otp);
     UserDto resetPassword(ResetPasswordRequest request);
 
 

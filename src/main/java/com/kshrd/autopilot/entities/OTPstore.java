@@ -14,7 +14,7 @@ public class OTPstore  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Integer otp_code;
+    private Integer otpCode;
     private Boolean is_verify=false;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id",referencedColumnName = "id")

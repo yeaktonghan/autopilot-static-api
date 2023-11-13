@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface OTPRepository extends JpaRepository<OTPstore,Integer> {
   Optional<OTPstore> findByUserId(Long userId);
+  Optional<OTPstore> findByOtpCode(Integer code);
 }

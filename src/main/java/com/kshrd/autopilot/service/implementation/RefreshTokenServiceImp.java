@@ -52,7 +52,7 @@ public class RefreshTokenServiceImp implements RefreshTokenService {
     public RefreshToken verifyToken(RefreshToken token) {
       // Optional<RefreshToken> refreshToken=repository.findByToken(token.getToken());
         if(token.getExpireDate().compareTo(Instant.now())<0){
-           // repository.delete(token);
+            repository.delete(token);
             throw new AutoPilotException("Expire", HttpStatus.BAD_REQUEST, "http://localhost:8080/errors/", "Token expired");
         }
         return token;
