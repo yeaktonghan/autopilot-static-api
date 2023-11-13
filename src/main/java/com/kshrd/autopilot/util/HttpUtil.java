@@ -65,14 +65,14 @@ public class HttpUtil {
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             JobWithDetails job = jenkins.getJob(jobName);
 
-             if (job.isBuildable()) {
+             if (job.isBuildable()||job.isInQueue()) {
                 result = "PENDING";
             }
             Build build = job.getLastBuild();
             BuildResult rs=build.details().getResult();
             if (rs==BuildResult.SUCCESS) {
                 result = "SUCCESS";
-            }else {
+            } else if (rs==BuildResult.FAILURE) {
                 result = "FAILURE";
             }
 

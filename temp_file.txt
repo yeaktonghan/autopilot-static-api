@@ -50,7 +50,7 @@ pipeline {
             steps {
                  script{
 
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/Phsamnang/demomavean.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://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@github.com/Phsamnang/demomavean.git']]])
             }
         }
         }
