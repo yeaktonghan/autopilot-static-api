@@ -41,9 +41,9 @@
             stages {
             stage('Backup database') {
             steps {
-            sh 'docker exec autopilot pg_dump -U postgres autopilot > db-name${CURRENT_DATETIME}.sql'
-            sh 'mkdir -p /home/sftpuser/sftp/new-database-location/'
-            sh 'mv db-name${CURRENT_DATETIME}.sql /home/sftpuser/sftp/new-database-location/db-name${CURRENT_DATETIME}.sql'
+            sh 'docker exec docker-ps-name pg_dump -U postgres database-name > db-name${CURRENT_DATETIME}.sql'
+            sh 'mkdir -p /root/sftp/new-database-location/'
+            sh 'mv db-name${CURRENT_DATETIME}.sql /root/sftp/new-database-location/db-name${CURRENT_DATETIME}.sql'
             }
             }
             }

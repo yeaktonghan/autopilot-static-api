@@ -7,7 +7,7 @@ import java.sql.Statement;
 
 public class DatabaseUtil {
     public static void createPostgres(String name,String username,String pwd){
-        String url="jdbc:postgresql://128.199.138.228:5432/postgres";
+        String url="jdbc:postgresql://178.128.48.96:5432/postgres";
         String password="12345";
         String usr="postgres";
 
