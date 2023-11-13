@@ -91,8 +91,7 @@ public class Jenkins {
         }
     }
 
-    public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String projectPort) {
-        System.out.println("Run create react job");
+    public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace) {
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
@@ -108,7 +107,6 @@ public class Jenkins {
             replaceString.put("var-image", image);
             replaceString.put("var-branch", branch);
             replaceString.put("argo-namespace", namespace);
-            replaceString.put("x-port",projectPort);
             replaceString.put("argo-application-yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/"+ cdRepos +"/main/application.yaml");
             // replace string operation
             for (Map.Entry<String, String> entry : replaceString.entrySet()) {
@@ -117,6 +115,31 @@ public class Jenkins {
             System.out.println("Job name: " +jobName);
             System.out.println("Job config xml");
             jenkins.createJob(jobName, configXML);
+            System.out.println("End job create");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void backupPostgresDatabase(Long projectId, Integer port, String databaseName){
+        try {
+            String jenkinsUrl = "http://188.166.179.13:8080/";
+            String username = "kshrd";
+            String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+            JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
+            String postgresDatabasePipeline = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/DatabaseJenkinsPipeline/postgres-backup-pipeline.xml");
+            System.out.println(postgresDatabasePipeline);
+            Map<String, String> replaceString = new HashMap<>();
+            replaceString.put("docker-ps-name", projectId+databaseName);
+            replaceString.put("database-name", databaseName);
+            replaceString.put("new-database-location", projectId+databaseName);
+            replaceString.put("db-name", databaseName);
+            // replace string operation
+            for (Map.Entry<String, String> entry : replaceString.entrySet()) {
+                postgresDatabasePipeline = postgresDatabasePipeline.replace(entry.getKey(), entry.getValue());
+            }
+            System.out.println("Job config xml");
+            jenkins.createJob(projectId+databaseName+"-backup", postgresDatabasePipeline);
             System.out.println("End job create");
         } catch (Exception e) {
             e.printStackTrace();

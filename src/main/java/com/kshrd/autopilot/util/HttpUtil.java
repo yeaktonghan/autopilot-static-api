@@ -65,13 +65,15 @@ public class HttpUtil {
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             JobWithDetails job = jenkins.getJob(jobName);
 
-             if (job.isBuildable()||job.isInQueue()) {
+             if (job.isBuildable()) {
                 result = "PENDING";
             }
             Build build = job.getLastBuild();
             BuildResult rs=build.details().getResult();
             if (rs==BuildResult.SUCCESS) {
                 result = "SUCCESS";
+            }else {
+                result = "FAILURE";
             }
 
         } catch (URISyntaxException e) {

@@ -60,15 +60,18 @@
             steps {
             script {
             def dockerfileContent = """
-            FROM node:14
-            WORKDIR /app
+            FROM node:20.9.0-alpine
+
+            WORKDIR /usr/src/docker-react-sample
 
             COPY package*.json ./
 
-            RUN npm install
+            RUN npm install -f
+
             COPY . .
-            EXPOSE x-port
-            RUN npm run build
+
+            EXPOSE 3000
+
             CMD ["npm", "start"]
             """
             writeFile file: 'Dockerfile', text: dockerfileContent
@@ -94,7 +97,7 @@
             doGenerateSubmoduleConfigurations: false,
             extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
             submoduleCfg: [],
-            userRemoteConfigs: [[url: "https://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@github.com/KSGA-Autopilot/${GITHUB_REPO}"]]])
+            userRemoteConfigs: [[url: "https://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@github.com/KSGA-Autopilot/${GITHUB_REPO}"]]])
             }
             }
             }
@@ -115,7 +118,7 @@
             sh 'git commit -m "Updated images version" || true'
 
             // Push the changes back to GitHub
-            sh 'git push https://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@github.com/KSGA-Autopilot/${GITHUB_REPO} HEAD:main'
+            sh 'git push https://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@github.com/KSGA-Autopilot/${GITHUB_REPO} HEAD:main'
             }
             }
             }
