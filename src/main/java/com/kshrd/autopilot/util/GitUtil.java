@@ -37,7 +37,7 @@ public class GitUtil {
     public static void createRepository(String reposName) {
         try {
             String apiUrl = "https://api.github.com/user/repos";
-            String token = "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";
+            String token = "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";
             String owner = "KSGA-Autopilot";
             URL url = new URL(apiUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -75,7 +75,7 @@ public class GitUtil {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.github.com/user/repos"))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer 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")
+                .header("Authorization", "Bearer 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")
                 .POST(HttpRequest.BodyPublishers.ofString("{ \"name\": \"" + name + "\",  \"private\": false }"))
                 .build();
 
@@ -113,7 +113,7 @@ public class GitUtil {
                 .uri(URI.create(gitEndpoint))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
-                .header("Authorization", "Bearer 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")
+                .header("Authorization", "Bearer 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")
                 .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create deployment.yaml\",  \"content\": \"" + encodedDeployment + "\" }"))
                 .build();
         // send http request
@@ -149,7 +149,7 @@ public class GitUtil {
                 .uri(URI.create(gitEndpoint))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
-                .header("Authorization", "Bearer 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")
+                .header("Authorization", "Bearer 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")
                 .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create service.yaml\",  \"content\": \"" + encodedServiceYamlFile + "\" }"))
                 .build();
         // send http request
@@ -184,7 +184,7 @@ public class GitUtil {
                 .uri(URI.create(gitEndpoint))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
-                .header("Authorization", "Bearer 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")
+                .header("Authorization", "Bearer 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")
                 .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create application.yaml\",  \"content\": \"" + encodedApplicationYamlFile + "\" }"))
                 .build();
         // send http request
@@ -222,7 +222,7 @@ public class GitUtil {
                 .uri(URI.create(gitEndpoint))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
-                .header("Authorization", "Bearer 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")
+                .header("Authorization", "Bearer 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")
                 .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create ingress.yaml\",  \"content\": \"" + encodedIngressYamlFile + "\" }"))
                 .build();
         // send http request
@@ -257,7 +257,7 @@ public class GitUtil {
                 .uri(URI.create(gitEndpoint))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
-                .header("Authorization", "Bearer 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")
+                .header("Authorization", "Bearer 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")
                 .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create argo-app.yaml\",  \"content\": \"" + encodedArgoAppYamlFile + "\" }"))
                 .build();
         // send http request
@@ -291,7 +291,7 @@ public class GitUtil {
                 .uri(URI.create(gitEndpoint))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.github+json")
-                .header("Authorization", "Bearer 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")
+                .header("Authorization", "Bearer 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")
                 .PUT(HttpRequest.BodyPublishers.ofString("{ \"message\": \"create certificate.yaml\",  \"content\": \"" + certYamlFile + "\" }"))
                 .build();
         // send http request
@@ -305,7 +305,7 @@ public class GitUtil {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.github.com/repos/KSGA-Autopilot/" + reposName))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer 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")
+                .header("Authorization", "Bearer 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")
                 .GET()
                 .build();
 
@@ -319,7 +319,7 @@ public class GitUtil {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.github.com/repos/KSGA-Autopilot/" + reposName))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer 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")
+                .header("Authorization", "Bearer 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")
                 .DELETE()
                 .build();
 

@@ -139,7 +139,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
                 databasePath = "/var/lib/postgresql/data";
                 databasePort = "5432";
                 request.setUsername("postgres");
-                createPostgresDB = "docker run -d -p " + lastPort + ":" + databasePort + " --restart always --name=" + request.getProject_id().toString() + request.getDbName() + " -e POSTGRES_DB=" + request.getDbName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getUsername() + ":" + databasePath + " " + databaseImage;
+                createPostgresDB = "docker run -d -p " + lastPort + ":" + databasePort + " --restart always --name=" + request.getProject_id().toString() + request.getDbName() + " -e POSTGRES_DB=" + request.getDbName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getProject_id()+request.getDbName() + ":" + databasePath + " " + databaseImage;
             }
             case "mysql" -> {
                 request.setUsername("root");
