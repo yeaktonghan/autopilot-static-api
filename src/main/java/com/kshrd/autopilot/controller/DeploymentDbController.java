@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 @RestController
 @RequestMapping("api/v1")
@@ -32,12 +33,22 @@ public class DeploymentDbController {
         return ResponseEntity.ok(response);
     }
     @GetMapping("/database/project/{id}")
-    public ResponseEntity<?> createDatabase(@PathVariable("id") Long project_id) {
+    public ResponseEntity<?> createDatabase(@PathVariable("id") Long projectId) {
 
         AutoPilotResponse<?> response = AutoPilotResponse.builder()
                 .success(true)
                 .message("Get all Database deployments successfully")
-                .payload( service.getDeploymentDatabaseByProjectId(project_id))
+                .payload( service.getDeploymentDatabaseByProjectId(projectId))
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/database/{id}")
+    public ResponseEntity<?> deleteDatabase(@PathVariable("id") Long databaseId, @RequestParam Long projectId, @RequestParam Boolean deleteBackup) throws JSchException, URISyntaxException, IOException, InterruptedException {
+        AutoPilotResponse<?> response = AutoPilotResponse.builder()
+                .success(true)
+                .message("Database deleted.")
+                .payload(service.deleteDatabaseByDatabaseId(databaseId, projectId, deleteBackup))
                 .build();
         return ResponseEntity.ok(response);
     }

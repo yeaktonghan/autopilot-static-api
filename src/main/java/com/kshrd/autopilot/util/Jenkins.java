@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -144,6 +145,14 @@ public class Jenkins {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void deleteJob(String jobName) throws URISyntaxException, IOException {
+        String jenkinsUrl = "http://188.166.179.13:8080/";
+        String username = "kshrd";
+        String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+        JenkinsServer jenkinsServer = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
+        jenkinsServer.deleteJob(jobName);
     }
 
 }
