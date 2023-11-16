@@ -2,7 +2,7 @@
 
   def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
   def dockerfileContent = """
-  FROM openjdk:19-jdk
+FROM openjdk:19-jdk
 WORKDIR /app
 
 COPY build/libs/${jarFileName} ${jarFileName}

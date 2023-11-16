@@ -15,6 +15,7 @@ public class DeploymentDBDto {
     private String port;
     private String type;
     private String username;
+    private String password;
     private String project_name;
     private LocalDateTime create_at;
 }

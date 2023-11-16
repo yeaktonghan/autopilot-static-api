@@ -7,10 +7,7 @@ import com.kshrd.autopilot.response.AutoPilotResponse;
 import com.kshrd.autopilot.service.DeploymentDBService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -31,6 +28,16 @@ public class DeploymentDbController {
                 .success(true)
                 .message("Deployment database has created successfully")
                 .payload( service.deployDatabase(request))
+                .build();
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/database/project/{id}")
+    public ResponseEntity<?> createDatabase(@PathVariable("id") Long project_id) {
+
+        AutoPilotResponse<?> response = AutoPilotResponse.builder()
+                .success(true)
+                .message("Get all Database deployments successfully")
+                .payload( service.getDeploymentDatabaseByProjectId(project_id))
                 .build();
         return ResponseEntity.ok(response);
     }

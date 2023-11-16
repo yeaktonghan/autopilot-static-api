@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface DeploymentDbRepository extends JpaRepository<DeploymentDb, Integer> {
     @Query(value = "SELECT port FROM deployment_db WHERE project_id = :projectId ORDER BY created_at DESC LIMIT 1", nativeQuery = true)
@@ -17,4 +19,5 @@ public interface DeploymentDbRepository extends JpaRepository<DeploymentDb, Inte
     DeploymentDb findDeploymentDbByPort(String port);
 
     DeploymentDb findDeploymentDbByDbNameAndProject(String dbName, Project project);
+    List<DeploymentDb> findAllByProject(Project project);
 }

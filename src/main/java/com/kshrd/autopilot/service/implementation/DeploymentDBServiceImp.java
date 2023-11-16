@@ -8,6 +8,7 @@ import com.kshrd.autopilot.entities.DeploymentDb;
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.dto.DeploymentDBDto;
 import com.kshrd.autopilot.entities.request.DeploymentDBRequest;
+import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.exception.BadRequestException;
 import com.kshrd.autopilot.exception.ConflictException;
 import com.kshrd.autopilot.repository.DeploymentDbRepository;
@@ -18,6 +19,8 @@ import com.kshrd.autopilot.util.Jenkins;
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Build;
 import com.offbytwo.jenkins.model.JobWithDetails;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -25,14 +28,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DeploymentDBServiceImp implements DeploymentDBService {
     private final DeploymentDbRepository repository;
     private final ProjectRepository projectRepository;
+    @Value("${error.url}")
+    String errUrl;
 
     public DeploymentDBServiceImp(DeploymentDbRepository repository, ProjectRepository projectRepository) {
         this.repository = repository;
@@ -203,6 +207,22 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         deploymentDb.setIpAddress("178.128.48.96");
         repository.save(deploymentDb);
         return repository.findDeploymentDbByPort(lastPort.toString()).toDeploymentDBDto();
+    }
+
+    @Override
+    public List<DeploymentDBDto> getDeploymentDatabaseByProjectId(Long project_id) {
+        Optional<Project> project=projectRepository.findById(project_id);
+        //System.out.println(project);
+        if (!project.isPresent()){
+            throw new AutoPilotException("Not found", HttpStatus.NOT_FOUND,errUrl,"Project id is not found!");
+        }
+        List<DeploymentDb> deploymentDbs=repository.findAllByProject(project.get());
+        List<DeploymentDBDto>deploymentDBDtoList=deploymentDbs.stream().map(deploymentDb ->
+            deploymentDb.toDeploymentDBDto()
+        ).toList();
+
+       // return  null;
+        return deploymentDBDtoList;
     }
 
 
