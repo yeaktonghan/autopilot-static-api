@@ -93,7 +93,7 @@ public class FileStorageController {
         Path path = Paths.get("src/main/resources/imagePf/" + fileName);
         try {
             ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(new InputStreamResource(resource.getInputStream()));
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(new InputStreamResource(resource.getInputStream()));
         } catch (Exception e) {
             System.out.println("Error message " + e.getMessage());
         }

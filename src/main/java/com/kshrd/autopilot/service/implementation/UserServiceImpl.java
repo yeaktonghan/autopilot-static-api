@@ -85,9 +85,9 @@ public class UserServiceImpl implements UserService {
         } else {
             User user = new User();
             String imagePf[] = {
-                    "userPf1.svg", "userPf2.svg", "userPf3.svg", "userPf4.svg", "userPf5.svg", "userPf6.svg",
-                    "userPf7.svg", "userPf8.svg", "userPf9.svg", "userPf10.svg", "userPf11.svg", "userPf12.svg",
-                    "userPf13.svg", "userPf14.svg", "userPf15.svg", "userPf16.svg"
+                    "userPf1.png", "userPf2.png", "userPf3.png", "userPf4.png", "userPf5.png", "userPf6.png",
+                    "userPf7.png", "userPf8.png", "userPf9.png", "userPf10.png", "userPf11.png", "userPf12.png",
+                    "userPf13.png", "userPf14.png", "userPf15.png", "userPf16.png"
             };
             Random random=new Random();
             int index=random.nextInt(imagePf.length);
