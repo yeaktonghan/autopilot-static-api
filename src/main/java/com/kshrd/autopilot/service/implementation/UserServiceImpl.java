@@ -3,6 +3,7 @@ package com.kshrd.autopilot.service.implementation;
 import com.kshrd.autopilot.entities.ConfirmationEmail;
 import com.kshrd.autopilot.entities.dto.UserDto;
 import com.kshrd.autopilot.entities.OTPstore;
+import com.kshrd.autopilot.entities.request.SocialLoginRequest;
 import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.exception.BadRequestException;
 import com.kshrd.autopilot.exception.NotFoundException;
@@ -85,6 +86,7 @@ public class UserServiceImpl implements UserService {
             User user = new User();
             user.setEmail(request.getEmail());
             user.setUsername(request.getUsername());
+            user.setFull_name(request.getUsername());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(user);
             ConfirmationEmail confirmationEmail = new ConfirmationEmail(user);
@@ -190,6 +192,18 @@ public class UserServiceImpl implements UserService {
         return user.toUserDto();
     }
 
+    @Override
+    public UserDto fromSocial(SocialLoginRequest request) {
+        User user=new User();
+        user.setFull_name(request.getName());
+        user.setEmail(request.getEmail());
+        user.setUsername(request.getSub());
+        user.setImageUrl(request.getPicture());
+        user.setEnabled(true);
+        String encrypt=passwordEncoder.encode(request.getSub());
+        user.setPassword(encrypt);
+        return userRepository.save(user).toUserDto();
+    }
 
 
 }

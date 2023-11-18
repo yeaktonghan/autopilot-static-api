@@ -2,13 +2,11 @@ package com.kshrd.autopilot.controller;
 
 import com.kshrd.autopilot.entities.RefreshToken;
 import com.kshrd.autopilot.entities.dto.UserDto;
-import com.kshrd.autopilot.entities.request.RefreshTokenRequest;
+import com.kshrd.autopilot.entities.request.*;
 
 import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.jwt.JwtTokenUtil;
-import com.kshrd.autopilot.entities.request.AuthenticationRequest;
-import com.kshrd.autopilot.entities.request.ResetPasswordRequest;
-import com.kshrd.autopilot.entities.request.UserRequest;
+import com.kshrd.autopilot.repository.UserRepository;
 import com.kshrd.autopilot.response.AutoPilotResponse;
 import com.kshrd.autopilot.response.OtpResponse;
 import com.kshrd.autopilot.service.RefreshTokenService;
@@ -24,10 +22,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -37,21 +31,22 @@ import java.util.concurrent.atomic.AtomicReference;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
-
     private final UserService service;
     private final JwtTokenUtil jwtTokenUtil;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
+    private final UserRepository repository;
     @Value("${error.url}")
     private String errorUrl;
 
-    public AuthenticationController(UserService service, JwtTokenUtil jwtTokenUtil, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService) {
+    public AuthenticationController(UserService service, JwtTokenUtil jwtTokenUtil, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService, UserRepository repository) {
         this.service = service;
         this.jwtTokenUtil = jwtTokenUtil;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
+        this.repository = repository;
     }
 
 
@@ -138,6 +133,45 @@ public class AuthenticationController {
                 .payload(userDto)
                 .build();
         return ResponseEntity.ok(response);
+    }
+    @PostMapping("login/social")
+    public ResponseEntity<?> loginWithSocial(@RequestBody SocialLoginRequest request) throws Exception {
+        if (repository.findUsersByEmail(request.getEmail())==null){
+            service.fromSocial(request);
+            authenticate(request.getSub(), request.getSub());
+            final UserDetails userDetails = service.loadUserByUsername(request.getSub());
+
+            final   String token = jwtTokenUtil.generateToken(userDetails);
+
+
+            UserDto userDto = service.getUserByUsername(request.getSub());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.getSub());
+            userDto.setToken(refreshToken.getToken());
+            userDto.setAccessToken(token);
+
+            AutoPilotResponse<UserDto> response = AutoPilotResponse.<UserDto>builder()
+                    .success(true)
+                    .message("You are successfully logged in")
+                    .payload(userDto).build();
+            return ResponseEntity.ok(response);
+        }else {
+            authenticate(request.getSub(), request.getSub());
+            final UserDetails userDetails = service.loadUserByUsername(request.getSub());
+
+            final   String token = jwtTokenUtil.generateToken(userDetails);
+
+
+            UserDto userDto = service.getUserByUsername(request.getSub());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.getSub());
+            userDto.setToken(refreshToken.getToken());
+            userDto.setAccessToken(token);
+
+            AutoPilotResponse<UserDto> response = AutoPilotResponse.<UserDto>builder()
+                    .success(true)
+                    .message("You are successfully logged in")
+                    .payload(userDto).build();
+            return ResponseEntity.ok(response);
+        }
     }
     private void authenticate(String username, String password) throws Exception {
         try {
