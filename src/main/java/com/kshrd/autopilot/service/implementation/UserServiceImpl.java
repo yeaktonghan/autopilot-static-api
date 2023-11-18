@@ -84,32 +84,39 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("Email is already exist", "Email " + request.getEmail() + " is already exist");
         } else {
             User user = new User();
+            String imagePf[] = {
+                    "userPf1.svg", "userPf2.svg", "userPf3.svg", "userPf4.svg", "userPf5.svg", "userPf6.svg",
+                    "userPf7.svg", "userPf8.svg", "userPf9.svg", "userPf10.svg", "userPf11.svg", "userPf12.svg",
+                    "userPf13.svg", "userPf14.svg", "userPf15.svg", "userPf16.svg"
+            };
+            Random random=new Random();
+            int index=random.nextInt(imagePf.length);
             user.setEmail(request.getEmail());
+            user.setImageUrl(String.valueOf(requestSer.getRequestURL()).substring(0, 22) + "api/v1/file/profile?filePf=" +imagePf[index]);
             user.setUsername(request.getUsername());
             user.setFull_name(request.getUsername());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(user);
             ConfirmationEmail confirmationEmail = new ConfirmationEmail(user);
             confirmationEmailRepository.save(confirmationEmail);
-           String appUrl ="http://localhost:5173/signin?token=" + confirmationEmail.getConfirmationToken();
-            emailService.confirmEmail(request.getEmail(),appUrl);
+            String appUrl = "http://localhost:5173/signin?token=" + confirmationEmail.getConfirmationToken();
+            emailService.confirmEmail(request.getEmail(), appUrl);
         }
 
         return userRepository.findByUsername(request.getUsername()).toUserDto();
-       // return  null;
+        // return  null;
     }
 
     @Override
     public UserDto confirmEmail(String emailtoken) {
         ConfirmationEmail token = confirmationEmailRepository.findByConfirmationToken(emailtoken);
-        if(token != null)
-        {
-           Optional< User> user = userRepository.findById(token.getUser().getId());
+        if (token != null) {
+            Optional<User> user = userRepository.findById(token.getUser().getId());
             user.get().setEnabled(true);
             userRepository.save(user.get());
             return user.get().toUserDto();
-        }else {
-            throw new AutoPilotException("Not found",HttpStatus.NOT_FOUND,urlError,"Error: Couldn't verify email");
+        } else {
+            throw new AutoPilotException("Not found", HttpStatus.NOT_FOUND, urlError, "Error: Couldn't verify email");
         }
 
     }
@@ -140,8 +147,8 @@ public class UserServiceImpl implements UserService {
 //                "http://" + request.getServerName() +
 //                        ":" + request.getServerPort() +
 //                        request.getContextPath()+"/api/v1/auth/verifyOTP?otp="+otp_code;
-        String appUrl=frontUrl+otp_code;
-       // System.out.println(protocol+"://"+host+":"+String.valueOf(port));
+        String appUrl = frontUrl + otp_code;
+        // System.out.println(protocol+"://"+host+":"+String.valueOf(port));
         Optional<OTPstore> otpOptional = otpRepository.findByUserId(user.getId());
         if (otpOptional.isPresent()) {
             OTPstore updateOtp = otpOptional.get();
@@ -156,14 +163,14 @@ public class UserServiceImpl implements UserService {
             otPstore.setCreated_at(LocalDateTime.now());
             otpRepository.save(otPstore);
             emailService.sendOTPEmail(username, user.getUsername(), appUrl);
-      }
+        }
 
     }
 
     @Override
     public UserDto verifyOTP(Integer otp) {
         LocalDateTime now = LocalDateTime.now();
-        Optional<OTPstore> otPstore=otpRepository.findByOtpCode(otp);
+        Optional<OTPstore> otPstore = otpRepository.findByOtpCode(otp);
         Integer expired = now.getMinute() - otPstore.get().getCreated_at().getMinute();
         if (expired > 4 && otp.equals(otPstore.get().getOtpCode())) {
             throw new NotFoundException("Expired OTP", "Your OTP is expired");
@@ -194,13 +201,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto fromSocial(SocialLoginRequest request) {
-        User user=new User();
+        User user = new User();
         user.setFull_name(request.getName());
         user.setEmail(request.getEmail());
         user.setUsername(request.getSub());
         user.setImageUrl(request.getPicture());
         user.setEnabled(true);
-        String encrypt=passwordEncoder.encode(request.getSub());
+        String encrypt = passwordEncoder.encode(request.getSub());
         user.setPassword(encrypt);
         return userRepository.save(user).toUserDto();
     }

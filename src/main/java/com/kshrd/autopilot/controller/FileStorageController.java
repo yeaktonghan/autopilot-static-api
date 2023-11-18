@@ -85,4 +85,19 @@ public class FileStorageController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/profile")
+    @Operation(summary = "Get Image")
+    public ResponseEntity<Resource> getImagePf(
+            @RequestParam("filePf") String fileName
+    ) {
+        Path path = Paths.get("src/main/resources/imagePf/" + fileName);
+        try {
+            ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(new InputStreamResource(resource.getInputStream()));
+        } catch (Exception e) {
+            System.out.println("Error message " + e.getMessage());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 }
