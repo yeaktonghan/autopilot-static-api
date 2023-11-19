@@ -1,45 +1,46 @@
 package com.kshrd.autopilot.service.implementation;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.kshrd.autopilot.entities.DeploymentDb;
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.dto.DeploymentDBDto;
 import com.kshrd.autopilot.entities.request.DeploymentDBRequest;
+import com.kshrd.autopilot.entities.user.User;
 import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.exception.BadRequestException;
 import com.kshrd.autopilot.exception.ConflictException;
 import com.kshrd.autopilot.repository.DeploymentDbRepository;
+import com.kshrd.autopilot.repository.ProjectDetailRepository;
 import com.kshrd.autopilot.repository.ProjectRepository;
 import com.kshrd.autopilot.service.DeploymentDBService;
 import com.kshrd.autopilot.util.HttpUtil;
 import com.kshrd.autopilot.util.Jenkins;
+import com.kshrd.autopilot.util.SSHUtil;
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Build;
 import com.offbytwo.jenkins.model.JobWithDetails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class DeploymentDBServiceImp implements DeploymentDBService {
     private final DeploymentDbRepository repository;
+    private final ProjectDetailRepository projectDetailRepository;
     private final ProjectRepository projectRepository;
     @Value("${error.url}")
     String errUrl;
 
-    public DeploymentDBServiceImp(DeploymentDbRepository repository, ProjectRepository projectRepository) {
+    public DeploymentDBServiceImp(DeploymentDbRepository repository, ProjectDetailRepository projectDetailRepository, ProjectRepository projectRepository) {
         this.repository = repository;
+        this.projectDetailRepository = projectDetailRepository;
         this.projectRepository = projectRepository;
 
     }
@@ -129,10 +130,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         }
 
         // setup for deployment
-        String username = "root";
-        String hostname = "178.128.48.96";
-        int port = 22;
-        String createPostgresDB = "";
+        String sshRequest = "";
         request.setDbType(request.getDbType().toLowerCase().trim());
         String databaseImage;
         String databasePath;
@@ -143,7 +141,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
                 databasePath = "/var/lib/postgresql/data";
                 databasePort = "5432";
                 request.setUsername("postgres");
-                createPostgresDB = "docker run -d -p " + lastPort + ":" + databasePort + " --restart always --name=" + request.getProject_id().toString() + request.getDbName() + " -e POSTGRES_DB=" + request.getDbName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getProject_id()+request.getDbName() + ":" + databasePath + " " + databaseImage;
+                sshRequest = "docker run -d -p " + lastPort + ":" + databasePort + " --restart always --name=" + request.getProject_id().toString() + request.getDbName() + " -e POSTGRES_DB=" + request.getDbName() + " -e POSTGRES_USER=" + request.getUsername() + " -e POSTGRES_PASSWORD=" + request.getPassword() + " -v " + request.getProject_id() + request.getDbName() + ":" + databasePath + " " + databaseImage;
             }
             case "mysql" -> {
                 request.setUsername("root");
@@ -153,35 +151,8 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         }
 
         // ssh and create db
-        Session session = null;
-        ChannelExec channel = null;
+        SSHUtil.sshExecCommand(sshRequest);
 
-        try {
-            session = new JSch().getSession(username, hostname, port);
-            session.setPassword("#KSHRD2023");
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.connect();
-
-            channel = (ChannelExec) session.openChannel("exec");
-            channel.setCommand(createPostgresDB);
-            ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
-            channel.setOutputStream(responseStream);
-            channel.connect();
-
-            while (channel.isConnected()) {
-                Thread.sleep(100);
-            }
-
-            String responseString = responseStream.toString();
-            System.out.println(responseString);
-        } finally {
-            if (session != null) {
-                session.disconnect();
-            }
-            if (channel != null) {
-                channel.disconnect();
-            }
-        }
         // create jenkins job to backup database
         try {
             Jenkins jenkins = new Jenkins();
@@ -193,7 +164,6 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         if (HttpUtil.buildJob(jobName) != 201) {
             throw new BadRequestException("Fail to build job", "Job have not been build successfully.");
         }
-
 
         // save to db
         DeploymentDb deploymentDb = new DeploymentDb();
@@ -211,18 +181,57 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
 
     @Override
     public List<DeploymentDBDto> getDeploymentDatabaseByProjectId(Long project_id) {
-        Optional<Project> project=projectRepository.findById(project_id);
+        Optional<Project> project = projectRepository.findById(project_id);
         //System.out.println(project);
-        if (!project.isPresent()){
-            throw new AutoPilotException("Not found", HttpStatus.NOT_FOUND,errUrl,"Project id is not found!");
+        if (!project.isPresent()) {
+            throw new AutoPilotException("Not found", HttpStatus.NOT_FOUND, errUrl, "Project id is not found!");
         }
-        List<DeploymentDb> deploymentDbs=repository.findAllByProject(project.get());
-        List<DeploymentDBDto>deploymentDBDtoList=deploymentDbs.stream().map(deploymentDb ->
-            deploymentDb.toDeploymentDBDto()
+        List<DeploymentDb> deploymentDbs = repository.findAllByProject(project.get());
+        List<DeploymentDBDto> deploymentDBDtoList = deploymentDbs.stream().map(deploymentDb ->
+                deploymentDb.toDeploymentDBDto()
         ).toList();
 
-       // return  null;
+        // return  null;
         return deploymentDBDtoList;
+    }
+
+    @Override
+    public String deleteDatabaseByDatabaseId(Long databaseId, Long projectId, Boolean deleteBackup) throws JSchException, InterruptedException, URISyntaxException, IOException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long currentUserId = user.getId();
+        if (!(projectDetailRepository.existsByUserIdAndProjectId(currentUserId, projectId))) {
+            throw new BadRequestException("Project not found.", "Incorrect project for this user.");
+        } else if (!(repository.existsByIdAndProjectId(databaseId, projectId))) {
+            throw new BadRequestException("Database not found.", "This database does not belong to this project.");
+        }
+        DeploymentDb deploymentDb = repository.findById(databaseId.intValue()).get();
+
+        // setup for ssh
+        String request = null;
+        switch (deploymentDb.getDbType()) {
+            case "postgres" -> {
+                request = "docker rm " + deploymentDb.getProject().getId().toString() + deploymentDb.getDbName() + " -f";
+            }
+//            case "mysql" -> {
+//                request.setUsername("root");
+//            }
+            default ->
+                    throw new BadRequestException("Database type not supported.", "Supported database are 'postgres', and 'mysql'");
+        }
+        // delete docker ps via ssh
+        SSHUtil.sshExecCommand(request);
+
+        // delete backup if yes         // remove from data
+        if (deleteBackup) {
+            SSHUtil.sshExecCommand("rm -rf /root/sftp/" + projectId + deploymentDb.getDbName());
+            repository.deleteById(databaseId.intValue());
+        } else {
+            repository.disableDatabase(databaseId);
+        }
+        // delete job
+        Jenkins.deleteJob(deploymentDb.getProject().getId() + deploymentDb.getDbName() + "-backup");
+
+        return "Database waa deleted successfully.";
     }
 
 

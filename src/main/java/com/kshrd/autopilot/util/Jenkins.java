@@ -51,7 +51,7 @@ public class Jenkins {
 
     }
 
-    public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace, String port, String tool) {
+    public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String port,String tool) {
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
@@ -146,7 +146,7 @@ public class Jenkins {
                 postgresDatabasePipeline = postgresDatabasePipeline.replace(entry.getKey(), entry.getValue());
             }
             System.out.println("Job config xml");
-            jenkins.createJob(projectId + databaseName + "-backup", postgresDatabasePipeline);
+            jenkins.createJob(projectId+databaseName+"-backup", postgresDatabasePipeline);
             System.out.println("End job create");
         } catch (Exception e) {
             e.printStackTrace();

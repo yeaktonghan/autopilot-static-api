@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeploymentDBDto {
+    private Long id;
     private String database_name;
     private String connection_host;
     private String port;
