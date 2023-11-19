@@ -181,4 +181,11 @@ public class Jenkins {
         }
         return consoleLog;
     }
+    public static void deleteJob(String jobName) throws URISyntaxException, IOException {
+        String jenkinsUrl = "http://188.166.179.13:8080/";
+        String username = "kshrd";
+        String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+        JenkinsServer jenkinsServer = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
+        jenkinsServer.deleteJob(jobName);
+    }
 }
