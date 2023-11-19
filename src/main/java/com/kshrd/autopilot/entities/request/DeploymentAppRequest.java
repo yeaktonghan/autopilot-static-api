@@ -13,15 +13,19 @@ public class DeploymentAppRequest {
     private Long projectId;
     private String domain;
     private String token;
+    @NotNull
     private String framework;
+    @NotNull
     private String buildTool;
     private String email;
     private String description;
     private String gitPlatform;
+    @NotNull
     private String gitSrcUrl;
     private Integer projectPort;
     private String path;
     private Integer dependsOn;
+    @NotNull
     private String branch;
 
 }
