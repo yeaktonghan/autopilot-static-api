@@ -156,6 +156,16 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         return deploymentApp.get().toDeploymentAppDto();
     }
 
+    @Override
+    public String getConsoleBuildByDeploymentId(Integer id) {
+       Optional<DeploymentApp> deploymentAp=deploymentAppRepository.findById(id);
+        if (!deploymentAp.isPresent()){
+            throw new AutoPilotException("Not Found", HttpStatus.BAD_REQUEST, urlError, "Deployment is not found!");
+        }
+        Jenkins jenkins=new Jenkins();
+        return jenkins.consoleBuild(deploymentAp.get().getJobName());
+    }
+
     public String deploymentSpring(DeploymentAppRequest request) throws IOException, InterruptedException {
         // String repoName = "https://github.com/KSGA-Autopilot/" + request.getAppName() + "-cd" + ".git";
         URL url = new URL(request.getGitSrcUrl());

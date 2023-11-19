@@ -12,4 +12,6 @@ public interface DeploymentAppService {
     List<DeploymentAppDto> getAllDeploymentApps(Long project_id);
 
     DeploymentAppDto getDeploymentAppById(Integer id);
+
+    String getConsoleBuildByDeploymentId(Integer id);
 }

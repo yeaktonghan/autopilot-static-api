@@ -49,4 +49,8 @@ public class DeploymentAppController {
                 .payload(service.getDeploymentAppById(id)).build();
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/deployment/console/{id}")
+    public ResponseEntity<?>getConsoleDeploymentById(@PathVariable("id") Integer id){
+        return ResponseEntity.ok(service.getConsoleBuildByDeploymentId(id));
+    }
 }
