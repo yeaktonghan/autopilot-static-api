@@ -54,6 +54,11 @@ public class ProjectServiceImpl implements ProjectService {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = new Project();
+         project=projectRepository.findByName(request.getName());
+         ProjectDetails projectDetail=projectDetailRepository.findByUserAndProject(user,project);
+         if (projectDetail!=null){
+             throw new AutoPilotException("Already Exist",HttpStatus.BAD_REQUEST,urlError,"Your project already exist!");
+         }
         project.setName(request.getName());
         project.setProjectCode(code_team);
         project.setCreated_at(LocalDateTime.now());
