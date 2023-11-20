@@ -2,7 +2,7 @@ package com.kshrd.autopilot.controller;
 
 import com.kshrd.autopilot.entities.dto.ProjectDto;
 import com.kshrd.autopilot.entities.request.CreateTeamRequest;
-import com.kshrd.autopilot.entities.request.ProjectImageRequest;
+import com.kshrd.autopilot.entities.request.ImageRequest;
 import com.kshrd.autopilot.response.AutoPilotResponse;
 import com.kshrd.autopilot.service.ProjectService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -83,7 +83,7 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
     @PutMapping("/project/image")
-    public ResponseEntity<?>changeProjectImage(@RequestBody ProjectImageRequest request){
+    public ResponseEntity<?>changeProjectImage(@RequestBody ImageRequest request){
 
         AutoPilotResponse<ProjectDto> response = AutoPilotResponse.<ProjectDto>builder()
                 .success(true)
