@@ -14,6 +14,8 @@ pipeline {
 stage('build to docker images') {
     steps {
       script {
+        sh 'gradle build'
+        sh 'ls ./build'
         sh 'docker build -t kshrdautopilot/autopilot-api:${CURRENT_DATETIME} .'
         sh 'docker push kshrdautopilot/autopilot-api:${CURRENT_DATETIME}'
         echo "build images successfully"
