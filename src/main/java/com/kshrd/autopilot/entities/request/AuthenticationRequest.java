@@ -1,5 +1,6 @@
 package com.kshrd.autopilot.entities.request;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.Data;
 @Data
 public class AuthenticationRequest {
     @NotNull(message = "Please enter username.")
+    @NotBlank(message = "Please enter username.")
     private String username;
     @Email(message = "Please enter a valid email address.")
     @NotNull
