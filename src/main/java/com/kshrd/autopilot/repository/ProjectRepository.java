@@ -9,4 +9,5 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Project findByProjectCode(String code);
     void deleteById(Long id);
+    Project findByName(String name);
 }

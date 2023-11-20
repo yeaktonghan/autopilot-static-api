@@ -55,6 +55,13 @@ public class UserProfileServiceImp implements UserProfileService {
             }
         }
         User user=repository.findUsersByEmail(email);
+        if (request.getUsername()==null){
+            user.setUsername(user.getUsername());
+        } else if (request.getImageUrl()==null) {
+          user.setImageUrl(user.getImageUrl());
+        }else if(request.getFullName()==null){
+            user.setFull_name(user.getFull_name());
+        }
         user.setUsername(request.getUsername());
         user.setFull_name(request.getFullName());
         user.setImageUrl(request.getImageUrl());
@@ -73,5 +80,13 @@ public class UserProfileServiceImp implements UserProfileService {
     public UserDto getUserById(Integer id) {
 
         return null;
+    }
+
+    @Override
+    public UserDto changeUserProfile(String imageUrl) {
+        String email=CurrentUserUtil.getEmail();
+        User user =repository.findUsersByEmail(email);
+        user.setImageUrl(imageUrl);
+        return repository.save(user).toUserDto();
     }
 }

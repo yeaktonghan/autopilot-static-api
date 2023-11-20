@@ -1,5 +1,6 @@
 package com.kshrd.autopilot.controller;
 
+import com.kshrd.autopilot.entities.request.ImageRequest;
 import com.kshrd.autopilot.entities.request.PasswordRequest;
 import com.kshrd.autopilot.entities.request.UpdateUserRequest;
 import com.kshrd.autopilot.response.AutoPilotResponse;
@@ -44,6 +45,15 @@ public class UserProfileController {
                 .message("Your password has been changed")
                 .success(true)
                 .payload(service.updateProfile(request)).build();
+        return ResponseEntity.ok(response);
+    }
+    @PutMapping("/changeProfile/image")
+    public ResponseEntity<?>changeProfile(@RequestBody ImageRequest imageUrl){
+        AutoPilotResponse<?> response=AutoPilotResponse.
+                builder()
+                .message("Your profile image has been changed")
+                .success(true)
+                .payload(service.changeUserProfile(imageUrl.getImageUrl())).build();
         return ResponseEntity.ok(response);
     }
 }

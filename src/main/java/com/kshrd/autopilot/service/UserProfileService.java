@@ -9,4 +9,5 @@ public interface UserProfileService {
     UserDto updateProfile(UpdateUserRequest request);
     UserDto getCurrentUser();
     UserDto getUserById(Integer id);
+    UserDto changeUserProfile(String imageUrl);
 }
