@@ -194,6 +194,8 @@ public class Jenkins {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
             String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+            String toolType = "";
+            String build_tool = "npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             String configXML = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/python/flask-pipeline.xml");
             System.out.println(configXML);

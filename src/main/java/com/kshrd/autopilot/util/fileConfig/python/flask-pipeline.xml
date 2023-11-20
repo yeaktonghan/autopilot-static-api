@@ -1,8 +1,7 @@
-
-<flow-definition plugin="workflow-job@1360.vc6700e3136f5">
+<flow-definition plugin="workflow-job@1348.v32a_a_f150910e">
     <actions>
-        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2150.v4cfd8916915c"/>
-        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2150.v4cfd8916915c">
+        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40"/>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2144.v077a_d1928a_40">
             <jobProperties/>
             <triggers/>
             <parameters/>
@@ -22,13 +21,13 @@
         </jenkins.model.BuildDiscarderProperty>
         <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
             <triggers>
-                <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3.1">
+                <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3">
                     <spec/>
                 </com.cloudbees.jenkins.GitHubPushTrigger>
             </triggers>
         </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
     </properties>
-    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3806.va_3a_6988277b_2">
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3802.vd42b_fcf00b_a_c">
         <script>
             pipeline {
             agent {
@@ -57,21 +56,29 @@
             steps {
             script {
             def dockerfileContent = """
-            # Use an official Python runtime as a parent image
             FROM python:3-alpine3.9
+
             WORKDIR /app
+
             COPY requirements.txt .
-            RUN apk update && apk upgrade && \
-            apk add --no-cache build-base libffi-dev openssl-dev libxslt-dev libxml2-dev postgresql-dev musl-dev
-            RUN pip install --upgrade pip && \
-            pip install Flask flask_restx psycopg2
+
+            RUN apk update
+            RUN apk upgrade
+            RUN apk add --no-cache build-base libffi-dev openssl-dev libxslt-dev libxml2-dev postgresql-dev musl-dev
+
+            RUN pip install --upgrade pip
+            RUN pip install Flask flask_restx psycopg2
+
             RUN pip install scrapy==2.9.0
             RUN pip install flask_jwt_extended
-            RUN pip install apscheduler passlib flask_cors chatter Flask-Cors==4.0.0 passlib==1.7.4 scrapydo==0.2.2 chatterbot==1.0.4 && \
-            PyYAML==3.12
+            RUN pip install apscheduler passlib flask_cors chatter Flask-Cors==4.0.0 passlib==1.7.4 scrapydo==0.2.2 chatterbot==1.0.4
+            RUN PyYAML==3.12
             RUN pip install cachetools
+
             RUN pip install googletrans gunicorn scrapydo
+
             COPY . .
+
             EXPOSE 8000
             CMD ["flask", "run", "--host", "0.0.0.0" ,"-p", "8000"]
             """
@@ -88,24 +95,32 @@
             }
             }
             }
-            stage('go to repository'){
+            stage('go to repository') {
 
             steps {
             script {
-            // Clone the GitHub repository
+            //Clone the GitHub repository
             checkout([$class: 'GitSCM',
-            branches: [[name: '*/main']],
+            branches: [
+            [name: '*/main']
+            ],
             doGenerateSubmoduleConfigurations: false,
-            extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
+            extensions: [
+            [$class: 'CleanBeforeCheckout'],
+            [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]
+            ],
             submoduleCfg: [],
-            userRemoteConfigs: [[url: "https://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@github.com/KSGA-Autopilot/${GITHUB_REPO}"]]])
+            userRemoteConfigs: [
+            [url: "https://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@github.com/KSGA-Autopilot/${GITHUB_REPO}"]
+            ]
+            ])
             }
             }
             }
             stage('Modify File') {
             steps {
             script {
-            // Modify the content of the file
+            //Modify the content of the file
             sh "sed -i 's+var-image.*+var-image:${CURRENT_DATETIME}+g' app/deployment.yaml"
             sh "cat app/deployment.yaml"
             }
@@ -114,11 +129,11 @@
             stage('Commit and Push') {
             steps {
             script {
-            // Commit the changes
+            //Commit the changes
             sh 'git add .'
             sh 'git commit -m "Updated images version" || true'
 
-            // Push the changes back to GitHub
+            //Push the changes back to GitHub
             sh 'git push https://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@github.com/KSGA-Autopilot/${GITHUB_REPO} HEAD:main'
             }
             }
