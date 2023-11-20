@@ -15,6 +15,7 @@ public class DeploymentAppRequest {
     private String token;
     private String framework;
     private String buildTool;
+    private String buildPackage;
     private String email;
     private String description;
     private String gitPlatform;

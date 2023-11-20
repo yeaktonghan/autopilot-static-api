@@ -19,6 +19,7 @@ public class DeploymentAppDto {
     private String path;
     private String framework;
     private String buildTool;
+    private String buildPackage;
     private String email;
     private String description;
     private String gitPlatform;

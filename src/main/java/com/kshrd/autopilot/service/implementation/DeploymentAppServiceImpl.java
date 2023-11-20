@@ -75,6 +75,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setBranch(request.getBranch());
         deploymentApp.setDescription(request.getDescription());
         deploymentApp.setBuildTool(request.getBuildTool());
+        deploymentApp.setBuildPackage(request.getBuildPackage());
         deploymentApp.setDependsOn(request.getDependsOn());
         deploymentApp.setCreateAt(LocalDateTime.now());
         deploymentApp.setGitPlatform(request.getGitPlatform());
@@ -101,7 +102,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (request.getToken() != null) {
+        if (request.getToken() != null && !request.getToken().equals("string")) {
             request.setGitSrcUrl(protocol + "://" + request.getToken() + "@" + newUrl + path);
         }
 
@@ -211,7 +212,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create certificate for namespace
             GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
             // create jenkins job
-            cli.createSpringJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getProjectPort().toString(), request.getBuildTool().toLowerCase());
+            cli.createSpringJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getProjectPort().toString(), request.getBuildTool().toLowerCase(), request.getBuildPackage().toLowerCase());
         } catch (Exception e) {
             e.printStackTrace();
         }

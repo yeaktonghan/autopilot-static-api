@@ -15,6 +15,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Jenkins {
@@ -51,7 +52,7 @@ public class Jenkins {
 
     }
 
-    public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String port,String tool) {
+    public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String port,String tool, String buildPackage) {
         try {
             String jenkinsUrl = "http://188.166.179.13:8080/";
             String username = "kshrd";
@@ -59,16 +60,30 @@ public class Jenkins {
             String toolType = "";
             String build_tool = "gradle";
             String b_project = "";
-            switch (tool) {
-                case "gradle":
-                    toolType = "springGradle";
-                    b_project = "gradle build";
-                    break;
-                case "maven":
-                    toolType = "springMaven";
-                    b_project = "mvn package";
-                    build_tool = "maven";
-                    break;
+            if (!Objects.equals(buildPackage, "war")) {
+                switch (tool) {
+                    case "gradle" -> {
+                        toolType = "springGradle";
+                        b_project = "gradle build";
+                    }
+                    case "maven" -> {
+                        toolType = "springMaven";
+                        b_project = "mvn package";
+                        build_tool = "maven";
+                    }
+                }
+            } else {
+                switch (tool) {
+                    case "gradle" -> {
+                        toolType = "springGradle";
+                        b_project = "gradle build";
+                    }
+                    case "maven" -> {
+                        toolType = "springMavenWar";
+                        b_project = "mvn package";
+                        build_tool = "maven";
+                    }
+                }
             }
             File fileDocker = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/" + toolType);
 

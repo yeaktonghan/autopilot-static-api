@@ -1,4 +1,4 @@
-def jarFile = sh(script: 'find . -name *-0.0.1-SNAPSHOT.jar' , returnStdout: true).trim()
+def jarFile = sh(script: 'find . -name *-0.0.1-SNAPSHOT.war' , returnStdout: true).trim()
 
 def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
 
