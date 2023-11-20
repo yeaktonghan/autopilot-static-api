@@ -6,6 +6,7 @@ import com.kshrd.autopilot.entities.request.UpdateUserRequest;
 import com.kshrd.autopilot.response.AutoPilotResponse;
 import com.kshrd.autopilot.service.UserProfileService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 
@@ -42,18 +43,27 @@ public class UserProfileController {
     public ResponseEntity<?>changeProfile(@RequestBody UpdateUserRequest request){
         AutoPilotResponse<?> response=AutoPilotResponse.
                 builder()
-                .message("Your password has been changed")
+                .message("Your profile has been changed")
                 .success(true)
                 .payload(service.updateProfile(request)).build();
         return ResponseEntity.ok(response);
     }
     @PutMapping("/changeProfile/image")
-    public ResponseEntity<?>changeProfile(@RequestBody ImageRequest imageUrl){
+    public ResponseEntity<?>changeProfileImage(@RequestBody ImageRequest imageUrl){
         AutoPilotResponse<?> response=AutoPilotResponse.
                 builder()
                 .message("Your profile image has been changed")
                 .success(true)
                 .payload(service.changeUserProfile(imageUrl.getImageUrl())).build();
+        return ResponseEntity.ok(response);
+    }
+    @PutMapping("/changeProfile/remove")
+    public ResponseEntity<?>removeProfileImage(HttpServletRequest request){
+        AutoPilotResponse<?> response=AutoPilotResponse.
+                builder()
+                .message("Your profile image has been removed")
+                .success(true)
+                .payload(service.removeProfileImage(request)).build();
         return ResponseEntity.ok(response);
     }
 }

@@ -8,6 +8,7 @@ import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.repository.UserRepository;
 import com.kshrd.autopilot.service.UserProfileService;
 import com.kshrd.autopilot.util.CurrentUserUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class UserProfileServiceImp implements UserProfileService {
@@ -55,11 +57,11 @@ public class UserProfileServiceImp implements UserProfileService {
             }
         }
         User user=repository.findUsersByEmail(email);
-        if (request.getUsername()==null){
+        if (request.getUsername()==null||request.getUsername().isBlank()){
             user.setUsername(user.getUsername());
-        } else if (request.getImageUrl()==null) {
+        } else if (request.getImageUrl()==null||request.getImageUrl().isBlank()) {
           user.setImageUrl(user.getImageUrl());
-        }else if(request.getFullName()==null){
+        }else if(request.getFullName()==null||request.getFullName().isBlank()){
             user.setFull_name(user.getFull_name());
         }
         user.setUsername(request.getUsername());
@@ -80,6 +82,21 @@ public class UserProfileServiceImp implements UserProfileService {
     public UserDto getUserById(Integer id) {
 
         return null;
+    }
+
+    @Override
+    public UserDto removeProfileImage(HttpServletRequest request) {
+        String email=CurrentUserUtil.getEmail();
+        User user=repository.findUsersByEmail(email);
+        String imagePf[] = {
+                "userPf1.png", "userPf2.png", "userPf3.png", "userPf4.png", "userPf5.png", "userPf6.png",
+                "userPf7.png", "userPf8.png", "userPf9.png", "userPf10.png", "userPf11.png", "userPf12.png",
+                "userPf13.png", "userPf14.png", "userPf15.png", "userPf16.png"
+        };
+        Random random=new Random();
+        int index=random.nextInt(imagePf.length);
+        user.setImageUrl(String.valueOf(request.getRequestURL()).substring(0, 22) + "api/v1/file/profile?filePf=" +imagePf[index]);
+        return repository.save(user).toUserDto();
     }
 
     @Override

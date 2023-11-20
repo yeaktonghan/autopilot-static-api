@@ -14,5 +14,6 @@ public interface ProjectService {
 
     ProjectDto joinProject(String project_code);
     ProjectDto changeImage(Long id,String url);
+    void kickMembers(Integer userId,Integer projectId);
     void removeProject(Long id);
 }

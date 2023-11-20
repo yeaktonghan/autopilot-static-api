@@ -165,6 +165,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public void kickMembers(Integer userId,Integer projectId) {
+
+    }
+
+    @Override
     public void removeProject(Long id) {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);

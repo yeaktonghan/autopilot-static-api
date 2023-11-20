@@ -12,5 +12,5 @@ public class UpdateUserRequest {
     private String fullName;
     private String username;
     private String imageUrl;
-    private Gender gender;
+
 }
