@@ -60,11 +60,11 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         }
         // if framework not correct throw error
         switch (request.getFramework().toLowerCase().trim()) {
-            case "react", "spring" -> {
+            case "react", "spring", "flask" -> {
                 request.setFramework(request.getFramework().toLowerCase().trim());
             }
             default ->
-                    throw new BadRequestException("Incorrect framework input.", "Available framworks are 'react', and 'spring'");
+                    throw new BadRequestException("Incorrect framework input.", "Available framworks are 'react', 'flask', and 'spring'");
         }
 
         // insert to database
@@ -106,17 +106,16 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         }
 
         switch (request.getFramework().toLowerCase()) {
-            case "spring":
-                jobName = deploymentSpring(request);
-                break;
-            case "react":
-                jobName = deployReactJs(request);
-                break;
+            case "spring" -> jobName = deploymentSpring(request);
+            case "react" -> jobName = deployReactJs(request);
+            case "flask" -> jobName = deployFlask(request);
         }
         deploymentApp.setJobName(jobName);
         deploymentAppRepository.save(deploymentApp);
         return deploymentApp.toDeploymentAppDto();
     }
+
+
 
     @Override
     public List<DeploymentAppDto> getAllDeploymentApps(Long project_id) {
@@ -295,6 +294,75 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
             // create jenkins job
             cli.createReactJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // build job
+        if (HttpUtil.buildJob(jobName) != 201) {
+            throw new BadRequestException("Fail to build job", "Job have not been build successfully.");
+        }
+        // check if job is built successfully
+
+        // generate cert for namespace
+        // make argo cd create application
+        // add domain and secure ssl
+        // setup monitoring: server up -> send alert
+        //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
+//        return deploymentApp.toDeploymentAppDto();
+        return jobName;
+    }
+    private String deployFlask(DeploymentAppRequest request) throws IOException, InterruptedException {
+        // create cd repos
+        URL url = new URL(request.getGitSrcUrl());
+        String cdRepos = url.getPath();
+        String[] arrayPath = cdRepos.split("/");
+        String username = arrayPath[1].toLowerCase();
+        System.out.println("Username: " + username);
+        String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
+        System.out.println("Project Name: " + projectName);
+
+        String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
+        System.out.println("Application name: " + applicationName);
+        cdRepos = applicationName + "-cd";
+        String namespace = username.toLowerCase().replaceAll("_", "");
+        String serviceName = applicationName + "-svc";
+        String deploymentName = applicationName + "-deployment";
+        String deploymentLabel = applicationName;
+        String containerName = applicationName;
+        String ingressName = applicationName + "-ingress";
+        if (Objects.equals(request.getDomain(), "string") || Objects.equals(request.getDomain(), null)) {
+            request.setDomain("");
+        } else if (Objects.equals(request.getToken(), "string") || Objects.equals(request.getToken(), null)) {
+            request.setToken("");
+        }
+
+        String image = "kshrdautopilot/" + applicationName;
+        System.out.println("Image: " + image);
+        System.out.println("cd repos: " + cdRepos);
+
+        String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
+        // need to verify here
+        int cdResponse = GitUtil.createGitRepos(cdRepos);
+
+        if (cdResponse != 201) {
+            throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
+        }
+        // create job: build, test, and push image, update cd repos image
+        try {
+            Jenkins cli = new Jenkins();
+            // create application for argocd
+            GitUtil.createApplication(cdRepos, applicationName, namespace);
+            // create deployment file
+            GitUtil.createSpringDeployment(cdRepos, deploymentName, deploymentLabel, 2, containerName, image, request.getProjectPort());
+            // create service file
+            GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
+            // create ingress file
+            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
+//            GitUtil.createArgoApp(cdRepos, appName, username);
+            // create certificate for namespace
+            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+            // create jenkins job
+            cli.createFlaskJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace);
         } catch (Exception e) {
             e.printStackTrace();
         }

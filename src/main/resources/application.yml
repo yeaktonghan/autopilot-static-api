@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://178.128.48.96:5432/autopilot
+    url: jdbc:postgresql://localhost:5432/autopilot
     username: postgres
-    password: 12345
+    password: 22061997
 
     driver-class-name: org.postgresql.Driver
   jpa:
