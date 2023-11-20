@@ -54,8 +54,8 @@ public class ProjectServiceImpl implements ProjectService {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = new Project();
-         project=projectRepository.findByName(request.getName());
-         ProjectDetails projectDetail=projectDetailRepository.findByUserAndProject(user,project);
+       Project  pro=projectRepository.findByName(request.getName());
+         ProjectDetails projectDetail=projectDetailRepository.findByUserAndProject(user,pro);
          if (projectDetail!=null){
              throw new AutoPilotException("Already Exist",HttpStatus.BAD_REQUEST,urlError,"Your project already exist!");
          }
