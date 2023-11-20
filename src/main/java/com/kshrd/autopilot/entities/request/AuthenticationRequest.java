@@ -12,6 +12,7 @@ public class AuthenticationRequest {
     private String username;
     @Email(message = "Please enter a valid email address.")
     @NotNull
+    @NotBlank(message = "Email is require")
     private String email;
     @NotNull
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$",
