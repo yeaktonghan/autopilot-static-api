@@ -52,9 +52,13 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
+        DeploymentApp deploymentApp1=deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
         Optional<Project> project = Optional.ofNullable(projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new AutoPilotException("Not found!", HttpStatus.NOT_FOUND, urlError, "You are not owner this project")));
         ProjectDetails projectDetails = projectDetailRepository.findByUserAndProject(user, project.get());
+       if (deploymentApp1!=null){
+           throw new AutoPilotException("Already exist!", HttpStatus.BAD_REQUEST, urlError, "Git url already exist!");
+       }
         if (projectDetails == null) {
             throw new AutoPilotException("Not owner!", HttpStatus.BAD_REQUEST, urlError, "You are not owner this project");
         }
