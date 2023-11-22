@@ -137,6 +137,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectDto joinProject(String project_code) {
         Project project = projectRepository.findByProjectCode(project_code);
+        System.out.println("find by project code"+project);
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         ProjectDetails projectDetails = projectDetailRepository.findByProject(project);

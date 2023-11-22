@@ -56,7 +56,7 @@ public class Jenkins {
         try {
             String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
-            String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
             String toolType = "";
             String build_tool = "gradle";
             String b_project = "";
@@ -117,7 +117,7 @@ public class Jenkins {
         try {
             String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
-            String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
             String toolType = "";
             String build_tool = "npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
@@ -147,7 +147,7 @@ public class Jenkins {
         try {
             String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
-            String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             String postgresDatabasePipeline = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/DatabaseJenkinsPipeline/postgres-backup-pipeline.xml");
             System.out.println(postgresDatabasePipeline);
@@ -173,7 +173,7 @@ public class Jenkins {
         try {
             String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
-            String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             JobWithDetails jobWithDetails = jenkins.getJob(jobname);
             if (jobWithDetails != null) {
@@ -199,7 +199,7 @@ public class Jenkins {
     public static void deleteJob(String jobName) throws URISyntaxException, IOException {
         String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
         String username = "kshrd";
-        String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+        String apiToken = "11b664636cbda38a9884b0f69241829bf1";
         JenkinsServer jenkinsServer = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
         jenkinsServer.deleteJob(jobName);
     }
@@ -208,7 +208,7 @@ public class Jenkins {
         try {
             String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
-            String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
+            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
             String toolType = "";
             String build_tool = "npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
