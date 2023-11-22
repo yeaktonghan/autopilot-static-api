@@ -40,7 +40,7 @@ public class UserProfileController {
         return ResponseEntity.ok(response);
     }
     @PutMapping("/changeProfile")
-    public ResponseEntity<?>changeProfile(@RequestBody UpdateUserRequest request){
+    public ResponseEntity<?>changeProfile(@RequestBody @Valid UpdateUserRequest request){
         AutoPilotResponse<?> response=AutoPilotResponse.
                 builder()
                 .message("Your profile has been changed")

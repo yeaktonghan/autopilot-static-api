@@ -57,16 +57,9 @@ public class UserProfileServiceImp implements UserProfileService {
             }
         }
         User user=repository.findUsersByEmail(email);
-        if (request.getUsername()==null||request.getUsername().isBlank()){
-            user.setUsername(user.getUsername());
-        } else if (request.getImageUrl()==null||request.getImageUrl().isBlank()) {
-          user.setImageUrl(user.getImageUrl());
-        }else if(request.getFullName()==null||request.getFullName().isBlank()){
-            user.setFull_name(user.getFull_name());
-        }
-        user.setUsername(request.getUsername());
-        user.setFull_name(request.getFullName());
-        user.setImageUrl(request.getImageUrl());
+            user.setUsername(request.getUsername());
+            user.setFull_name(request.getFullName());
+            user.setImageUrl(request.getImageUrl());
         repository.save(user);
         return user.toUserDto();
     }
