@@ -1,10 +1,13 @@
 package com.kshrd.autopilot.util;
 
 import com.offbytwo.jenkins.JenkinsServer;
+import com.offbytwo.jenkins.client.JenkinsHttpClient;
 import com.offbytwo.jenkins.model.Build;
 import com.offbytwo.jenkins.model.BuildWithDetails;
 import com.offbytwo.jenkins.model.ConsoleLog;
 import com.offbytwo.jenkins.model.JobWithDetails;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,7 +93,7 @@ public class Jenkins {
             Map<String, String> docker = new HashMap<>();
             docker.put("x-port", port);
             String dockerfile = FileUtil.replaceText(fileDocker, docker);
-            JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
+            JenkinsHttpClient jenkins = new JenkinsHttpClient(new URI(jenkinsUrl), username, apiToken);
             File file = new File("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-gradle.pipeline.xml");
             Map<String, String> replacement = new HashMap<>();
             replacement.put("toolChange", tool);
@@ -105,9 +108,11 @@ public class Jenkins {
             replacement.put("argo-namespace", namespace);
             replacement.put("argo-application-yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/" + cdRepos + "/main/application.yaml");
             String jobConfig = FileUtil.replaceText(file, replacement);
+          //  StringEntity entity=new StringEntity(jobConfig, ContentType.APPLICATION_XML);
             //   System.out.println(jobConfig);
             //String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);
-            jenkins.createJob(jobName, jobConfig);
+            String createJobUrl = "/createItem?name="+jobName;
+            jenkins.post_xml(createJobUrl, jobConfig);
         } catch (Exception e) {
             e.printStackTrace();
         }
