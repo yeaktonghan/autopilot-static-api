@@ -16,9 +16,6 @@ public interface ProjectDetailRepository extends JpaRepository<ProjectDetails,In
     List<ProjectDetails> findAllByUser(User user);
     ProjectDetails findByProject(Project project);
     ProjectDetails findByUserAndProject(User user,Project project);
-    void deleteById(Integer id);
-
-
     List<ProjectDetails> findAllByProject(Project project);
 
     @Query(value = "select exists (select * from project_detail pd where user_id = :userId and project_id = :projectId)", nativeQuery = true)

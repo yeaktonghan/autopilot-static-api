@@ -54,11 +54,11 @@ public class ProjectServiceImpl implements ProjectService {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = new Project();
-       Project  pro=projectRepository.findByName(request.getName());
-         ProjectDetails projectDetail=projectDetailRepository.findByUserAndProject(user,pro);
-         if (projectDetail!=null){
-             throw new AutoPilotException("Already Exist",HttpStatus.BAD_REQUEST,urlError,"Your project already exist!");
-         }
+        Project pro = projectRepository.findByName(request.getName());
+        ProjectDetails projectDetail = projectDetailRepository.findByUserAndProject(user, pro);
+        if (projectDetail != null) {
+            throw new AutoPilotException("Already Exist", HttpStatus.BAD_REQUEST, urlError, "Your project already exist!");
+        }
         project.setName(request.getName());
         project.setProjectCode(code_team);
         project.setCreated_at(LocalDateTime.now());
@@ -73,7 +73,7 @@ public class ProjectServiceImpl implements ProjectService {
         UserDto userDto = userRepository.findById(projectDetails.getUser().getId()).get().toUserDto();
         userDtos.add(userDto);
 
-        return project.toProjectDto(userDtos,true);
+        return project.toProjectDto(userDtos, true);
     }
 
     @Override
@@ -106,18 +106,18 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectDto getProjectById(Long id) {
         Optional<Project> project = projectRepository.findById(id);
-        String email=CurrentUserUtil.getEmail();
-        User user=userRepository.findUsersByEmail(email);
-        if (!project.isPresent()){
-            throw new AutoPilotException("Project not found",HttpStatus.NOT_FOUND,urlError,"You project id  is not found!");
+        String email = CurrentUserUtil.getEmail();
+        User user = userRepository.findUsersByEmail(email);
+        if (!project.isPresent()) {
+            throw new AutoPilotException("Project not found", HttpStatus.NOT_FOUND, urlError, "You project id  is not found!");
         }
-        List<ProjectDetails> projectDetails=projectDetailRepository.findAllByProject(project.get());
-        List<UserDto> userDtos=new ArrayList<>();
-        for (ProjectDetails member:projectDetails){
+        List<ProjectDetails> projectDetails = projectDetailRepository.findAllByProject(project.get());
+        List<UserDto> userDtos = new ArrayList<>();
+        for (ProjectDetails member : projectDetails) {
             userDtos.add(member.getUser().toUserDto());
         }
-        ProjectDetails isOwner=projectDetailRepository.findByUserAndProject(user,project.get());
-        return project.get().toProjectDto(userDtos,isOwner.getIs_owner());
+        ProjectDetails isOwner = projectDetailRepository.findByUserAndProject(user, project.get());
+        return project.get().toProjectDto(userDtos, isOwner.getIs_owner());
     }
 
 
@@ -154,10 +154,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectDto changeImage(Long id,String url) {
-        Optional<Project> project=projectRepository.findById(id);
-        if (!project.isPresent()){
-            throw new AutoPilotException("Not Found!",HttpStatus.NOT_FOUND,urlError,"Your project not found");
+    public ProjectDto changeImage(Long id, String url) {
+        Optional<Project> project = projectRepository.findById(id);
+        if (!project.isPresent()) {
+            throw new AutoPilotException("Not Found!", HttpStatus.NOT_FOUND, urlError, "Your project not found");
         }
         project.get().setProjectPf(url);
         projectRepository.save(project.get());
@@ -165,7 +165,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void kickMembers(Integer userId,Integer projectId) {
+    public void kickMembers(Integer userId, Integer projectId) {
 
     }
 
@@ -180,7 +180,12 @@ public class ProjectServiceImpl implements ProjectService {
         } else if (!projectDetails.getIs_owner()) {
             throw new AutoPilotException("Not owner", HttpStatus.BAD_REQUEST, urlError, "You are not project owner");
         } else {
-            projectDetailRepository.deleteById(projectDetails.getId());
+            List<ProjectDetails> projectDetailsList = projectDetailRepository.findAllByProject(project);
+            for (ProjectDetails ps : projectDetailsList
+            ) {
+                projectDetailRepository.deleteById(ps.getId());
+            }
+            //projectDetailRepository.deleteByProject(project);
             projectRepository.deleteById(id);
         }
     }
