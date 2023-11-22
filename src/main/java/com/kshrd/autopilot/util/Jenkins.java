@@ -23,7 +23,7 @@ public class Jenkins {
         //System.out.println(gitUrl);
         try {
             // store this in application.yml
-            String jenkinsUrl = "http://188.166.179.13:8080/";
+            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
             String token = "11ea48669bc5b21f56e116d00868fa669d";
 
@@ -54,7 +54,7 @@ public class Jenkins {
 
     public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String port,String tool, String buildPackage) {
         try {
-            String jenkinsUrl = "http://188.166.179.13:8080/";
+            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
             String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
             String toolType = "";
@@ -115,7 +115,7 @@ public class Jenkins {
 
     public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace) {
         try {
-            String jenkinsUrl = "http://188.166.179.13:8080/";
+            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
             String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
             String toolType = "";
@@ -145,7 +145,7 @@ public class Jenkins {
 
     public void backupPostgresDatabase(Long projectId, Integer port, String databaseName) {
         try {
-            String jenkinsUrl = "http://188.166.179.13:8080/";
+            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
             String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
@@ -171,7 +171,7 @@ public class Jenkins {
     public String consoleBuild(String jobname) {
         String consoleLog = "";
         try {
-            String jenkinsUrl = "http://188.166.179.13:8080/";
+            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
             String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
@@ -197,7 +197,7 @@ public class Jenkins {
         return consoleLog;
     }
     public static void deleteJob(String jobName) throws URISyntaxException, IOException {
-        String jenkinsUrl = "http://188.166.179.13:8080/";
+        String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
         String username = "kshrd";
         String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
         JenkinsServer jenkinsServer = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
@@ -206,7 +206,7 @@ public class Jenkins {
 
     public void createFlaskJobConfig(String gitSrcUrl, String image, String branch, String cdRepos, String jobName, String namespace) {
         try {
-            String jenkinsUrl = "http://188.166.179.13:8080/";
+            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
             String apiToken = "11494604d60cbd9709b8b582eedd62fab3";
             String toolType = "";
