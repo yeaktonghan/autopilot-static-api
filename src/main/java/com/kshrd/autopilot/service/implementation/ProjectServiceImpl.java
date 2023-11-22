@@ -137,20 +137,19 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectDto joinProject(String project_code) {
         Project project = projectRepository.findByProjectCode(project_code);
-        System.out.println("find by project code"+project);
+        //System.out.println("find by project code"+project);
+        ProjectDetails newMember=new ProjectDetails();
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
-        ProjectDetails projectDetails = projectDetailRepository.findByProject(project);
+        ProjectDetails projectDetails = projectDetailRepository.findByUserAndProject(user,project);
         if (project == null) {
             throw new AutoPilotException("Not found", HttpStatus.NOT_FOUND, urlError, "Project not found");
-        } else if (user.getId().equals(projectDetails.getUser().getId())) {
+        } else if (projectDetails!=null) {
             throw new AutoPilotException("Can not join", HttpStatus.BAD_REQUEST, urlError, "You already in project");
-        } else {
-            ProjectDetails newMember = new ProjectDetails();
+        }
             newMember.setUser(user);
             newMember.setProject(project);
-            projectDetailRepository.save(newMember);
-        }
+        projectDetailRepository.save(newMember);
         return project.toProjectDto();
     }
 
