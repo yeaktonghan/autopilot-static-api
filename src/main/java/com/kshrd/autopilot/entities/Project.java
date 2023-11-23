@@ -34,6 +34,8 @@ public class Project {
     private Set<DeploymentApp> deploymentApps=new HashSet<>();
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
     private Set<DeploymentDb> deploymentDbs=new HashSet<>();
+    @OneToOne(mappedBy = "project",cascade = CascadeType.ALL)
+    private NotificationCredential notificationCredential;
     public ProjectDto toProjectDto(List<UserDto> userDtos, Boolean isOwner){
         return new ProjectDto(this.id,this.name,this.projectCode, userDtos,created_at,isOwner,color, projectPf);
     }
