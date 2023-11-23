@@ -1,5 +1,6 @@
 package com.kshrd.autopilot.service.implementation;
 
+import com.jcraft.jsch.JSchException;
 import com.kshrd.autopilot.entities.DeploymentApp;
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.ProjectDetails;
@@ -8,20 +9,22 @@ import com.kshrd.autopilot.entities.request.DeploymentAppRequest;
 import com.kshrd.autopilot.entities.user.User;
 import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.exception.BadRequestException;
+import com.kshrd.autopilot.exception.ConflictException;
+import com.kshrd.autopilot.exception.NotFoundException;
 import com.kshrd.autopilot.repository.DeploymentAppRepository;
 import com.kshrd.autopilot.repository.ProjectDetailRepository;
 import com.kshrd.autopilot.repository.ProjectRepository;
 import com.kshrd.autopilot.repository.UserRepository;
 import com.kshrd.autopilot.service.DeploymentAppService;
-import com.kshrd.autopilot.util.CurrentUserUtil;
-import com.kshrd.autopilot.util.GitUtil;
-import com.kshrd.autopilot.util.HttpUtil;
-import com.kshrd.autopilot.util.Jenkins;
+import com.kshrd.autopilot.util.*;
+import com.offbytwo.jenkins.JenkinsServer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,13 +55,13 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
-        DeploymentApp deploymentApp1=deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
+        DeploymentApp deploymentApp1 = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
         Optional<Project> project = Optional.ofNullable(projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new AutoPilotException("Not found!", HttpStatus.NOT_FOUND, urlError, "You are not owner this project")));
         ProjectDetails projectDetails = projectDetailRepository.findByUserAndProject(user, project.get());
-       if (deploymentApp1!=null){
-           throw new AutoPilotException("Already exist!", HttpStatus.BAD_REQUEST, urlError, "Git url already exist!");
-       }
+        if (deploymentApp1 != null) {
+            throw new AutoPilotException("Already exist!", HttpStatus.BAD_REQUEST, urlError, "Git url already exist!");
+        }
         if (projectDetails == null) {
             throw new AutoPilotException("Not owner!", HttpStatus.BAD_REQUEST, urlError, "You are not owner this project");
         }
@@ -121,7 +124,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     }
 
 
-
     @Override
     public List<DeploymentAppDto> getAllDeploymentApps(Long project_id) {
         String email = CurrentUserUtil.getEmail();
@@ -162,11 +164,11 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
     @Override
     public String getConsoleBuildByDeploymentId(Integer id) {
-       Optional<DeploymentApp> deploymentAp=deploymentAppRepository.findById(id);
-        if (!deploymentAp.isPresent()){
+        Optional<DeploymentApp> deploymentAp = deploymentAppRepository.findById(id);
+        if (!deploymentAp.isPresent()) {
             throw new AutoPilotException("Not Found", HttpStatus.BAD_REQUEST, urlError, "Deployment is not found!");
         }
-        Jenkins jenkins=new Jenkins();
+        Jenkins jenkins = new Jenkins();
         return jenkins.consoleBuild(deploymentAp.get().getJobName());
     }
 
@@ -316,6 +318,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 //        return deploymentApp.toDeploymentAppDto();
         return jobName;
     }
+
     private String deployFlask(DeploymentAppRequest request) throws IOException, InterruptedException {
         // create cd repos
         URL url = new URL(request.getGitSrcUrl());
@@ -384,5 +387,53 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
         return jobName;
+    }
+
+    @Override
+    public String deleteAppDeploymentById(Long id) throws MalformedURLException, JSchException, InterruptedException {
+        // check if exist
+        if (!(deploymentAppRepository.existsById(id.intValue()))){
+            throw new NotFoundException("Deployment not found.", "Can not find this deployment in the database.");
+        }
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long currentUserId = user.getId();
+        // check if user can delete this deployment
+        if (!(deploymentAppRepository.checkIfProjectExistForUser(id, currentUserId))) {
+            throw new ConflictException("User not found in this project.", "This user does not have permission to delete this deployment.");
+        }
+
+        // delete argo cd app with cascade
+        DeploymentApp deploymentApp = deploymentAppRepository.findById(id.intValue()).get();
+        URL url = new URL(deploymentApp.getGitSrcUrl());
+        String cdRepos = url.getPath();
+        String[] arrayPath = cdRepos.split("/");
+        String username = arrayPath[1].toLowerCase();
+        System.out.println("Username: " + username);
+        String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
+        System.out.println("Project Name: " + projectName);
+
+        String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
+
+        SSHUtil.sshExecCommandController("argocd app delete argocd/"+applicationName+" --cascade=true -y");
+
+        // delete jenkins job
+        try {
+            Jenkins cli = new Jenkins();
+
+            // create jenkins job
+            cli.deleteJob(deploymentApp.getJobName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // delete from database
+        deploymentAppRepository.deleteById(id.intValue());
+
+        // check if still exist;
+        if (deploymentAppRepository.existsById(id.intValue())){
+            throw new NotFoundException("Fail to delete deployment.", "Failing to delete this deployment from database.");
+        }
+        return "Delete deployment successfully.";
     }
 }
