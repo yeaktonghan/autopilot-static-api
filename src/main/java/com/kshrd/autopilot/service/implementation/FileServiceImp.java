@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,7 +34,7 @@ public class FileServiceImp implements FileService {
         obj.setFileName(file.getOriginalFilename());
         obj.setFileType(file.getContentType());
         obj.setSize(file.getSize());
-        obj.setFileUrl(String.valueOf(request.getRequestURL()).substring(0, 22) + "api/v1/file?file=" + obj.getFileName());
+
         String uploadPath = fileStorageProperties.getUploadPath();
         Path directoryPath = Paths.get(uploadPath).toAbsolutePath().normalize();
         java.io.File directory = directoryPath.toFile();

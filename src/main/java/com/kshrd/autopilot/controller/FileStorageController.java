@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,6 +39,7 @@ public class FileStorageController {
     @Operation(summary = "upload file")
     public ResponseEntity<?> saveFile(@RequestParam(required = false) MultipartFile file,
                                       HttpServletRequest request) throws IOException {
+
         if(file != null){
             return ResponseEntity.status(200).body(fileService.saveFile(file,request));
         }
