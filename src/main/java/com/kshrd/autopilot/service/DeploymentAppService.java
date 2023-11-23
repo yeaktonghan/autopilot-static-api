@@ -1,9 +1,11 @@
 package com.kshrd.autopilot.service;
 
+import com.jcraft.jsch.JSchException;
 import com.kshrd.autopilot.entities.dto.DeploymentAppDto;
 import com.kshrd.autopilot.entities.request.DeploymentAppRequest;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 
 public interface DeploymentAppService {
@@ -14,4 +16,6 @@ public interface DeploymentAppService {
     DeploymentAppDto getDeploymentAppById(Integer id);
 
     String getConsoleBuildByDeploymentId(Integer id);
+
+    String deleteAppDeploymentById(Long id) throws MalformedURLException, JSchException, InterruptedException;
 }
