@@ -39,7 +39,6 @@ public class FileStorageController {
     @Operation(summary = "upload file")
     public ResponseEntity<?> saveFile(@RequestParam(required = false) MultipartFile file,
                                       HttpServletRequest request) throws IOException {
-
         if(file != null){
             return ResponseEntity.status(200).body(fileService.saveFile(file,request));
         }
