@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             ConfirmationEmail confirmationEmail = new ConfirmationEmail(user);
             confirmationEmailRepository.save(confirmationEmail);
-            String appUrl = "https://autopilot.dev/signin?token=" + confirmationEmail.getConfirmationToken();
+            String appUrl = "https://auto-pilot.dev/signin?token=" + confirmationEmail.getConfirmationToken();
             emailService.confirmEmail(request.getEmail(), appUrl);
         }
 
