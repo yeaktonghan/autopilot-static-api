@@ -17,5 +17,5 @@ public interface DeploymentAppService {
 
     String getConsoleBuildByDeploymentId(Integer id);
 
-    String deleteAppDeploymentById(Long id) throws MalformedURLException, JSchException, InterruptedException;
+    String deleteAppDeploymentById(Long id) throws JSchException, IOException;
 }

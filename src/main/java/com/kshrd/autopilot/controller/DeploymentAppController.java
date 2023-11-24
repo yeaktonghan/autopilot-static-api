@@ -7,11 +7,11 @@ import com.kshrd.autopilot.response.AutoPilotResponse;
 import com.kshrd.autopilot.service.DeploymentAppService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
 
 @RestController
@@ -61,12 +61,13 @@ public class DeploymentAppController {
         return ResponseEntity.ok(service.getConsoleBuildByDeploymentId(id));
     }
 
-    @DeleteMapping("/deployment/{id}/delete")
-    public ResponseEntity<?> deleteDeploymentById(@PathVariable("id") Long id) throws MalformedURLException, JSchException, InterruptedException {
-        AutoPilotResponse.AutoPilotResponseBuilder<Object> response = AutoPilotResponse.builder()
+    @DeleteMapping(path = "/deployment/{id}/delete")
+    public ResponseEntity<?> deleteDeploymentById(@PathVariable("id") Long id) throws JSchException, IOException {
+        AutoPilotResponse<String> response = AutoPilotResponse.<String>builder()
                 .success(true)
                 .message("Successfully deleted App Deployment")
-                .payload(service.deleteAppDeploymentById(id));
+                .payload(service.deleteAppDeploymentById(id))
+                .build();
         return ResponseEntity.ok(response);
     }
 }

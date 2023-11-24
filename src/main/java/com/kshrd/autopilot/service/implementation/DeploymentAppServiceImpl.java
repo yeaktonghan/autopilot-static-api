@@ -390,7 +390,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     }
 
     @Override
-    public String deleteAppDeploymentById(Long id) throws MalformedURLException, JSchException, InterruptedException {
+    public String deleteAppDeploymentById(Long id) throws JSchException, IOException {
         // check if exist
         if (!(deploymentAppRepository.existsById(id.intValue()))){
             throw new NotFoundException("Deployment not found.", "Can not find this deployment in the database.");
@@ -411,12 +411,12 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String username = arrayPath[1].toLowerCase();
         System.out.println("Username: " + username);
         String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
-        System.out.println("Project Name: " + projectName);
+        System.out.println("Delete job 1");
 
         String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
 
         SSHUtil.sshExecCommandController("argocd app delete argocd/"+applicationName+" --cascade=true -y");
-
+        System.out.println("Delete job 2");
         // delete jenkins job
         try {
             Jenkins cli = new Jenkins();
@@ -426,6 +426,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Delete job 3");
 
         // delete from database
         deploymentAppRepository.deleteById(id.intValue());
@@ -434,6 +435,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (deploymentAppRepository.existsById(id.intValue())){
             throw new NotFoundException("Fail to delete deployment.", "Failing to delete this deployment from database.");
         }
+        System.out.println("Delete job 4");
         return "Delete deployment successfully.";
     }
 }
