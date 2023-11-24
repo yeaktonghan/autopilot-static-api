@@ -173,6 +173,16 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     }
 
     public String deploymentSpring(DeploymentAppRequest request) throws IOException, InterruptedException {
+        // check if build tools is maven or gradle
+        if  (!(request.getBuildTool().equalsIgnoreCase("maven") || request.getBuildTool().equalsIgnoreCase("gradle"))){
+            throw new BadRequestException("Incorrect build tool.", "Build tool should be 'maven' or 'gradle'");
+        }
+
+        // check if packaging is jar or war
+        if  (!(request.getBuildPackage().equalsIgnoreCase("jar") || request.getBuildPackage().equalsIgnoreCase("war"))){
+            throw new BadRequestException("Incorrect build package.", "Build package should be 'jar' or 'war'");
+        }
+
         // String repoName = "https://github.com/KSGA-Autopilot/" + request.getAppName() + "-cd" + ".git";
         URL url = new URL(request.getGitSrcUrl());
         String cdRepos = url.getPath();
