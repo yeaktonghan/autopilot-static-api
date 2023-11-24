@@ -269,6 +269,7 @@ public class GitUtil {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
+        String certName = dns.replaceAll("\\.",  "-") + "cert";
         // find template deployment file
         String certYaml = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/certificate.yaml");
         System.out.println(certYaml);
@@ -276,6 +277,7 @@ public class GitUtil {
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("dns-name", dns);
         replaceString.put("cert-namespace", nameSpace);
+        replaceString.put("tls-cert", certName);
         // replace string operation
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             certYaml = certYaml.replace(entry.getKey(), entry.getValue());
