@@ -43,7 +43,7 @@ public class SSHUtil {
         }
     }
 
-    public static void sshExecCommandController(String command) throws JSchException, InterruptedException {
+    public static void sshExecCommandController(String command) throws JSchException {
         // setup for ssh
         String username = "root";
         String hostname = "167.71.220.235";
@@ -68,6 +68,8 @@ public class SSHUtil {
 
             String responseString = responseStream.toString();
             System.out.println(responseString);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             if (session != null) {
                 session.disconnect();

@@ -16,6 +16,6 @@ public interface DeploymentAppRepository extends JpaRepository<DeploymentApp,Int
 
     DeploymentApp findByGitSrcUrl(String gitSrcUrl);
 
-    @Query(value = "select exists (select * from project_detail pd where project_id = (select project_id from deployment_app da where id = :id) and pd.user_id = :userId)", nativeQuery = false)
+    @Query(value = "select exists (select * from project_detail pd where project_id = (select project_id from deployment_app da where id = :id) and pd.user_id = :userId)", nativeQuery = true)
     boolean checkIfProjectExistForUser(@Param("id") Long id, @Param("userId") Long currentUserId);
 }
