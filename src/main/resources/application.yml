@@ -39,6 +39,3 @@ file:
 
 front:
   url: http://localhost:5173/email-sending?otp=
-
-server:
-  port: 9999
