@@ -77,7 +77,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         deploymentDb.setProject(project);
         deploymentDb.setPort("5433");
         deploymentDb.setDbType(request.getDbType());
-        deploymentDb.setIpAddress("178.128.48.96");
+        deploymentDb.setIpAddress("178.128.111.115");
         deploymentDb.setCreated_at(LocalDateTime.now());
         // DatabaseUtil.createPostgres(request.getName(),request.getUsername(),request.getPassword());
         try {
