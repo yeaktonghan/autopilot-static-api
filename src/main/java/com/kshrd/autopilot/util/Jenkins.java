@@ -123,8 +123,8 @@ public class Jenkins {
             String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
             String apiToken = "11b664636cbda38a9884b0f69241829bf1";
-            String toolType = "";
-            String build_tool = "npm";
+//            String toolType = "";
+//            String build_tool = "npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             String configXML = "";
             switch (builTool) {
