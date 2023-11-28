@@ -11,7 +11,7 @@ public class SSHUtil {
     public static void sshExecCommand(String command) throws JSchException, InterruptedException {
         // setup for ssh
         String username = "root";
-        String hostname = "178.128.48.96";
+        String hostname = "178.128.111.115";
         int port = 22;
         Session session = null;
         ChannelExec channel = null;
