@@ -1,0 +1,143 @@
+
+<flow-definition plugin="workflow-job@1360.vc6700e3136f5">
+    <actions>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2150.v4cfd8916915c"/>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2150.v4cfd8916915c">
+            <jobProperties/>
+            <triggers/>
+            <parameters/>
+            <options/>
+        </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+    </actions>
+    <description/>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <jenkins.model.BuildDiscarderProperty>
+            <strategy class="hudson.tasks.LogRotator">
+                <daysToKeep>-1</daysToKeep>
+                <numToKeep>-1</numToKeep>
+                <artifactDaysToKeep>-1</artifactDaysToKeep>
+                <artifactNumToKeep>-1</artifactNumToKeep>
+            </strategy>
+        </jenkins.model.BuildDiscarderProperty>
+        <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+            <triggers>
+                <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.37.3.1">
+                    <spec/>
+                </com.cloudbees.jenkins.GitHubPushTrigger>
+            </triggers>
+        </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+    </properties>
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3806.va_3a_6988277b_2">
+        <script>
+            pipeline {
+            agent {
+            node {
+            label 'worker1'
+            }
+            }
+            tools {
+            nodejs 'npm'
+            }
+            environment {
+            CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
+            }
+            stages {
+            stage('Clone Repository') {
+            steps {
+            script {
+            checkout([$class: 'GitSCM', branches: [
+            [name: 'var-branch']
+            ], doGenerateSubmoduleConfigurations: false, extensions: [
+            [$class: 'CleanBeforeCheckout']
+            ], userRemoteConfigs: [
+            [url: 'var-git_src_url']
+            ]])
+            }
+            }
+            }
+            stage('Add Dockerfile') {
+            steps {
+            script {
+            def dockerfileContent = """
+            FROM node:20.9.0
+
+            WORKDIR /app
+
+            COPY package.json .
+
+            RUN npm install
+
+            COPY . .
+
+            RUN npm run build
+
+            EXPOSE 5173
+
+            CMD [ "npm", "run", "preview"]
+            """
+            writeFile file: 'Dockerfile', text: dockerfileContent
+            }
+            }
+            }
+            stage('build to docker images') {
+            steps {
+            script {
+            sh 'docker build -t var-image:${CURRENT_DATETIME} .'
+            sh 'docker push var-image:${CURRENT_DATETIME}'
+            echo "build images successfully"
+            }
+            }
+            }
+            stage('go to repository'){
+
+            steps {
+            script {
+            // Clone the GitHub repository
+            checkout([$class: 'GitSCM',
+            branches: [[name: '*/main']],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: true]],
+            submoduleCfg: [],
+            userRemoteConfigs: [[url: "https://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@github.com/KSGA-Autopilot/${GITHUB_REPO}"]]])
+            }
+            }
+            }
+            stage('Modify File') {
+            steps {
+            script {
+            // Modify the content of the file
+            sh "sed -i 's+var-image.*+var-image:${CURRENT_DATETIME}+g' app/deployment.yaml"
+            sh "cat app/deployment.yaml"
+            }
+            }
+            }
+            stage('Commit and Push') {
+            steps {
+            script {
+            // Commit the changes
+            sh 'git add .'
+            sh 'git commit -m "Updated images version" || true'
+
+            // Push the changes back to GitHub
+            sh 'git push https://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@github.com/KSGA-Autopilot/${GITHUB_REPO} HEAD:main'
+            }
+            }
+            }
+            stage('Start argo application') {
+            steps {
+            sshagent(['ssh-keygen']) {
+            sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 "argocd login 167.71.220.235:31144 --username admin --password YOUR-PASSWORD-HERE --insecure"'
+            sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 kubectl create ns argo-namespace || true'
+            sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 argocd app create -f argo-application-yaml --upsert'
+            }
+            }
+            }
+            }
+            }
+        </script>
+        <sandbox>true</sandbox>
+    </definition>
+    <triggers/>
+    <disabled>false</disabled>
+</flow-definition>
