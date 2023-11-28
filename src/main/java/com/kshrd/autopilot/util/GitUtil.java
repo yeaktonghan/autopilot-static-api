@@ -196,6 +196,8 @@ public class GitUtil {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
+        String certName = domainName.replaceAll("\\.",  "-") + "cert";
+        System.out.println(certName);
         // find template deployment file
         String ingressYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/ingress.yaml");
         System.out.println(ingressYamlFile);
@@ -207,6 +209,7 @@ public class GitUtil {
         replaceString.put("i-path", path);
         replaceString.put("service-name", serviceName);
         replaceString.put("service-port", port);
+        replaceString.put("tls-cert",certName);
         // replace string operation
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             ingressYamlFile = ingressYamlFile.replace(entry.getKey(), entry.getValue());
@@ -270,6 +273,7 @@ public class GitUtil {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
         String certName = dns.replaceAll("\\.",  "-") + "cert";
+        System.out.println(certName);
         // find template deployment file
         String certYaml = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/certificate.yaml");
         System.out.println(certYaml);
