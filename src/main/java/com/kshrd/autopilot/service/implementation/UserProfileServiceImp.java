@@ -91,7 +91,7 @@ public class UserProfileServiceImp implements UserProfileService {
         Random random=new Random();
         int index=random.nextInt(imagePf.length);
         URL url = new URL(String.valueOf(request.getRequestURL()));
-        String baseUrl = url.getProtocol() + "://" + url.getHost() +":8080"+ "/";
+        String baseUrl = url.getProtocol() + "://" + url.getHost() + "/";
         user.setImageUrl(baseUrl + "api/v1/file/profile?filePf=" +imagePf[index]);
         return repository.save(user).toUserDto();
     }
