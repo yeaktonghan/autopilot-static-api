@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
             Random random=new Random();
             int index=random.nextInt(imagePf.length);
             URL url = new URL(String.valueOf(requestSer.getRequestURL()));
-            String baseUrl = url.getProtocol() + "://" + url.getHost()+":8080" +"/";
+            String baseUrl = url.getProtocol() + "://" + url.getHost()+"/";
             user.setEmail(request.getEmail());
            System.out.println(baseUrl);
             user.setImageUrl(baseUrl+ "api/v1/file/profile?filePf=" +imagePf[index]);
@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             ConfirmationEmail confirmationEmail = new ConfirmationEmail(user);
             confirmationEmailRepository.save(confirmationEmail);
-            String appUrl = "http://localhost:5173/signin?token=" + confirmationEmail.getConfirmationToken();
+            String appUrl = "https://auto-pilot.dev/signin?token=" + confirmationEmail.getConfirmationToken();
             emailService.confirmEmail(request.getEmail(), appUrl);
         }
 
