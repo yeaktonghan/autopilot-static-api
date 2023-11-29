@@ -248,4 +248,30 @@ public class Jenkins {
             e.printStackTrace();
         }
     }
+
+    public void backupMySqlDatabase(Long projectId, String password, String databaseName) {
+        try {
+            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+            String username = "kshrd";
+            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
+            JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
+            String postgresDatabasePipeline = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/DatabaseJenkinsPipeline/mysql-backup-pipeline.xml");
+            System.out.println(postgresDatabasePipeline);
+            Map<String, String> replaceString = new HashMap<>();
+            replaceString.put("docker-ps-name", projectId + databaseName);
+            replaceString.put("database-name", databaseName);
+            replaceString.put("database-password", password);
+            replaceString.put("new-database-location", projectId + databaseName);
+            replaceString.put("db-name", databaseName);
+            // replace string operation
+            for (Map.Entry<String, String> entry : replaceString.entrySet()) {
+                postgresDatabasePipeline = postgresDatabasePipeline.replace(entry.getKey(), entry.getValue());
+            }
+            System.out.println("Job config xml");
+            jenkins.createJob(projectId + databaseName + "-backup", postgresDatabasePipeline);
+            System.out.println("End job create");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

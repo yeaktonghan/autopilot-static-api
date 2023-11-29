@@ -5,7 +5,6 @@ import com.kshrd.autopilot.entities.dto.DeploymentAppDto;
 import com.kshrd.autopilot.entities.request.DeploymentAppRequest;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
 
 public interface DeploymentAppService {

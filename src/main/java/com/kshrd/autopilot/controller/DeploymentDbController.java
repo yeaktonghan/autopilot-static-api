@@ -33,8 +33,7 @@ public class DeploymentDbController {
         return ResponseEntity.ok(response);
     }
     @GetMapping("/database/project/{id}")
-    public ResponseEntity<?> createDatabase(@PathVariable("id") Long projectId) {
-
+    public ResponseEntity<?> getDatabase(@PathVariable("id") Long projectId) {
         AutoPilotResponse<?> response = AutoPilotResponse.builder()
                 .success(true)
                 .message("Get all Database deployments successfully")

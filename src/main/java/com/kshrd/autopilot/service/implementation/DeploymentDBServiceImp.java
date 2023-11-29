@@ -145,6 +145,11 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
             }
             case "mysql" -> {
                 request.setUsername("root");
+                databaseImage = "mysql:8.0.35-debian";
+                databasePath = "/var/lib/mysql";
+                databasePort = "3306";
+                request.setUsername("root");
+                sshRequest = "docker run -d -p " + lastPort + ":" + databasePort + " --restart always --name=" + request.getProject_id().toString() + request.getDbName() + " -e MYSQL_DATABASE=" + request.getDbName() + " -e MYSQL_ROOT_PASSWORD=" + request.getPassword() + " -v " + request.getProject_id() + request.getDbName() + ":" + databasePath + " " + databaseImage;
             }
             default ->
                     throw new BadRequestException("Database type not supported.", "Supported database are 'postgres', and 'mysql'");
@@ -154,12 +159,25 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         SSHUtil.sshExecCommand(sshRequest);
 
         // create jenkins job to backup database
-        try {
-            Jenkins jenkins = new Jenkins();
-            jenkins.backupPostgresDatabase(request.getProject_id(), lastPort, request.getDbName());
-        } catch (Exception e) {
-            throw new RuntimeException();
+        switch (request.getDbType()) {
+            case "postgres" -> {
+                try {
+                    Jenkins jenkins = new Jenkins();
+                    jenkins.backupPostgresDatabase(request.getProject_id(), lastPort, request.getDbName());
+                } catch (Exception e) {
+                    throw new RuntimeException();
+                }
+            }
+            case "mysql" -> {
+                try {
+                    Jenkins jenkins = new Jenkins();
+                    jenkins.backupMySqlDatabase(request.getProject_id(), request.getPassword(), request.getDbName());
+                } catch (Exception e) {
+                    throw new RuntimeException();
+                }
+            }
         }
+
         String jobName = request.getProject_id() + request.getDbName() + "-backup";
         if (HttpUtil.buildJob(jobName) != 201) {
             throw new BadRequestException("Fail to build job", "Job have not been build successfully.");
@@ -209,12 +227,9 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         // setup for ssh
         String request = null;
         switch (deploymentDb.getDbType()) {
-            case "postgres" -> {
+            case "postgres", "mysql" -> {
                 request = "docker rm " + deploymentDb.getProject().getId().toString() + deploymentDb.getDbName() + " -f";
             }
-//            case "mysql" -> {
-//                request.setUsername("root");
-//            }
             default ->
                     throw new BadRequestException("Database type not supported.", "Supported database are 'postgres', and 'mysql'");
         }
