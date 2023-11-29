@@ -161,6 +161,13 @@ public class ProjectServiceImpl implements ProjectService {
         }
         project.get().setProjectPf(url);
         projectRepository.save(project.get());
+        List<UserDto> userDtos = new ArrayList<>();
+        List<ProjectDetails> projectDetailsList = projectDetailRepository.findAllByProject(project.get());
+        //System.out.println(projectDetailsList);
+        for (ProjectDetails member : projectDetailsList) {
+            userDtos.add(member.getUser().toUserDto());
+        }
+        project.get().toProjectDto().setMembers(userDtos);
         return project.get().toProjectDto();
     }
 
