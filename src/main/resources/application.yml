@@ -38,4 +38,4 @@ file:
   uploadPath: src/main/resources/images/
 
 front:
-  url: https://auto-pilot.dev/email-sending?otp=
+  url: http://localhost:5173/email-sending?otp=

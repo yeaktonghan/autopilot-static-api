@@ -94,17 +94,17 @@ public class UserServiceImpl implements UserService {
             Random random=new Random();
             int index=random.nextInt(imagePf.length);
             URL url = new URL(String.valueOf(requestSer.getRequestURL()));
-            String baseUrl = url.getProtocol() + "://" + url.getHost() + "/";
+            String baseUrl = url.getProtocol() + "://" + url.getHost()+":8080" +"/";
             user.setEmail(request.getEmail());
-           // System.out.println(requestSer.getRequestURL());
-            user.setImageUrl(baseUrl + "api/v1/file/profile?filePf=" +imagePf[index]);
+           System.out.println(baseUrl);
+            user.setImageUrl(baseUrl+ "api/v1/file/profile?filePf=" +imagePf[index]);
             user.setUsername(request.getUsername());
             user.setFull_name(request.getUsername());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(user);
             ConfirmationEmail confirmationEmail = new ConfirmationEmail(user);
             confirmationEmailRepository.save(confirmationEmail);
-            String appUrl = "https://auto-pilot.dev/signin?token=" + confirmationEmail.getConfirmationToken();
+            String appUrl = "http://localhost:5173/signin?token=" + confirmationEmail.getConfirmationToken();
             emailService.confirmEmail(request.getEmail(), appUrl);
         }
 
