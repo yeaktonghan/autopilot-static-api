@@ -122,7 +122,7 @@ pipeline {
                 stage('Start argo application') {
                     steps {
                         sshagent(['ssh-keygen']) {
-                             sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 "argocd login 167.71.220.235:31144 --username admin --password YOUR-PASSWORD-HERE --insecure"'
+                             sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 "argocd login 167.71.220.235:31142 --username admin --password YOUR-PASSWORD-HERE --insecure"'
                                 sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 kubectl create ns argo-namespace || true'
                         sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 argocd app create -f argo-application-yaml --upsert'
                         }
