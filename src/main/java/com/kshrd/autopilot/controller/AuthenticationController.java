@@ -26,6 +26,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.MalformedURLException;
 import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
@@ -96,7 +97,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AutoPilotResponse<UserDto>> registration(@Valid @RequestBody AuthenticationRequest request,HttpServletRequest httpServletRequest) throws MessagingException {
+    public ResponseEntity<AutoPilotResponse<UserDto>> registration(@Valid @RequestBody AuthenticationRequest request,HttpServletRequest httpServletRequest) throws MessagingException, MalformedURLException {
         UserDto userDto = service.registration(request,httpServletRequest);
         AutoPilotResponse<UserDto> response = AutoPilotResponse.<UserDto>builder()
                 .message("Your registration was successfully")

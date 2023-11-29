@@ -55,7 +55,7 @@ public class Jenkins {
 
     }
 
-    public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace,String port,String tool, String buildPackage) {
+    public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace, String port, String tool, String buildPackage) {
         try {
             String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
@@ -108,25 +108,34 @@ public class Jenkins {
             replacement.put("argo-namespace", namespace);
             replacement.put("argo-application-yaml", "https://raw.githubusercontent.com/KSGA-Autopilot/" + cdRepos + "/main/application.yaml");
             String jobConfig = FileUtil.replaceText(file, replacement);
-          //  StringEntity entity=new StringEntity(jobConfig, ContentType.APPLICATION_XML);
+            //  StringEntity entity=new StringEntity(jobConfig, ContentType.APPLICATION_XML);
             //   System.out.println(jobConfig);
             //String jobName = project_name + UUID.randomUUID().toString().substring(0, 4);
-            String createJobUrl = "/createItem?name="+jobName;
+            String createJobUrl = "/createItem?name=" + jobName;
             jenkins.post_xml(createJobUrl, jobConfig);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace) {
+    public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace, String builTool) {
         try {
             String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
             String username = "kshrd";
             String apiToken = "11b664636cbda38a9884b0f69241829bf1";
-            String toolType = "";
-            String build_tool = "npm";
+//            String toolType = "";
+//            String build_tool = "npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
-            String configXML = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/react/react-npm.pipeline.xml");
+            String configXML = "";
+            switch (builTool) {
+                case "npm":
+                    configXML = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/react/react-npm.pipeline.xml");
+                    break;
+                case "vite":
+                    configXML = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/react/react-vite.pipeline.xml");
+                    break;
+            }
+
             System.out.println(configXML);
             Map<String, String> replaceString = new HashMap<>();
             replaceString.put("var-git_src_url", customerRepository);
@@ -166,7 +175,7 @@ public class Jenkins {
                 postgresDatabasePipeline = postgresDatabasePipeline.replace(entry.getKey(), entry.getValue());
             }
             System.out.println("Job config xml");
-            jenkins.createJob(projectId+databaseName+"-backup", postgresDatabasePipeline);
+            jenkins.createJob(projectId + databaseName + "-backup", postgresDatabasePipeline);
             System.out.println("End job create");
         } catch (Exception e) {
             e.printStackTrace();
@@ -182,7 +191,7 @@ public class Jenkins {
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             JobWithDetails jobWithDetails = jenkins.getJob(jobname);
             if (jobWithDetails != null) {
-                int buildNumber=jobWithDetails.getLastBuild().getNumber();
+                int buildNumber = jobWithDetails.getLastBuild().getNumber();
                 Build build = jobWithDetails.getBuildByNumber(buildNumber);
                 if (build != null) {
                     BuildWithDetails buildWithDetails = build.details();
@@ -201,6 +210,7 @@ public class Jenkins {
         }
         return consoleLog;
     }
+
     public static void deleteJob(String jobName) throws URISyntaxException, IOException {
         String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
         String username = "kshrd";

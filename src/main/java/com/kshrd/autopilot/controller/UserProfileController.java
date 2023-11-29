@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.net.MalformedURLException;
+
 @RestController
 @RequestMapping("api/v1/user")
 @SecurityRequirement(name = "auth")
@@ -58,7 +60,7 @@ public class UserProfileController {
         return ResponseEntity.ok(response);
     }
     @PutMapping("/changeProfile/remove")
-    public ResponseEntity<?>removeProfileImage(HttpServletRequest request){
+    public ResponseEntity<?>removeProfileImage(HttpServletRequest request) throws MalformedURLException {
         AutoPilotResponse<?> response=AutoPilotResponse.
                 builder()
                 .message("Your profile image has been removed")

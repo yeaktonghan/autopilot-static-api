@@ -27,6 +27,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -77,7 +79,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto registration(AuthenticationRequest request, HttpServletRequest requestSer) throws MessagingException {
+    public UserDto registration(AuthenticationRequest request, HttpServletRequest requestSer) throws MessagingException, MalformedURLException {
         if (userRepository.findByUsername(request.getUsername()) != null) {
             throw new BadRequestException("Username is token", "That Username is taken. Try another");
         } else if (userRepository.findUsersByEmail(request.getEmail()) != null) {
@@ -91,15 +93,18 @@ public class UserServiceImpl implements UserService {
             };
             Random random=new Random();
             int index=random.nextInt(imagePf.length);
+            URL url = new URL(String.valueOf(requestSer.getRequestURL()));
+            String baseUrl = url.getProtocol() + "://" + url.getHost() + "/";
             user.setEmail(request.getEmail());
-            user.setImageUrl(String.valueOf(requestSer.getRequestURL()).substring(0, 22) + "api/v1/file/profile?filePf=" +imagePf[index]);
+           // System.out.println(requestSer.getRequestURL());
+            user.setImageUrl(baseUrl + "api/v1/file/profile?filePf=" +imagePf[index]);
             user.setUsername(request.getUsername());
             user.setFull_name(request.getUsername());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(user);
             ConfirmationEmail confirmationEmail = new ConfirmationEmail(user);
             confirmationEmailRepository.save(confirmationEmail);
-            String appUrl = "http://localhost:5173/signin?token=" + confirmationEmail.getConfirmationToken();
+            String appUrl = "https://auto-pilot.dev/signin?token=" + confirmationEmail.getConfirmationToken();
             emailService.confirmEmail(request.getEmail(), appUrl);
         }
 

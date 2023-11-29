@@ -9,9 +9,11 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.net.MalformedURLException;
+
 public interface UserService extends UserDetailsService {
     UserDto getUserByUsername(String username);
-    UserDto registration(AuthenticationRequest request,HttpServletRequest requestSer) throws MessagingException;
+    UserDto registration(AuthenticationRequest request,HttpServletRequest requestSer) throws MessagingException, MalformedURLException;
     UserDto confirmEmail(String token);
     void sendOTP(String username, HttpServletRequest request) throws MessagingException;
     UserDto verifyOTP(Integer otp);

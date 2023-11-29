@@ -77,7 +77,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         deploymentDb.setProject(project);
         deploymentDb.setPort("5433");
         deploymentDb.setDbType(request.getDbType());
-        deploymentDb.setIpAddress("178.128.48.96");
+        deploymentDb.setIpAddress("178.128.111.115");
         deploymentDb.setCreated_at(LocalDateTime.now());
         // DatabaseUtil.createPostgres(request.getName(),request.getUsername(),request.getPassword());
         try {
@@ -174,7 +174,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
         deploymentDb.setDbName(request.getDbName());
         deploymentDb.setDbPassword(request.getPassword());
         deploymentDb.setProject(projectRepository.findById(request.getProject_id()).get());
-        deploymentDb.setIpAddress("178.128.48.96");
+        deploymentDb.setIpAddress("178.128.111.115");
         repository.save(deploymentDb);
         return repository.findDeploymentDbByPort(lastPort.toString()).toDeploymentDBDto();
     }

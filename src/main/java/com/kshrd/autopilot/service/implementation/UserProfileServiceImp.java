@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -78,7 +80,7 @@ public class UserProfileServiceImp implements UserProfileService {
     }
 
     @Override
-    public UserDto removeProfileImage(HttpServletRequest request) {
+    public UserDto removeProfileImage(HttpServletRequest request) throws MalformedURLException {
         String email=CurrentUserUtil.getEmail();
         User user=repository.findUsersByEmail(email);
         String imagePf[] = {
@@ -88,7 +90,9 @@ public class UserProfileServiceImp implements UserProfileService {
         };
         Random random=new Random();
         int index=random.nextInt(imagePf.length);
-        user.setImageUrl(String.valueOf(request.getRequestURL()).substring(0, 22) + "api/v1/file/profile?filePf=" +imagePf[index]);
+        URL url = new URL(String.valueOf(request.getRequestURL()));
+        String baseUrl = url.getProtocol() + "://" + url.getHost() + "/";
+        user.setImageUrl(baseUrl + "api/v1/file/profile?filePf=" +imagePf[index]);
         return repository.save(user).toUserDto();
     }
 
