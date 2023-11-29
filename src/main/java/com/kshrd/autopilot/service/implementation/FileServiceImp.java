@@ -35,7 +35,7 @@ public class FileServiceImp implements FileService {
         obj.setFileType(file.getContentType());
         obj.setSize(file.getSize());
         URL url = new URL(String.valueOf(request.getRequestURL()));
-        String baseUrl = url.getProtocol() + "://" + url.getHost()+":8080"+ "/";
+        String baseUrl = url.getProtocol() + "://" + url.getHost()+ "/";
         obj.setFileUrl(baseUrl+"api/v1/file?file="+obj.getFileName());
         String uploadPath = fileStorageProperties.getUploadPath();
         Path directoryPath = Paths.get(uploadPath).toAbsolutePath().normalize();
