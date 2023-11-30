@@ -221,71 +221,11 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
             GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
-//            GitUtil.createArgoApp(cdRepos, appName, username);
 //            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
 
-            // create certificate
-            // check if user have domain name
-            String tempFileName = UUID.randomUUID() + "temp-certificate.yaml";
-            if (request.getDomain() == null) {
-                List<String> subdomainList = subDomainRepository.findAllByIsTakenFalse().stream().map(SubDomain::getSubdomain).toList();
-                System.out.println("Subdomain: " + subdomainList);
-                String subdomain = subdomainList.get(0);
-                subDomainRepository.setIsTakenToTrue(subdomain);
-                String certName = subdomain.replaceAll("\\.", "-") + "-cert";
-                if (subDomainRepository.checkIfSubDomainIsValidated(subdomain)) {
-                    // if false create certificate for default namespace then copy certificate to this user's namespace
+            //create certificate
+            createCertificate(request);
 
-                    String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml temp-certificate.yaml && sed -i 's/cert-here/" + certName + "/g' temp-certificate.yaml && sed -i 's/dns-here/" + subdomain + "/g' temp-certificate.yaml && kubectl apply -f temp-certificate.yaml && rm\n" +
-                            "temp-certificate.yaml";
-                    SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                    subDomainRepository.setIsValidatedToTrue(subdomain);
-                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                    // update database to true
-                } else {
-                    // if true copy certificate to this user's namespace
-                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                }
-            } else {
-                String certName = request.getDomain().replaceAll("\\.", "-") + "-cert";
-                // check user's subdomain is in database or not
-                if (subDomainRepository.checkIfExist(request.getDomain())) {
-                    if (subDomainRepository.checkIfSubDomainIsValidated(request.getDomain())) {
-                        // if false create certificate for default namespace then copy certificate to this user's namespace
-
-                        String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml temp-certificate.yaml && sed -i 's/cert-here/" + certName + "/g' temp-certificate.yaml && sed -i 's/dns-here/" + request.getDomain() + "/g' temp-certificate.yaml && kubectl apply -f temp-certificate.yaml && rm\n" +
-                                "temp-certificate.yaml";
-                        SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                        subDomainRepository.setIsValidatedToTrue(request.getDomain());
-                        String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                                "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                        SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                        // update database to true
-                    } else {
-                        // if true copy certificate to this user's namespace
-                        String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                                "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                        SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                    }
-                } else {
-                    SubDomain subDomain = new SubDomain();
-                    subDomain.setSubdomain(request.getDomain());
-                    subDomain.setIsCustomerDomain(true);
-                    subDomain.setIsTaken(true);
-                    subDomainRepository.save(subDomain);
-                    String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml temp-certificate.yaml && sed -i 's/cert-here/" + certName + "/g' temp-certificate.yaml && sed -i 's/dns-here/" + request.getDomain() + "/g' temp-certificate.yaml && kubectl apply -f temp-certificate.yaml && rm\n" +
-                            "temp-certificate.yaml";
-                    SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                    subDomainRepository.setIsValidatedToTrue(request.getDomain());
-                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                }
-            }
             // create jenkins job
             cli.createSpringJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getProjectPort().toString(), request.getBuildTool().toLowerCase(), request.getBuildPackage().toLowerCase());
         } catch (Exception e) {
@@ -369,67 +309,8 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create certificate for namespace
 //            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
 
-            // Create certificate
-            // check if user have domain name
-            if (request.getDomain() == null) {
-                List<String> subdomainList = subDomainRepository.findAllByIsTakenFalse().stream().map(SubDomain::getSubdomain).toList();
-                System.out.println("Subdomain: " + subdomainList);
-                String subdomain = subdomainList.get(0);
-                subDomainRepository.setIsTakenToTrue(subdomain);
-                String certName = subdomain.replaceAll("\\.", "-") + "-cert";
-                if (subDomainRepository.checkIfSubDomainIsValidated(subdomain)) {
-                    // if false create certificate for default namespace then copy certificate to this user's namespace
-
-                    String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml temp-certificate.yaml && sed -i 's/cert-here/" + certName + "/g' temp-certificate.yaml && sed -i 's/dns-here/" + subdomain + "/g' temp-certificate.yaml && kubectl apply -f temp-certificate.yaml && rm\n" +
-                            "temp-certificate.yaml";
-                    SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                    subDomainRepository.setIsValidatedToTrue(subdomain);
-                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                    // update database to true
-                } else {
-                    // if true copy certificate to this user's namespace
-                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                }
-            } else {
-                String certName = request.getDomain().replaceAll("\\.", "-") + "-cert";
-                // check user's subdomain is in database or not
-                if (subDomainRepository.checkIfExist(request.getDomain())) {
-                    if (subDomainRepository.checkIfSubDomainIsValidated(request.getDomain())) {
-                        // if false create certificate for default namespace then copy certificate to this user's namespace
-
-                        String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml temp-certificate.yaml && sed -i 's/cert-here/" + certName + "/g' temp-certificate.yaml && sed -i 's/dns-here/" + request.getDomain() + "/g' temp-certificate.yaml && kubectl apply -f temp-certificate.yaml && rm\n" +
-                                "temp-certificate.yaml";
-                        SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                        subDomainRepository.setIsValidatedToTrue(request.getDomain());
-                        String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                                "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                        SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                        // update database to true
-                    } else {
-                        // if true copy certificate to this user's namespace
-                        String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                                "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                        SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                    }
-                } else {
-                    SubDomain subDomain = new SubDomain();
-                    subDomain.setSubdomain(request.getDomain());
-                    subDomain.setIsCustomerDomain(true);
-                    subDomain.setIsTaken(true);
-                    subDomainRepository.save(subDomain);
-                    String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml temp-certificate.yaml && sed -i 's/cert-here/" + certName + "/g' temp-certificate.yaml && sed -i 's/dns-here/" + request.getDomain() + "/g' temp-certificate.yaml && kubectl apply -f temp-certificate.yaml && rm\n" +
-                            "temp-certificate.yaml";
-                    SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                    subDomainRepository.setIsValidatedToTrue(request.getDomain());
-                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                }
-            }
+            //create certificate
+            createCertificate(request);
 
             // create jenkins job
             cli.createReactJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getBuildTool());
@@ -503,64 +384,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 //            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
 
             //create certificate
-            // check if user have domain name
-            String tempFileName = UUID.randomUUID() + "temp-certificate.yaml";
-            if (request.getDomain() == null) {
-                List<String> subdomainList = subDomainRepository.findAllByIsTakenFalse().stream().map(SubDomain::getSubdomain).toList();
-                System.out.println("Subdomain: " + subdomainList);
-                String subdomain = subdomainList.get(0);
-                subDomainRepository.setIsTakenToTrue(subdomain);
-                String certName = subdomain.replaceAll("\\.", "-") + "-cert";
-                if (subDomainRepository.checkIfSubDomainIsValidated(subdomain)) {
-                    // if false create certificate for default namespace then copy certificate to this user's namespace
-
-                    String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + subdomain + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
-                    SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                    subDomainRepository.setIsValidatedToTrue(subdomain);
-                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                    // update database to true
-                } else {
-                    // if true copy certificate to this user's namespace
-                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                }
-            } else {
-                String certName = request.getDomain().replaceAll("\\.", "-") + "-cert";
-                // check user's subdomain is in database or not
-                if (subDomainRepository.checkIfExist(request.getDomain())) {
-                    if (subDomainRepository.checkIfSubDomainIsValidated(request.getDomain())) {
-                        // if false create certificate for default namespace then copy certificate to this user's namespace
-
-                        String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml "+tempFileName+" && sed -i 's/cert-here/" + certName + "/g' "+tempFileName+" && sed -i 's/dns-here/" + request.getDomain() + "/g' "+tempFileName+" && kubectl apply -f "+tempFileName+" && rm " + tempFileName;
-                        SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                        subDomainRepository.setIsValidatedToTrue(request.getDomain());
-                        String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                                "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                        SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                        // update database to true
-                    } else {
-                        // if true copy certificate to this user's namespace
-                        String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                                "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                        SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                    }
-                } else {
-                    SubDomain subDomain = new SubDomain();
-                    subDomain.setSubdomain(request.getDomain());
-                    subDomain.setIsCustomerDomain(true);
-                    subDomain.setIsTaken(true);
-                    subDomainRepository.save(subDomain);
-                    String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml "+tempFileName+" && sed -i 's/cert-here/" + certName + "/g' "+tempFileName+" && sed -i 's/dns-here/" + request.getDomain() + "/g' "+tempFileName+" && kubectl apply -f "+tempFileName+" && rm " + tempFileName;
-                    SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                    subDomainRepository.setIsValidatedToTrue(request.getDomain());
-                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
-                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
-                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                }
-            }
+            createCertificate(request);
 
             // create jenkins job
             cli.createFlaskJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace);
@@ -630,5 +454,77 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         }
         System.out.println("Delete job 4");
         return "Delete deployment successfully.";
+    }
+
+    private void createCertificate(DeploymentAppRequest request) throws IOException, InterruptedException, JSchException {
+        URL url = new URL(request.getGitSrcUrl());
+        String cdRepos = url.getPath();
+        String[] arrayPath = cdRepos.split("/");
+        String username = arrayPath[1].toLowerCase();
+        System.out.println("Username: " + username);
+        String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
+        System.out.println("Project Name: " + projectName);
+
+        String namespace = username.toLowerCase().replaceAll("_", "");
+        String tempFileName = UUID.randomUUID() + "temp-certificate.yaml";
+        // if user don't have domain name
+        if (request.getDomain() == null) {
+            List<String> subdomainList = subDomainRepository.findAllByIsTakenFalse().stream().map(SubDomain::getSubdomain).toList();
+            if (subdomainList.isEmpty()) {
+                throw new ConflictException("Run out of free subdomain", "We have run out of free subdomain. Please come back later or create or own domain.");
+            }
+            System.out.println("Subdomain: " + subdomainList);
+            String subdomain = subdomainList.get(0);
+            subDomainRepository.setIsTakenToTrue(subdomain);
+            String certName = subdomain.replaceAll("\\.", "-") + "-cert";
+            if (!(subDomainRepository.checkIfSubDomainIsValidated(subdomain))) {
+                // if false create certificate for default namespace then copy certificate to this user's namespace
+
+                String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + subdomain + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
+                SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
+                subDomainRepository.setIsValidatedToTrue(subdomain);
+                String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
+                        "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+            } else {
+                // if true copy certificate to this user's namespace
+                String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
+                        "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+            }
+        } else { // user have their own domain name
+            String certName = request.getDomain().replaceAll("\\.", "-") + "-cert";
+            // check user's subdomain is in database or not
+            if (subDomainRepository.checkIfExist(request.getDomain())) {
+                if (subDomainRepository.checkIfSubDomainIsValidated(request.getDomain())) {
+                    // if false create certificate for default namespace then copy certificate to this user's namespace
+
+                    String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + request.getDomain() + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
+                    SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
+                    subDomainRepository.setIsValidatedToTrue(request.getDomain());
+                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
+                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+                    // update database to true
+                } else {
+                    // if true copy certificate to this user's namespace
+                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
+                            "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+                }
+            } else {
+                SubDomain subDomain = new SubDomain();
+                subDomain.setSubdomain(request.getDomain());
+                subDomain.setIsCustomerDomain(true);
+                subDomain.setIsTaken(true);
+                subDomainRepository.save(subDomain);
+                String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + request.getDomain() + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
+                SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
+                subDomainRepository.setIsValidatedToTrue(request.getDomain());
+                String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed\n" +
+                        "'s/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+            }
+        }
     }
 }

@@ -196,7 +196,7 @@ public class GitUtil {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
-        String certName = domainName.replaceAll("\\.",  "-") + "cert";
+        String certName = domainName.replaceAll("\\.",  "-") + "-cert";
         System.out.println(certName);
         // find template deployment file
         String ingressYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/ingress.yaml");
