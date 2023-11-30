@@ -1,0 +1,56 @@
+<flow-definition plugin="workflow-job@1360.vc6700e3136f5">
+    <actions>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2150.v4cfd8916915c"/>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2150.v4cfd8916915c">
+            <jobProperties/>
+            <triggers/>
+            <parameters/>
+            <options/>
+        </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+    </actions>
+    <description/>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <jenkins.model.BuildDiscarderProperty>
+            <strategy class="hudson.tasks.LogRotator">
+                <daysToKeep>1</daysToKeep>
+                <numToKeep>5</numToKeep>
+                <artifactDaysToKeep>1</artifactDaysToKeep>
+                <artifactNumToKeep>5</artifactNumToKeep>
+            </strategy>
+        </jenkins.model.BuildDiscarderProperty>
+        <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+            <triggers>
+                <hudson.triggers.TimerTrigger>
+                    <spec>H 23 * * *</spec>
+                </hudson.triggers.TimerTrigger>
+            </triggers>
+        </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+    </properties>
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3806.va_3a_6988277b_2">
+        <script>
+            pipeline {
+            agent {
+            node{
+            label 'db-node'
+            }
+            }
+            environment{
+            CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
+            }
+            stages {
+            stage('Backup database') {
+            steps {
+            sh 'docker exec docker-ps-name /usr/bin/mysqldump -u root --password=database-password database-name > db-name${CURRENT_DATETIME}.sql'
+            sh 'mkdir -p /root/sftp/new-database-location/'
+            sh 'mv db-name${CURRENT_DATETIME}.sql /root/sftp/new-database-location/db-name${CURRENT_DATETIME}.sql'
+            }
+            }
+            }
+            }
+        </script>
+        <sandbox>true</sandbox>
+    </definition>
+    <triggers/>
+    <disabled>false</disabled>
+</flow-definition>

@@ -2,6 +2,8 @@ package com.kshrd.autopilot.service.implementation;
 
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.ProjectDetails;
+import com.kshrd.autopilot.entities.dto.DeploymentAppDto;
+import com.kshrd.autopilot.entities.dto.DeploymentDBDto;
 import com.kshrd.autopilot.entities.dto.ProjectDto;
 import com.kshrd.autopilot.entities.dto.UserDto;
 import com.kshrd.autopilot.entities.request.CreateTeamRequest;
@@ -10,6 +12,8 @@ import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.repository.ProjectDetailRepository;
 import com.kshrd.autopilot.repository.ProjectRepository;
 import com.kshrd.autopilot.repository.UserRepository;
+import com.kshrd.autopilot.service.DeploymentAppService;
+import com.kshrd.autopilot.service.DeploymentDBService;
 import com.kshrd.autopilot.service.ProjectService;
 import com.kshrd.autopilot.util.CurrentUserUtil;
 import com.kshrd.autopilot.util.ProjectCodeGenerator;
@@ -28,13 +32,19 @@ import java.util.Random;
 public class ProjectServiceImpl implements ProjectService {
     @Value("${error.url}")
     private String urlError;
+
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final DeploymentAppService deploymentAppService;
+    private final DeploymentDBService deploymentDBService;
     private final ProjectDetailRepository projectDetailRepository;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository, UserRepository userRepository, ProjectDetailRepository projectDetailRepository) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, UserRepository userRepository, DeploymentAppService deploymentAppService, DeploymentDBService deploymentDBService, ProjectDetailRepository projectDetailRepository) {
+
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
+        this.deploymentAppService = deploymentAppService;
+        this.deploymentDBService = deploymentDBService;
         this.projectDetailRepository = projectDetailRepository;
     }
 
@@ -54,25 +64,26 @@ public class ProjectServiceImpl implements ProjectService {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = new Project();
-        Project pro = projectRepository.findByName(request.getName());
-        ProjectDetails projectDetail = projectDetailRepository.findByUserAndProject(user, pro);
-        if (projectDetail != null) {
-            throw new AutoPilotException("Already Exist", HttpStatus.BAD_REQUEST, urlError, "Your project already exist!");
+        List<ProjectDetails> projectDetails=projectDetailRepository.findAllByUser(user);
+        for (ProjectDetails pjs:projectDetails) {
+            Project pj = projectRepository.findById(pjs.getProject().getId()).get();
+            if (pj.getName().equals(request.getName())) {
+                throw new AutoPilotException("Already Exist", HttpStatus.BAD_REQUEST, urlError, "Your project already exist!");
+            }
         }
         project.setName(request.getName());
         project.setProjectCode(code_team);
         project.setCreated_at(LocalDateTime.now());
         project.setColor(color);
         projectRepository.save(project);
-        ProjectDetails projectDetails = new ProjectDetails();
-        projectDetails.setProject(project);
-        projectDetails.setUser(user);
-        projectDetails.setIs_owner(true);
-        projectDetailRepository.save(projectDetails);
+        ProjectDetails projectDetail = new ProjectDetails();
+        projectDetail.setProject(project);
+        projectDetail.setUser(user);
+        projectDetail.setIs_owner(true);
+        projectDetailRepository.save(projectDetail);
         List<UserDto> userDtos = new ArrayList<>();
-        UserDto userDto = userRepository.findById(projectDetails.getUser().getId()).get().toUserDto();
+        UserDto userDto = userRepository.findById(projectDetail.getUser().getId()).get().toUserDto();
         userDtos.add(userDto);
-
         return project.toProjectDto(userDtos, true);
     }
 
@@ -163,12 +174,11 @@ public class ProjectServiceImpl implements ProjectService {
         projectRepository.save(project.get());
         List<UserDto> userDtos = new ArrayList<>();
         List<ProjectDetails> projectDetailsList = projectDetailRepository.findAllByProject(project.get());
-        //System.out.println(projectDetailsList);
         for (ProjectDetails member : projectDetailsList) {
             userDtos.add(member.getUser().toUserDto());
         }
         project.get().toProjectDto().setMembers(userDtos);
-        return project.get().toProjectDto();
+        return project.get().toProjectDto(userDtos,true);
     }
 
     @Override
@@ -181,6 +191,11 @@ public class ProjectServiceImpl implements ProjectService {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = projectRepository.findById(id).get();
+        List<DeploymentAppDto> deploymentAppDtos=deploymentAppService.getAllDeploymentApps(id);
+        List<DeploymentDBDto> deploymentDBDtos=deploymentDBService.getDeploymentDatabaseByProjectId(id);
+        if (deploymentDBDtos!=null||deploymentAppDtos!=null){
+            throw new AutoPilotException("Can not remove", HttpStatus.NOT_FOUND, urlError, "Your project has deploymentÏ");
+        }
         ProjectDetails projectDetails = projectDetailRepository.findByUserAndProject(user, project);
         if (projectDetails == null) {
             throw new AutoPilotException("Not found", HttpStatus.NOT_FOUND, urlError, "Project not found");
