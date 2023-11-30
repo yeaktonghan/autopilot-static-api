@@ -4,6 +4,7 @@ import com.jcraft.jsch.JSchException;
 import com.kshrd.autopilot.entities.DeploymentApp;
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.ProjectDetails;
+import com.kshrd.autopilot.entities.SubDomain;
 import com.kshrd.autopilot.entities.dto.DeploymentAppDto;
 import com.kshrd.autopilot.entities.request.DeploymentAppRequest;
 import com.kshrd.autopilot.entities.user.User;
@@ -11,26 +12,22 @@ import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.exception.BadRequestException;
 import com.kshrd.autopilot.exception.ConflictException;
 import com.kshrd.autopilot.exception.NotFoundException;
-import com.kshrd.autopilot.repository.DeploymentAppRepository;
-import com.kshrd.autopilot.repository.ProjectDetailRepository;
-import com.kshrd.autopilot.repository.ProjectRepository;
-import com.kshrd.autopilot.repository.UserRepository;
+import com.kshrd.autopilot.repository.*;
 import com.kshrd.autopilot.service.DeploymentAppService;
 import com.kshrd.autopilot.util.*;
-import com.offbytwo.jenkins.JenkinsServer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DeploymentAppServiceImpl implements DeploymentAppService {
@@ -40,14 +37,15 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
     private final ProjectRepository projectRepository;
     private final ProjectDetailRepository projectDetailRepository;
     private final UserRepository userRepository;
+    private final SubDomainRepository subDomainRepository;
 
 
-    public DeploymentAppServiceImpl(DeploymentAppRepository deploymentAppRepository, ProjectRepository projectRepository, ProjectDetailRepository projectDetailRepository, UserRepository userRepository) {
+    public DeploymentAppServiceImpl(DeploymentAppRepository deploymentAppRepository, ProjectRepository projectRepository, ProjectDetailRepository projectDetailRepository, UserRepository userRepository, SubDomainRepository subDomainRepository) {
         this.deploymentAppRepository = deploymentAppRepository;
         this.projectRepository = projectRepository;
-
         this.projectDetailRepository = projectDetailRepository;
         this.userRepository = userRepository;
+        this.subDomainRepository = subDomainRepository;
     }
 
     @Override
@@ -92,7 +90,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setToken(request.getToken());
         deploymentApp.setProjectPort(request.getProjectPort());
         deploymentApp.setPath(request.getPath());
-        //System.out.println("all request" + deploymentApp);
         deploymentApp.setDomain(request.getDomain());
 
 
@@ -118,7 +115,11 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             case "react" -> jobName = deployReactJs(request);
             case "flask" -> jobName = deployFlask(request);
         }
-        deploymentApp.setJobName(jobName);
+        String[] parts = jobName.split("splithere");
+        String jobNameSplit = parts[0];
+        String domain = parts[1];
+        deploymentApp.setDomain(domain);
+        deploymentApp.setJobName(jobNameSplit);
         deploymentAppRepository.save(deploymentApp);
         return deploymentApp.toDeploymentAppDto();
     }
@@ -146,7 +147,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (!deploymentApp.isPresent()) {
             throw new AutoPilotException("Not Found", HttpStatus.BAD_REQUEST, urlError, "Deployment is not found!");
         }
-        System.out.println(deploymentApp.get().getJobName());
         String result = HttpUtil.getLastBuildJob(deploymentApp.get().getJobName());
         if (result == "PENDING") {
             deploymentApp.get().setStatus(null);
@@ -174,12 +174,12 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
     public String deploymentSpring(DeploymentAppRequest request) throws IOException, InterruptedException {
         // check if build tools is maven or gradle
-        if  (!(request.getBuildTool().equalsIgnoreCase("maven") || request.getBuildTool().equalsIgnoreCase("gradle"))){
+        if (!(request.getBuildTool().equalsIgnoreCase("maven") || request.getBuildTool().equalsIgnoreCase("gradle"))) {
             throw new BadRequestException("Incorrect build tool.", "Build tool should be 'maven' or 'gradle'");
         }
 
         // check if packaging is jar or war
-        if  (!(request.getBuildPackage().equalsIgnoreCase("jar") || request.getBuildPackage().equalsIgnoreCase("war"))){
+        if (!(request.getBuildPackage().equalsIgnoreCase("jar") || request.getBuildPackage().equalsIgnoreCase("war"))) {
             throw new BadRequestException("Incorrect build package.", "Build package should be 'jar' or 'war'");
         }
 
@@ -188,12 +188,9 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String cdRepos = url.getPath();
         String[] arrayPath = cdRepos.split("/");
         String username = arrayPath[1].toLowerCase();
-        System.out.println("Username: " + username);
         String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
-        System.out.println("Project Name: " + projectName);
 
         String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
-        System.out.println("Application name: " + applicationName);
         cdRepos = applicationName + "-cd";
         String namespace = username.toLowerCase().replaceAll("_", "");
         String serviceName = applicationName + "-svc";
@@ -203,8 +200,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String ingressName = applicationName + "-ingress";
 
         String image = "kshrdautopilot/" + applicationName;
-        System.out.println("Image: " + image);
-        System.out.println("cd repos: " + cdRepos);
 
         String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
         // need to verify here
@@ -214,6 +209,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             throw new BadRequestException("Unable to create.", "Enable to create git repository." + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
+        String domain = null;
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -223,10 +219,11 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create service file
             GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
-            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
-//            GitUtil.createArgoApp(cdRepos, appName, username);
-            // create certificate for namespace
-            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+            domain = createCertificate(request);
+
+            // create ingress file
+            GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
+
             // create jenkins job
             cli.createSpringJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getProjectPort().toString(), request.getBuildTool().toLowerCase(), request.getBuildPackage().toLowerCase());
         } catch (Exception e) {
@@ -254,7 +251,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // create cd repos
         // create deployment
         // create service
-        return jobName;
+        return jobName + "splithere" + domain;
     }
 
     public String deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
@@ -263,12 +260,8 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String cdRepos = url.getPath();
         String[] arrayPath = cdRepos.split("/");
         String username = arrayPath[1].toLowerCase();
-        System.out.println("Username: " + username);
         String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
-        System.out.println("Project Name: " + projectName);
-
         String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
-        System.out.println("Application name: " + applicationName);
         cdRepos = applicationName + "-cd";
         String namespace = username.toLowerCase().replaceAll("_", "");
         String serviceName = applicationName + "-svc";
@@ -285,17 +278,15 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         }
 
         String image = "kshrdautopilot/" + applicationName;
-        System.out.println("Image: " + image);
-        System.out.println("cd repos: " + cdRepos);
 
         String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
         // need to verify here
         int cdResponse = GitUtil.createGitRepos(cdRepos);
-
         if (cdResponse != 201) {
             throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
+        String domain = null;
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -304,13 +295,18 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             GitUtil.createSpringDeployment(cdRepos, deploymentName, deploymentLabel, 2, containerName, image, request.getProjectPort());
             // create service file
             GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
-            // create ingress file
-            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
+
 //            GitUtil.createArgoApp(cdRepos, appName, username);
             // create certificate for namespace
-            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+//            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+
+            //create certificate
+            domain = createCertificate(request);
+
+            // create ingress file
+            GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
             // create jenkins job
-            cli.createReactJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace,request.getBuildTool());
+            cli.createReactJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getBuildTool());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -326,7 +322,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-        return jobName;
+        return jobName + "splithere" + domain;
     }
 
     private String deployFlask(DeploymentAppRequest request) throws IOException, InterruptedException {
@@ -335,12 +331,9 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String cdRepos = url.getPath();
         String[] arrayPath = cdRepos.split("/");
         String username = arrayPath[1].toLowerCase();
-        System.out.println("Username: " + username);
         String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
-        System.out.println("Project Name: " + projectName);
 
         String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
-        System.out.println("Application name: " + applicationName);
         cdRepos = applicationName + "-cd";
         String namespace = username.toLowerCase().replaceAll("_", "");
         String serviceName = applicationName + "-svc";
@@ -355,8 +348,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         }
 
         String image = "kshrdautopilot/" + applicationName;
-        System.out.println("Image: " + image);
-        System.out.println("cd repos: " + cdRepos);
 
         String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
         // need to verify here
@@ -366,6 +357,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
+        String domain = null;
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -375,10 +367,11 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create service file
             GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
-            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
-//            GitUtil.createArgoApp(cdRepos, appName, username);
-            // create certificate for namespace
-            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+            domain = createCertificate(request);
+
+            // create ingress file
+            GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
+
             // create jenkins job
             cli.createFlaskJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace);
         } catch (Exception e) {
@@ -396,13 +389,13 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-        return jobName;
+        return jobName + "splithere" + domain;
     }
 
     @Override
     public String deleteAppDeploymentById(Long id) throws JSchException, IOException {
         // check if exist
-        if (!(deploymentAppRepository.existsById(id.intValue()))){
+        if (!(deploymentAppRepository.existsById(id.intValue()))) {
             throw new NotFoundException("Deployment not found.", "Can not find this deployment in the database.");
         }
 
@@ -418,14 +411,11 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String cdRepos = url.getPath();
         String[] arrayPath = cdRepos.split("/");
         String username = arrayPath[1].toLowerCase();
-        System.out.println("Username: " + username);
         String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
-        System.out.println("Delete job 1");
 
         String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
 
-        SSHUtil.sshExecCommandController("argocd app delete argocd/"+applicationName+" --cascade=true -y");
-        System.out.println("Delete job 2");
+        SSHUtil.sshExecCommandController("argocd app delete argocd/" + applicationName + " --cascade=true -y");
         // delete jenkins job
         try {
             Jenkins cli = new Jenkins();
@@ -435,16 +425,109 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Delete job 3");
 
         // delete from database
         deploymentAppRepository.deleteById(id.intValue());
 
         // check if still exist;
-        if (deploymentAppRepository.existsById(id.intValue())){
+        if (deploymentAppRepository.existsById(id.intValue())) {
             throw new NotFoundException("Fail to delete deployment.", "Failing to delete this deployment from database.");
         }
-        System.out.println("Delete job 4");
+        SubDomain setTrue = subDomainRepository.findBySubdomain(deploymentApp.getDomain());
+        setTrue.setIsTaken(false);
+        subDomainRepository.save(setTrue);
         return "Delete deployment successfully.";
+    }
+
+    private String createCertificate(DeploymentAppRequest request) throws IOException, InterruptedException, JSchException {
+        URL url = new URL(request.getGitSrcUrl());
+        String cdRepos = url.getPath();
+        String[] arrayPath = cdRepos.split("/");
+        String username = arrayPath[1].toLowerCase();
+        String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
+
+        String namespace = username.toLowerCase().replaceAll("_", "");
+        String tempFileName = UUID.randomUUID() + "temp-certificate.yaml";
+        String domain;
+        // if user don't have domain name
+        if (request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() || request.getDomain().equalsIgnoreCase("string")) {
+            List<String> subdomainList = subDomainRepository.findAllByIsTakenFalse().stream().map(SubDomain::getSubdomain).toList();
+            if (subdomainList.isEmpty()) {
+                throw new ConflictException("Run out of free subdomain", "We have run out of free subdomain. Please come back later or create or own domain.");
+            }
+            String subdomain = subdomainList.get(0);
+            domain = subdomain;
+            SubDomain setTrue = subDomainRepository.findBySubdomain(subdomain);
+            setTrue.setIsTaken(true);
+            subDomainRepository.save(setTrue);
+            String certName = subdomain.replaceAll("\\.", "-") + "-cert";
+            if (!(subDomainRepository.checkIfSubDomainIsValidated(subdomain))) {
+                // if false create certificate for default namespace then copy certificate to this user's namespace
+
+                String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + subdomain + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
+                SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
+                setTrue.setIsValidated(true);
+                subDomainRepository.save(setTrue);
+                String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                TimeUnit.SECONDS.sleep(60);
+                SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+                setTrue.setIsTaken(true);
+                subDomainRepository.save(setTrue);
+            } else {
+                // if true copy certificate to this user's namespace
+                String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+                setTrue.setIsValidated(true);
+                subDomainRepository.save(setTrue);
+            }
+        } else { // user have their own domain name
+            String certName = request.getDomain().replaceAll("\\.", "-") + "-cert";
+            domain = request.getDomain();
+            // check user's subdomain is in database or not
+            if (subDomainRepository.checkIfExist(request.getDomain())) {
+                SubDomain setTrue = subDomainRepository.findBySubdomain(request.getDomain());
+                if (subDomainRepository.checkIfSubDomainIsValidated(request.getDomain())) {
+                    // if true, only copy
+                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+
+                    setTrue.setIsTaken(true);
+                    subDomainRepository.save(setTrue);
+
+                    // update database to true
+                } else {
+                    // if false, create new certificate
+                    String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + request.getDomain() + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
+                    SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
+                    setTrue.setIsValidated(true);
+                    subDomainRepository.save(setTrue);
+                    // and then copy certificate to this user's namespace
+                    String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                    TimeUnit.SECONDS.sleep(60);
+                    SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+                    setTrue.setIsTaken(true);
+                    subDomainRepository.save(setTrue);
+                }
+
+            } else {
+                SubDomain subDomain = new SubDomain();
+                subDomain.setSubdomain(request.getDomain());
+                subDomain.setIsCustomerDomain(true);
+                subDomain.setIsTaken(true);
+                subDomainRepository.save(subDomain);
+                SubDomain setTrue = subDomainRepository.findBySubdomain(request.getDomain());
+                String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + request.getDomain() + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
+                SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
+                setTrue.setIsValidated(true);
+                subDomainRepository.save(setTrue);
+                String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                TimeUnit.SECONDS.sleep(60);
+                SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
+                setTrue.setIsTaken(true);
+                subDomainRepository.save(setTrue);
+
+            }
+        }
+        return domain;
     }
 }

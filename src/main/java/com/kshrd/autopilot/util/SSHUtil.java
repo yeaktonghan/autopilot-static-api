@@ -32,7 +32,6 @@ public class SSHUtil {
             }
 
             String responseString = responseStream.toString();
-            System.out.println(responseString);
         } finally {
             if (session != null) {
                 session.disconnect();
@@ -67,7 +66,6 @@ public class SSHUtil {
             }
 
             String responseString = responseStream.toString();
-            System.out.println(responseString);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {

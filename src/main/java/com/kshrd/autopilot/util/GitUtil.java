@@ -80,8 +80,6 @@ public class GitUtil {
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println("request: " + request);
-        System.out.println(response.body());
         return response.statusCode();
     }
 
@@ -105,7 +103,6 @@ public class GitUtil {
         }
         // encode string to base64 for github api
         String encodedDeployment = Base64.getEncoder().encodeToString(deployment.getBytes());
-        System.out.println(encodedDeployment);
         // build http request client
         HttpClient httpClient = HttpClient.newBuilder().build();
         String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/app/deployment.yaml";
@@ -127,7 +124,6 @@ public class GitUtil {
         }
         // find template deployment file
         String serviceYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/spring-service.yaml");
-        System.out.println(serviceYamlFile);
         // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("s-name", serviceName);
@@ -138,10 +134,8 @@ public class GitUtil {
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             serviceYamlFile = serviceYamlFile.replace(entry.getKey(), entry.getValue());
         }
-        System.out.println(serviceYamlFile);
         // encode string to base64 for github api
         String encodedServiceYamlFile = Base64.getEncoder().encodeToString(serviceYamlFile.getBytes());
-        System.out.println(encodedServiceYamlFile);
         // build http request client
         HttpClient httpClient = HttpClient.newBuilder().build();
         String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/app/service.yaml";
@@ -163,7 +157,6 @@ public class GitUtil {
         }
         // find template deployment file
         String applicationYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/application.yaml");
-        System.out.println(applicationYamlFile);
         // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("app-name", appName.toLowerCase());
@@ -173,10 +166,8 @@ public class GitUtil {
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             applicationYamlFile = applicationYamlFile.replace(entry.getKey(), entry.getValue());
         }
-        System.out.println(applicationYamlFile);
         // encode string to base64 for github api
         String encodedApplicationYamlFile = Base64.getEncoder().encodeToString(applicationYamlFile.getBytes());
-        System.out.println(encodedApplicationYamlFile);
         // build http request client
         HttpClient httpClient = HttpClient.newBuilder().build();
         String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/application.yaml";
@@ -196,11 +187,9 @@ public class GitUtil {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
-        String certName = domainName.replaceAll("\\.",  "-") + "cert";
-        System.out.println(certName);
+        String certName = domainName.replaceAll("\\.",  "-") + "-cert";
         // find template deployment file
         String ingressYamlFile = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/spring/ingress.yaml");
-        System.out.println(ingressYamlFile);
         // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("i-name", ingressName);
@@ -214,10 +203,8 @@ public class GitUtil {
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             ingressYamlFile = ingressYamlFile.replace(entry.getKey(), entry.getValue());
         }
-        System.out.println(ingressYamlFile);
         // encode string to base64 for github api
         String encodedIngressYamlFile = Base64.getEncoder().encodeToString(ingressYamlFile.getBytes());
-        System.out.println(encodedIngressYamlFile);
         // build http request client
         HttpClient httpClient = HttpClient.newBuilder().build();
         String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/app/ingress.yaml";
@@ -239,7 +226,6 @@ public class GitUtil {
         }
         // find template deployment file
         String argoAppYaml = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/argo-application.yaml");
-        System.out.println(argoAppYaml);
         // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("var-app-name", appName);
@@ -249,10 +235,8 @@ public class GitUtil {
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             argoAppYaml = argoAppYaml.replace(entry.getKey(), entry.getValue());
         }
-        System.out.println(argoAppYaml);
         // encode string to base64 for github api
         String encodedArgoAppYamlFile = Base64.getEncoder().encodeToString(argoAppYaml.getBytes());
-        System.out.println(encodedArgoAppYamlFile);
         // build http request client
         HttpClient httpClient = HttpClient.newBuilder().build();
         String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/argo-application.yaml";
@@ -272,11 +256,9 @@ public class GitUtil {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
-        String certName = dns.replaceAll("\\.",  "-") + "cert";
-        System.out.println(certName);
+        String certName = dns.replaceAll("\\.",  "-") + "-cert";
         // find template deployment file
         String certYaml = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/certificate.yaml");
-        System.out.println(certYaml);
         // List spring-gradle.pipeline.xml to replace on the sameple file
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("dns-name", dns);
@@ -286,10 +268,8 @@ public class GitUtil {
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             certYaml = certYaml.replace(entry.getKey(), entry.getValue());
         }
-        System.out.println(certYaml);
         // encode string to base64 for github api
         String certYamlFile = Base64.getEncoder().encodeToString(certYaml.getBytes());
-        System.out.println(certYamlFile);
         // build http request client
         HttpClient httpClient = HttpClient.newBuilder().build();
         String gitEndpoint = "https://api.github.com/repos/KSGA-Autopilot/" + reposName + "/contents/app/certificate.yaml";
