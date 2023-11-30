@@ -54,25 +54,26 @@ public class ProjectServiceImpl implements ProjectService {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = new Project();
-        Project pro = projectRepository.findByName(request.getName());
-        ProjectDetails projectDetail = projectDetailRepository.findByUserAndProject(user, pro);
-        if (projectDetail != null) {
-            throw new AutoPilotException("Already Exist", HttpStatus.BAD_REQUEST, urlError, "Your project already exist!");
+        List<ProjectDetails> projectDetails=projectDetailRepository.findAllByUser(user);
+        for (ProjectDetails pjs:projectDetails) {
+            Project pj = projectRepository.findById(pjs.getProject().getId()).get();
+            if (pj.getName().equals(request.getName())) {
+                throw new AutoPilotException("Already Exist", HttpStatus.BAD_REQUEST, urlError, "Your project already exist!");
+            }
         }
         project.setName(request.getName());
         project.setProjectCode(code_team);
         project.setCreated_at(LocalDateTime.now());
         project.setColor(color);
         projectRepository.save(project);
-        ProjectDetails projectDetails = new ProjectDetails();
-        projectDetails.setProject(project);
-        projectDetails.setUser(user);
-        projectDetails.setIs_owner(true);
-        projectDetailRepository.save(projectDetails);
+        ProjectDetails projectDetail = new ProjectDetails();
+        projectDetail.setProject(project);
+        projectDetail.setUser(user);
+        projectDetail.setIs_owner(true);
+        projectDetailRepository.save(projectDetail);
         List<UserDto> userDtos = new ArrayList<>();
-        UserDto userDto = userRepository.findById(projectDetails.getUser().getId()).get().toUserDto();
+        UserDto userDto = userRepository.findById(projectDetail.getUser().getId()).get().toUserDto();
         userDtos.add(userDto);
-
         return project.toProjectDto(userDtos, true);
     }
 
@@ -163,12 +164,11 @@ public class ProjectServiceImpl implements ProjectService {
         projectRepository.save(project.get());
         List<UserDto> userDtos = new ArrayList<>();
         List<ProjectDetails> projectDetailsList = projectDetailRepository.findAllByProject(project.get());
-        //System.out.println(projectDetailsList);
         for (ProjectDetails member : projectDetailsList) {
             userDtos.add(member.getUser().toUserDto());
         }
         project.get().toProjectDto().setMembers(userDtos);
-        return project.get().toProjectDto();
+        return project.get().toProjectDto(userDtos,true);
     }
 
     @Override
