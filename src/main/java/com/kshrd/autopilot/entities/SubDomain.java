@@ -17,6 +17,7 @@ public class SubDomain {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
+    @Column(unique=true)
     private String subdomain;
     @Column(columnDefinition = "DEFAULT FALSE")
     private Boolean isValidated;
