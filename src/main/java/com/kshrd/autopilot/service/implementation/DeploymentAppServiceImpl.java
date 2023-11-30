@@ -412,7 +412,6 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         if (!(deploymentAppRepository.checkIfProjectExistForUser(id, currentUserId))) {
             throw new ConflictException("User not found in this project.", "This user does not have permission to delete this deployment.");
         }
-
         // delete argo cd app with cascade
         DeploymentApp deploymentApp = deploymentAppRepository.findById(id.intValue()).get();
         URL url = new URL(deploymentApp.getGitSrcUrl());

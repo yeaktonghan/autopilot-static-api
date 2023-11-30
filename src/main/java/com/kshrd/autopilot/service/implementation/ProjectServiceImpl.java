@@ -2,6 +2,8 @@ package com.kshrd.autopilot.service.implementation;
 
 import com.kshrd.autopilot.entities.Project;
 import com.kshrd.autopilot.entities.ProjectDetails;
+import com.kshrd.autopilot.entities.dto.DeploymentAppDto;
+import com.kshrd.autopilot.entities.dto.DeploymentDBDto;
 import com.kshrd.autopilot.entities.dto.ProjectDto;
 import com.kshrd.autopilot.entities.dto.UserDto;
 import com.kshrd.autopilot.entities.request.CreateTeamRequest;
@@ -10,6 +12,8 @@ import com.kshrd.autopilot.exception.AutoPilotException;
 import com.kshrd.autopilot.repository.ProjectDetailRepository;
 import com.kshrd.autopilot.repository.ProjectRepository;
 import com.kshrd.autopilot.repository.UserRepository;
+import com.kshrd.autopilot.service.DeploymentAppService;
+import com.kshrd.autopilot.service.DeploymentDBService;
 import com.kshrd.autopilot.service.ProjectService;
 import com.kshrd.autopilot.util.CurrentUserUtil;
 import com.kshrd.autopilot.util.ProjectCodeGenerator;
@@ -28,13 +32,19 @@ import java.util.Random;
 public class ProjectServiceImpl implements ProjectService {
     @Value("${error.url}")
     private String urlError;
+
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final DeploymentAppService deploymentAppService;
+    private final DeploymentDBService deploymentDBService;
     private final ProjectDetailRepository projectDetailRepository;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository, UserRepository userRepository, ProjectDetailRepository projectDetailRepository) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, UserRepository userRepository, DeploymentAppService deploymentAppService, DeploymentDBService deploymentDBService, ProjectDetailRepository projectDetailRepository) {
+
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
+        this.deploymentAppService = deploymentAppService;
+        this.deploymentDBService = deploymentDBService;
         this.projectDetailRepository = projectDetailRepository;
     }
 
@@ -181,6 +191,11 @@ public class ProjectServiceImpl implements ProjectService {
         String email = CurrentUserUtil.getEmail();
         User user = userRepository.findUsersByEmail(email);
         Project project = projectRepository.findById(id).get();
+        List<DeploymentAppDto> deploymentAppDtos=deploymentAppService.getAllDeploymentApps(id);
+        List<DeploymentDBDto> deploymentDBDtos=deploymentDBService.getDeploymentDatabaseByProjectId(id);
+        if (deploymentDBDtos!=null||deploymentAppDtos!=null){
+            throw new AutoPilotException("Can not remove", HttpStatus.NOT_FOUND, urlError, "Your project has deploymentÏ");
+        }
         ProjectDetails projectDetails = projectDetailRepository.findByUserAndProject(user, project);
         if (projectDetails == null) {
             throw new AutoPilotException("Not found", HttpStatus.NOT_FOUND, urlError, "Project not found");
