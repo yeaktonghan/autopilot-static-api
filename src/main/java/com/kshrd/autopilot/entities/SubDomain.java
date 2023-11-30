@@ -1,9 +1,8 @@
 package com.kshrd.autopilot.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.kshrd.autopilot.entities.dto.DeploymentAppDto;
+import com.kshrd.autopilot.entities.dto.SubDomainDto;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +18,13 @@ public class SubDomain {
     @Id
     private Long id;
     private String subdomain;
+    @Column(columnDefinition = "DEFAULT FALSE")
     private Boolean isValidated;
+    @Column(columnDefinition = "DEFAULT FALSE")
     private Boolean isTaken;
     private Boolean isCustomerDomain;
+
+    public SubDomainDto toSubDomainDTO() {
+        return new SubDomainDto(this.subdomain, this.isValidated, this.isTaken, this.isCustomerDomain);
+    }
 }

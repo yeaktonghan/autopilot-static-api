@@ -272,7 +272,7 @@ public class GitUtil {
         if (GitUtil.checkGitReposExist(reposName) != 200) {
             throw new NotFoundException("Repository not found.", "This repository does not exist.");
         }
-        String certName = dns.replaceAll("\\.",  "-") + "cert";
+        String certName = dns.replaceAll("\\.",  "-") + "-cert";
         System.out.println(certName);
         // find template deployment file
         String certYaml = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/certificate.yaml");
