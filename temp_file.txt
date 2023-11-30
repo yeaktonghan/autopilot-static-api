@@ -41,7 +41,7 @@ pipeline {
 
     environment{
     CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
-    GITHUB_REPO = 'pholsoophak-09pvhpholsokphakspringhomework001-cd'
+    GITHUB_REPO = 'yeaktonghan-spring-maven-war-cd'
     }
 
     stages {
@@ -50,7 +50,7 @@ pipeline {
             steps {
                  script{
 
-                    checkout([$class: 'GitSCM', branches: [[name: 'master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://@gitlab.com/PholSoophak/09_pvh_pholsokphak_spring_homework001.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/yeaktonghan/spring-maven-war.git']]])
             }
         }
         }
@@ -66,7 +66,7 @@ pipeline {
          stage('Add Dockerfile') {
             steps {
                 script {
-                  def jarFile = sh(script: 'find . -name *-0.0.1-SNAPSHOT.jar' , returnStdout: true).trim()
+                  def jarFile = sh(script: 'find . -name *-0.0.1-SNAPSHOT.war' , returnStdout: true).trim()
 
 def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
 
@@ -74,7 +74,7 @@ def dockerfileContent = """
 FROM openjdk:19-jdk
 WORKDIR /app
 COPY target/${jarFileName} /app
-EXPOSE 8080
+EXPOSE 8888
 CMD ["java", "-jar", "/app/${jarFileName}"]
                                           """
 writeFile file: 'Dockerfile', text: dockerfileContent
@@ -87,9 +87,9 @@ writeFile file: 'Dockerfile', text: dockerfileContent
             steps {
                 script{
 
-                sh 'docker build -t kshrdautopilot/pholsoophak-09pvhpholsokphakspringhomework001:${CURRENT_DATETIME} .'
+                sh 'docker build -t kshrdautopilot/yeaktonghan-spring-maven-war:${CURRENT_DATETIME} .'
 
-                 sh 'docker push kshrdautopilot/pholsoophak-09pvhpholsokphakspringhomework001:${CURRENT_DATETIME}'
+                 sh 'docker push kshrdautopilot/yeaktonghan-spring-maven-war:${CURRENT_DATETIME}'
 
                     echo "build images successfully"
 
@@ -115,7 +115,7 @@ writeFile file: 'Dockerfile', text: dockerfileContent
                     steps {
                         script {
                             // Modify the content of the file
-                            sh "sed -i 's+kshrdautopilot/pholsoophak-09pvhpholsokphakspringhomework001.*+kshrdautopilot/pholsoophak-09pvhpholsokphakspringhomework001:${CURRENT_DATETIME}+g' app/deployment.yaml"
+                            sh "sed -i 's+kshrdautopilot/yeaktonghan-spring-maven-war.*+kshrdautopilot/yeaktonghan-spring-maven-war:${CURRENT_DATETIME}+g' app/deployment.yaml"
                             sh "cat app/deployment.yaml"
                                 }
                             }
@@ -135,8 +135,8 @@ writeFile file: 'Dockerfile', text: dockerfileContent
                     steps {
                         sshagent(['ssh-keygen']) {
                              sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 "argocd login 167.71.220.235:31142 --username admin --password YOUR-PASSWORD-HERE --insecure"'
-                                sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 kubectl create ns pholsoophak || true'
-                        sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 argocd app create -f https://raw.githubusercontent.com/KSGA-Autopilot/pholsoophak-09pvhpholsokphakspringhomework001-cd/main/application.yaml --upsert'
+                                sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 kubectl create ns yeaktonghan || true'
+                        sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 argocd app create -f https://raw.githubusercontent.com/KSGA-Autopilot/yeaktonghan-spring-maven-war-cd/main/application.yaml --upsert'
                         }
                     }
                 }

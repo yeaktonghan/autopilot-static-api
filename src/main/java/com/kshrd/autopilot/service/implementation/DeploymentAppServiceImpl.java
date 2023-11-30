@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DeploymentAppServiceImpl implements DeploymentAppService {
@@ -115,7 +116,14 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             case "react" -> jobName = deployReactJs(request);
             case "flask" -> jobName = deployFlask(request);
         }
-        deploymentApp.setJobName(jobName);
+        System.out.println(jobName);
+        String[] parts = jobName.split("splithere");
+        String jobNameSplit = parts[0];
+        System.out.println("Job split: " + jobNameSplit);
+        String domain = parts[1];
+        deploymentApp.setDomain(domain);
+        System.out.println("Domain Split: " + domain);
+        deploymentApp.setJobName(jobNameSplit);
         deploymentAppRepository.save(deploymentApp);
         return deploymentApp.toDeploymentAppDto();
     }
@@ -211,6 +219,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             throw new BadRequestException("Unable to create.", "Enable to create git repository." + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
+        String domain = null;
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -220,11 +229,12 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create service file
             GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
-            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
-//            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+            domain = createCertificate(request);
+            System.out.println("\u001B[32m created certificate \u001B[0m");
 
-            //create certificate
-            createCertificate(request);
+            // create ingress file
+            GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
+            System.out.println("\u001B[32m created ingress \u001B[0m");
 
             // create jenkins job
             cli.createSpringJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getProjectPort().toString(), request.getBuildTool().toLowerCase(), request.getBuildPackage().toLowerCase());
@@ -253,7 +263,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // create cd repos
         // create deployment
         // create service
-        return jobName;
+        return jobName + "splithere" + domain;
     }
 
     public String deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
@@ -289,6 +299,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
+        String domain = null;
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -306,7 +317,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 //            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
 
             //create certificate
-            String domain = createCertificate(request);
+            domain = createCertificate(request);
             System.out.println("\u001B[32m created certificate \u001B[0m");
 
             // create ingress file
@@ -331,7 +342,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-        return jobName;
+        return jobName + "splithere" + domain;
     }
 
     private String deployFlask(DeploymentAppRequest request) throws IOException, InterruptedException {
@@ -371,6 +382,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
+        String domain = null;
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -380,13 +392,12 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create service file
             GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
-            GitUtil.createIngress(cdRepos, ingressName, namespace, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), request.getPath(), serviceName, request.getProjectPort().toString());
-//            GitUtil.createArgoApp(cdRepos, appName, username);
-            // create certificate for namespace
-//            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
+            domain = createCertificate(request);
+            System.out.println("\u001B[32m created certificate \u001B[0m");
 
-            //create certificate
-            createCertificate(request);
+            // create ingress file
+            GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
+            System.out.println("\u001B[32m created ingress \u001B[0m");
 
             // create jenkins job
             cli.createFlaskJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace);
@@ -405,7 +416,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-        return jobName;
+        return jobName + "splithere" + domain;
     }
 
     @Override
@@ -472,13 +483,14 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String tempFileName = UUID.randomUUID() + "temp-certificate.yaml";
         String domain;
         // if user don't have domain name
-        if (request.getDomain() == null) {
+        if (request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() || request.getDomain().equalsIgnoreCase("string")) {
             List<String> subdomainList = subDomainRepository.findAllByIsTakenFalse().stream().map(SubDomain::getSubdomain).toList();
             if (subdomainList.isEmpty()) {
                 throw new ConflictException("Run out of free subdomain", "We have run out of free subdomain. Please come back later or create or own domain.");
             }
             System.out.println("Subdomain: " + subdomainList);
             String subdomain = subdomainList.get(0);
+            domain = subdomain;
             SubDomain setTrue = subDomainRepository.findBySubdomain(subdomain);
             setTrue.setIsTaken(true);
             subDomainRepository.save(setTrue);
@@ -488,8 +500,10 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
                 String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + subdomain + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
                 SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                subDomainRepository.setIsValidatedToTrue(subdomain);
+                setTrue.setIsValidated(true);
+                subDomainRepository.save(setTrue);
                 String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                TimeUnit.SECONDS.sleep(60);
                 SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
                 setTrue.setIsTaken(true);
                 subDomainRepository.save(setTrue);
@@ -497,11 +511,12 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
                 // if true copy certificate to this user's namespace
                 String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
                 SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
-                subDomainRepository.setIsValidatedToTrue(subdomain);
+                setTrue.setIsValidated(true);
+                subDomainRepository.save(setTrue);
             }
-            domain = subdomain;
         } else { // user have their own domain name
             String certName = request.getDomain().replaceAll("\\.", "-") + "-cert";
+            domain = request.getDomain();
             // check user's subdomain is in database or not
             if (subDomainRepository.checkIfExist(request.getDomain())) {
                 SubDomain setTrue = subDomainRepository.findBySubdomain(request.getDomain());
@@ -522,14 +537,16 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
                     // if false, create new certificate
                     String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + request.getDomain() + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
                     SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                    subDomainRepository.setIsValidatedToTrue(request.getDomain());
+                    setTrue.setIsValidated(true);
+                    subDomainRepository.save(setTrue);
                     // and then copy certificate to this user's namespace
                     String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                    TimeUnit.SECONDS.sleep(60);
                     SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
                     setTrue.setIsTaken(true);
                     subDomainRepository.save(setTrue);
                 }
-                domain = request.getDomain();
+
             } else {
                 System.out.println("We are here");
                 SubDomain subDomain = new SubDomain();
@@ -540,14 +557,16 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
                 SubDomain setTrue = subDomainRepository.findBySubdomain(request.getDomain());
                 String sshCommandCreateCertificate = "cd yaml && cp prod-certificate.yaml " + tempFileName + " && sed -i 's/cert-here/" + certName + "/g' " + tempFileName + " && sed -i 's/dns-here/" + request.getDomain() + "/g' " + tempFileName + " && kubectl apply -f " + tempFileName + " && rm " + tempFileName;
                 SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
-                subDomainRepository.setIsValidatedToTrue(request.getDomain());
+                setTrue.setIsValidated(true);
+                subDomainRepository.save(setTrue);
                 String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
                 System.out.println(sshCommandCopyCertificate);
+                TimeUnit.SECONDS.sleep(60);
                 SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
                 System.out.println("We are here too");
                 setTrue.setIsTaken(true);
                 subDomainRepository.save(setTrue);
-                domain = request.getDomain();
+
             }
             System.out.println("Inside else");
         }
