@@ -193,8 +193,8 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id).get();
         List<DeploymentAppDto> deploymentAppDtos=deploymentAppService.getAllDeploymentApps(id);
         List<DeploymentDBDto> deploymentDBDtos=deploymentDBService.getDeploymentDatabaseByProjectId(id);
-        if (deploymentDBDtos!=null||deploymentAppDtos!=null){
-            throw new AutoPilotException("Can not remove", HttpStatus.NOT_FOUND, urlError, "Your project has deploymentÏ");
+        if (!deploymentDBDtos.isEmpty()||!deploymentAppDtos.isEmpty()){
+            throw new AutoPilotException("Can not remove", HttpStatus.NOT_FOUND, urlError, "Your project has deployment");
         }
         ProjectDetails projectDetails = projectDetailRepository.findByUserAndProject(user, project);
         if (projectDetails == null) {
