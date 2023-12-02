@@ -8,7 +8,7 @@ public class NotificationCredential {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String botToken;
-    private String botId;
+    private String chatId;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "project_id",referencedColumnName = "id")
     private Project project;

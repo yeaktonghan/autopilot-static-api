@@ -520,12 +520,11 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
                 SSHUtil.sshExecCommandController(sshCommandCreateCertificate);
                 setTrue.setIsValidated(true);
                 subDomainRepository.save(setTrue);
-                String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/namespace: " + namespace + "/' | kubectl apply -f -";
+                String sshCommandCopyCertificate = "kubectl get secret " + certName + " -o yaml | sed 's/namespace: .*/nameserpace: " + namespace + "/' | kubectl apply -f -";
                 TimeUnit.SECONDS.sleep(60);
                 SSHUtil.sshExecCommandController(sshCommandCopyCertificate);
                 setTrue.setIsTaken(true);
                 subDomainRepository.save(setTrue);
-
             }
         }
         return domain;
