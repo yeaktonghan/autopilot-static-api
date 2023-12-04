@@ -90,7 +90,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setToken(request.getToken());
         deploymentApp.setProjectPort(request.getProjectPort());
         deploymentApp.setPath(request.getPath());
-        deploymentApp.setDomain(request.getDomain());
+        deploymentApp.setDomain("test.test.com");
 
 
         // build url for repos (public or private)
@@ -191,7 +191,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
 
         String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
-        cdRepos = applicationName + "-cd";
+        cdRepos = applicationName + "-cd-static-test";
         String namespace = username.toLowerCase().replaceAll("_", "");
         String serviceName = applicationName + "-svc";
         String deploymentName = applicationName + "-deployment";
@@ -209,7 +209,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             throw new BadRequestException("Unable to create.", "Enable to create git repository." + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
-        String domain = null;
+        String domain = "test.test.com";
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -251,7 +251,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // create cd repos
         // create deployment
         // create service
-        return jobName + "splithere" + domain;
+        return jobName + "splitheretest.test.com";
     }
 
     public String deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
@@ -262,7 +262,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String username = arrayPath[1].toLowerCase();
         String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
         String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
-        cdRepos = applicationName + "-cd";
+        cdRepos = applicationName + "-cd-static-test";
         String namespace = username.toLowerCase().replaceAll("_", "");
         String serviceName = applicationName + "-svc";
         String deploymentName = applicationName + "-deployment";
@@ -286,7 +286,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
-        String domain = null;
+        String domain = "test.test.com";
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -322,7 +322,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-        return jobName + "splithere" + domain;
+        return jobName + "splitheretest.test.com";
     }
 
     private String deployFlask(DeploymentAppRequest request) throws IOException, InterruptedException {
@@ -334,7 +334,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         String projectName = arrayPath[2].toLowerCase().substring(0, arrayPath[2].length() - 4);
 
         String applicationName = username.toLowerCase().replaceAll("_", "").replaceAll("/", "") + "-" + projectName.toLowerCase().replaceAll("_", "").replaceAll("/", "");
-        cdRepos = applicationName + "-cd";
+        cdRepos = applicationName + "-cd-static-test";
         String namespace = username.toLowerCase().replaceAll("_", "");
         String serviceName = applicationName + "-svc";
         String deploymentName = applicationName + "-deployment";
@@ -357,7 +357,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
-        String domain = null;
+        String domain = "test.test.com";
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -389,7 +389,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-        return jobName + "splithere" + domain;
+        return jobName + "splitheretest.test.com";
     }
 
     @Override

@@ -30,18 +30,14 @@
 <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3802.vd42b_fcf00b_a_c">
 <script>
 pipeline {
-    agent {
-        node{
-            label 'worker1'
-        }
-    }
+    agent any
    tools{
         maven 'maven'
     }
 
     environment{
     CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
-    GITHUB_REPO = 'yeaktonghan-spring-maven-war-cd'
+    GITHUB_REPO = 'yeaktonghan-devops-simple-spring-cd-static-test'
     }
 
     stages {
@@ -50,7 +46,7 @@ pipeline {
             steps {
                  script{
 
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/yeaktonghan/spring-maven-war.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout']], userRemoteConfigs: [[url: 'https://github.com/yeaktonghan/devops-simple-spring.git']]])
             }
         }
         }
@@ -66,7 +62,7 @@ pipeline {
          stage('Add Dockerfile') {
             steps {
                 script {
-                  def jarFile = sh(script: 'find . -name *-0.0.1-SNAPSHOT.war' , returnStdout: true).trim()
+                  def jarFile = sh(script: 'find . -name *-0.0.1-SNAPSHOT.jar' , returnStdout: true).trim()
 
 def jarFileName = jarFile.substring(jarFile.lastIndexOf('/') + 1)
 
@@ -74,7 +70,7 @@ def dockerfileContent = """
 FROM openjdk:19-jdk
 WORKDIR /app
 COPY target/${jarFileName} /app
-EXPOSE 8888
+EXPOSE 8080
 CMD ["java", "-jar", "/app/${jarFileName}"]
                                           """
 writeFile file: 'Dockerfile', text: dockerfileContent
@@ -87,9 +83,9 @@ writeFile file: 'Dockerfile', text: dockerfileContent
             steps {
                 script{
 
-                sh 'docker build -t kshrdautopilot/yeaktonghan-spring-maven-war:${CURRENT_DATETIME} .'
+                sh 'docker build -t kshrdautopilot/yeaktonghan-devops-simple-spring:${CURRENT_DATETIME} .'
 
-                 sh 'docker push kshrdautopilot/yeaktonghan-spring-maven-war:${CURRENT_DATETIME}'
+                 sh 'docker push kshrdautopilot/yeaktonghan-devops-simple-spring:${CURRENT_DATETIME}'
 
                     echo "build images successfully"
 
@@ -115,7 +111,7 @@ writeFile file: 'Dockerfile', text: dockerfileContent
                     steps {
                         script {
                             // Modify the content of the file
-                            sh "sed -i 's+kshrdautopilot/yeaktonghan-spring-maven-war.*+kshrdautopilot/yeaktonghan-spring-maven-war:${CURRENT_DATETIME}+g' app/deployment.yaml"
+                            sh "sed -i 's+kshrdautopilot/yeaktonghan-devops-simple-spring.*+kshrdautopilot/yeaktonghan-devops-simple-spring:${CURRENT_DATETIME}+g' app/deployment.yaml"
                             sh "cat app/deployment.yaml"
                                 }
                             }
@@ -134,9 +130,9 @@ writeFile file: 'Dockerfile', text: dockerfileContent
                 stage('Start argo application') {
                     steps {
                         sshagent(['ssh-keygen']) {
-                             sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 "argocd login 192.168.49.2:31459 --username admin --password YOUR-PASSWORD-HERE --insecure"'
+                             sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 "argocd login 127.0.0.1:45627 --username admin --password YOUR-PASSWORD-HERE --insecure"'
                                 sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 kubectl create ns yeaktonghan || true'
-                        sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 argocd app create -f https://raw.githubusercontent.com/KSGA-Autopilot/yeaktonghan-spring-maven-war-cd/main/application.yaml --upsert'
+                        sh 'ssh -o StrictHostKeyChecking=no root@167.71.220.235 argocd app create -f https://raw.githubusercontent.com/KSGA-Autopilot/yeaktonghan-devops-simple-spring-cd-static-test/main/application.yaml --upsert'
                         }
                     }
                 }

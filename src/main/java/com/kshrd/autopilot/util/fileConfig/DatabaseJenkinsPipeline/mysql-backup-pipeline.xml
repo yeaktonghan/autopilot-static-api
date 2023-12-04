@@ -30,11 +30,7 @@
     <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3806.va_3a_6988277b_2">
         <script>
             pipeline {
-            agent {
-            node{
-            label 'db-node'
-            }
-            }
+            agent any
             environment{
             CURRENT_DATETIME = new Date().format("yyyy-MM-dd-HH-mm-ss")
             }

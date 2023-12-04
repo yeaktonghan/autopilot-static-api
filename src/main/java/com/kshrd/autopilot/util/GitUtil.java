@@ -93,7 +93,7 @@ public class GitUtil {
         Map<String, String> replaceString = new HashMap<>();
         replaceString.put("d-name", deploymentName);
         replaceString.put("d-label", label);
-        replaceString.put("d-replicas", String.valueOf(replicaCount));
+        replaceString.put("d-replicas", "1");
         replaceString.put("d-container-name", containerName);
         replaceString.put("d-image", image);
         replaceString.put("d-port", String.valueOf(port));

@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5555/autopilot
+    url: jdbc:postgresql://localhost:5433/autopilot
     username: postgres
     password: 12345
 
@@ -39,3 +39,6 @@ file:
 
 front:
   url: https://auto-pilot.dev/email-sending?otp=
+
+server:
+  port : 8081
