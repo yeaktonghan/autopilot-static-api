@@ -15,7 +15,7 @@ import java.net.URL;
 
 public class HttpUtil {
     public static int buildJob(String jobName) throws IOException {
-        String apiUrl = "https://jenkins.hanyeaktong.site/job/" + jobName + "/build";
+        String apiUrl = "http://localhost:8080/job/" + jobName + "/build";
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -36,7 +36,7 @@ public class HttpUtil {
     }
 
     public static int getLastBuildStatus(String jobName) throws IOException {
-        String apiUrl = "https://jenkins.hanyeaktong.site/job/" + jobName + "/lastBuild/api/json";
+        String apiUrl = "http://localhost:8080/job/" + jobName + "/lastBuild/api/json";
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -57,7 +57,7 @@ public class HttpUtil {
     }
 
     public static String getLastBuildJob(String jobName) {
-        String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+        String jenkinsUrl = "http://localhost:8080/";
         String username = "kshrd";
         String apiToken = "113a92e3b821914adb7c544899738117e9";
         String result = "";

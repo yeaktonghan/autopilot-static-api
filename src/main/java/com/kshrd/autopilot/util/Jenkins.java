@@ -26,7 +26,7 @@ public class Jenkins {
         //System.out.println(gitUrl);
         try {
             // store this in application.yml
-            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+            String jenkinsUrl = "http://localhost:8080/";
             String username = "kshrd";
             String token = "11ea48669bc5b21f56e116d00868fa669d";
 
@@ -57,9 +57,9 @@ public class Jenkins {
 
     public void createSpringJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace, String port, String tool, String buildPackage) {
         try {
-            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+            String jenkinsUrl = "http://localhost:8080/";
             String username = "kshrd";
-            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
+            String apiToken = "11f6edfd57843d9640fcd0fcc9e0e47e97";
             String toolType = "";
             String build_tool = "gradle";
             String b_project = "";
@@ -120,9 +120,9 @@ public class Jenkins {
 
     public void createReactJobConfig(String customerRepository, String image, String branch, String cdRepos, String jobName, String namespace, String builTool) {
         try {
-            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+            String jenkinsUrl = "http://localhost:8080/";
             String username = "kshrd";
-            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
+            String apiToken = "11f6edfd57843d9640fcd0fcc9e0e47e97";
 //            String toolType = "";
 //            String build_tool = "npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
@@ -159,9 +159,9 @@ public class Jenkins {
 
     public void backupPostgresDatabase(Long projectId, Integer port, String databaseName) {
         try {
-            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+            String jenkinsUrl = "http://localhost:8080/";
             String username = "kshrd";
-            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
+            String apiToken = "11f6edfd57843d9640fcd0fcc9e0e47e97";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             String postgresDatabasePipeline = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/DatabaseJenkinsPipeline/postgres-backup-pipeline.xml");
             System.out.println(postgresDatabasePipeline);
@@ -185,9 +185,9 @@ public class Jenkins {
     public String consoleBuild(String jobname) {
         String consoleLog = "";
         try {
-            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+            String jenkinsUrl = "http://localhost:8080/";
             String username = "kshrd";
-            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
+            String apiToken = "11f6edfd57843d9640fcd0fcc9e0e47e97";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             JobWithDetails jobWithDetails = jenkins.getJob(jobname);
             if (jobWithDetails != null) {
@@ -212,18 +212,18 @@ public class Jenkins {
     }
 
     public static void deleteJob(String jobName) throws URISyntaxException, IOException {
-        String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+        String jenkinsUrl = "http://localhost:8080/";
         String username = "kshrd";
-        String apiToken = "11b664636cbda38a9884b0f69241829bf1";
+        String apiToken = "11f6edfd57843d9640fcd0fcc9e0e47e97";
         JenkinsServer jenkinsServer = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
         jenkinsServer.deleteJob(jobName);
     }
 
     public void createFlaskJobConfig(String gitSrcUrl, String image, String branch, String cdRepos, String jobName, String namespace) {
         try {
-            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+            String jenkinsUrl = "http://localhost:8080/";
             String username = "kshrd";
-            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
+            String apiToken = "11f6edfd57843d9640fcd0fcc9e0e47e97";
             String toolType = "";
             String build_tool = "npm";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
@@ -251,9 +251,9 @@ public class Jenkins {
 
     public void backupMySqlDatabase(Long projectId, String password, String databaseName) {
         try {
-            String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+            String jenkinsUrl = "http://localhost:8080/";
             String username = "kshrd";
-            String apiToken = "11b664636cbda38a9884b0f69241829bf1";
+            String apiToken = "11f6edfd57843d9640fcd0fcc9e0e47e97";
             JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsUrl), username, apiToken);
             String postgresDatabasePipeline = FileUtil.readFile("src/main/java/com/kshrd/autopilot/util/fileConfig/DatabaseJenkinsPipeline/mysql-backup-pipeline.xml");
             System.out.println(postgresDatabasePipeline);

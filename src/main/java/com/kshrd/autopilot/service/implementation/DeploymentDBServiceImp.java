@@ -48,7 +48,7 @@ public class DeploymentDBServiceImp implements DeploymentDBService {
     @Override
     public DeploymentDBDto creatDatabase(DeploymentDBRequest request) {
         Project project = projectRepository.findById(request.getProject_id()).get();
-        String jenkinsUrl = "https://jenkins.hanyeaktong.site/";
+        String jenkinsUrl = "http://localhost:8080/";
         String username = "kshrd";
         String apiToken = "113a92e3b821914adb7c544899738117e9";
         String jobName = "";

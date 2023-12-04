@@ -198,7 +198,7 @@ public class GitUtil {
         replaceString.put("i-path", path);
         replaceString.put("service-name", serviceName);
         replaceString.put("service-port", port);
-        replaceString.put("tls-cert",certName);
+        // replaceString.put("tls-cert",certName);
         // replace string operation
         for (Map.Entry<String, String> entry : replaceString.entrySet()) {
             ingressYamlFile = ingressYamlFile.replace(entry.getKey(), entry.getValue());

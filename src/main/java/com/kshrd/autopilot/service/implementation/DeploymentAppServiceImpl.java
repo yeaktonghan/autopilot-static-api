@@ -219,7 +219,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create service file
             GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
-            domain = createCertificate(request);
+            // domain = createCertificate(request);
 
             // create ingress file
             GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
@@ -301,7 +301,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 //            GitUtil.createNamespaceTlsCertificate(cdRepos, request.getDomain() == null || request.getDomain().isEmpty() || request.getDomain().isBlank() ? "controlplane.hanyeaktong.site" : request.getDomain(), namespace);
 
             //create certificate
-            domain = createCertificate(request);
+            // domain = createCertificate(request);
 
             // create ingress file
             GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
@@ -367,7 +367,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // create service file
             GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
-            domain = createCertificate(request);
+            // domain = createCertificate(request);
 
             // create ingress file
             GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
