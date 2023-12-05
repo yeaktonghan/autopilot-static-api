@@ -222,7 +222,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // domain = createCertificate(request);
 
             // create ingress file
-            GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
+//            GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
 
             // create jenkins job
             cli.createSpringJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getProjectPort().toString(), request.getBuildTool().toLowerCase(), request.getBuildPackage().toLowerCase());

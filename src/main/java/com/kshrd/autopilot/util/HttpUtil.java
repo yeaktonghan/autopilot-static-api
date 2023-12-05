@@ -20,7 +20,7 @@ public class HttpUtil {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setRequestProperty("Authorization", "Basic a3NocmQ6MTFlYTQ4NjY5YmM1YjIxZjU2ZTExNmQwMDg2OGZhNjY5ZA==");
+        connection.setRequestProperty("Authorization", "Basic a3NocmQ6MTFlZDk2MTNiZTBlNWM1MmJhZGYyMzYxYjY4NDA1NDc5MQ==");
         connection.setRequestProperty("Cookie", "JSESSIONID.45cf3bd0=node01ti5nrexdix6nabl0dtxyof2c426.node0");
         String requestBody = "mode=org.jenkinsci.plugins.workflow.job.WorkflowJob";
         connection.setDoOutput(true);

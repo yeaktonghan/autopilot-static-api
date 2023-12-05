@@ -117,11 +117,8 @@
             }
             stage('Start argo application') {
             steps {
-            sshagent(['ssh-keygen']) {
-            sh 'ssh -o StrictHostKeyChecking=no yeaktong@172.22.48.179 "argocd login 127.0.0.1:45627 --username admin
-            --password YOUR-PASSWORD-HERE --insecure"'
-            sh 'ssh -o StrictHostKeyChecking=no yeaktong@172.22.48.179 kubectl create ns argo-namespace || true'
-            sh 'ssh -o StrictHostKeyChecking=no yeaktong@172.22.48.179 argocd app create -f argo-application-yaml --upsert'
+            script {
+            sh "argocd app create -f argo-application-yaml --upsert"
             }
             }
             }
