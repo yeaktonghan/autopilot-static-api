@@ -77,6 +77,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setAppName(request.getAppName());
         deploymentApp.setProject(project.get());
         deploymentApp.setIpAddress("139.59.243.4");
+        deploymentApp.setStatus(true);
         deploymentApp.setBranch(request.getBranch());
         deploymentApp.setDescription(request.getDescription());
         deploymentApp.setBuildTool(request.getBuildTool());
@@ -90,7 +91,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         deploymentApp.setToken(request.getToken());
         deploymentApp.setProjectPort(request.getProjectPort());
         deploymentApp.setPath(request.getPath());
-        deploymentApp.setDomain("test.test.com");
+        deploymentApp.setDomain("demo.auto-pilot.dev");
 
 
         // build url for repos (public or private)
@@ -203,21 +204,21 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
         String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
         // need to verify here
-        int cdResponse = GitUtil.createGitRepos(cdRepos);
-
-        if (cdResponse != 201) {
-            throw new BadRequestException("Unable to create.", "Enable to create git repository." + cdRepos);
-        }
+//        int cdResponse = GitUtil.createGitRepos(cdRepos);
+//
+//        if (cdResponse != 201) {
+//            throw new BadRequestException("Unable to create.", "Enable to create git repository." + cdRepos);
+//        }
         // create job: build, test, and push image, update cd repos image
-        String domain = "test.test.com";
+        String domain = "demo.auto-pilot.dev";
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
-            GitUtil.createApplication(cdRepos, applicationName, namespace);
+//            GitUtil.createApplication(cdRepos, applicationName, namespace);
             // create deployment file
-            GitUtil.createSpringDeployment(cdRepos, deploymentName, deploymentLabel, 2, containerName, image, request.getProjectPort());
+//            GitUtil.createSpringDeployment(cdRepos, deploymentName, deploymentLabel, 2, containerName, image, request.getProjectPort());
             // create service file
-            GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
+//            GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
             // create ingress file
             // domain = createCertificate(request);
 
@@ -251,7 +252,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // create cd repos
         // create deployment
         // create service
-        return jobName + "splitheretest.test.com";
+        return jobName + "splitheredemo.auto-pilot.dev";
     }
 
     public String deployReactJs(DeploymentAppRequest request) throws IOException, InterruptedException {
@@ -281,20 +282,20 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
 
         String jobName = cdRepos + UUID.randomUUID().toString().substring(0, 4);
         // need to verify here
-        int cdResponse = GitUtil.createGitRepos(cdRepos);
-        if (cdResponse != 201) {
-            throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
-        }
+//        int cdResponse = GitUtil.createGitRepos(cdRepos);
+//        if (cdResponse != 201) {
+//            throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
+//        }
         // create job: build, test, and push image, update cd repos image
-        String domain = "test.test.com";
+        String domain = "demo.auto-pilot.dev";
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
-            GitUtil.createApplication(cdRepos, applicationName, namespace);
+//            GitUtil.createApplication(cdRepos, applicationName, namespace);
             // create deployment file
-            GitUtil.createSpringDeployment(cdRepos, deploymentName, deploymentLabel, 2, containerName, image, request.getProjectPort());
+//            GitUtil.createSpringDeployment(cdRepos, deploymentName, deploymentLabel, 2, containerName, image, request.getProjectPort());
             // create service file
-            GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
+//            GitUtil.createSpringService(cdRepos, serviceName, deploymentLabel, request.getProjectPort(), request.getProjectPort());
 
 //            GitUtil.createArgoApp(cdRepos, appName, username);
             // create certificate for namespace
@@ -304,7 +305,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             // domain = createCertificate(request);
 
             // create ingress file
-            GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
+//            GitUtil.createIngress(cdRepos, ingressName, namespace, domain, request.getPath(), serviceName, request.getProjectPort().toString());
             // create jenkins job
             cli.createReactJobConfig(request.getGitSrcUrl(), image, request.getBranch(), cdRepos, jobName, namespace, request.getBuildTool());
         } catch (Exception e) {
@@ -322,7 +323,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-        return jobName + "splitheretest.test.com";
+        return jobName + "splitheredemo.auto-pilot.dev";
     }
 
     private String deployFlask(DeploymentAppRequest request) throws IOException, InterruptedException {
@@ -357,7 +358,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
             throw new BadRequestException("Unable to create.", "Enable to create git repository: " + cdRepos);
         }
         // create job: build, test, and push image, update cd repos image
-        String domain = "test.test.com";
+        String domain = "demo.auto-pilot.dev";
         try {
             Jenkins cli = new Jenkins();
             // create application for argocd
@@ -389,7 +390,7 @@ public class DeploymentAppServiceImpl implements DeploymentAppService {
         // setup monitoring: server up -> send alert
         //DeploymentApp deploymentApp = deploymentAppRepository.findByGitSrcUrl(request.getGitSrcUrl());
 //        return deploymentApp.toDeploymentAppDto();
-        return jobName + "splitheretest.test.com";
+        return jobName + "splitheredemo.auto-pilot.dev";
     }
 
     @Override
