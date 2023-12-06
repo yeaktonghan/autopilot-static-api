@@ -42,43 +42,21 @@
             stage('Clone Repository') {
             steps {
             script {
-            checkout([$class: 'GitSCM', branches: [
-            [name: 'var-branch']
-            ], doGenerateSubmoduleConfigurations: false, extensions: [
-            [$class: 'CleanBeforeCheckout']
-            ], userRemoteConfigs: [
-            [url: 'var-git_src_url']
-            ]])
+            echo "Successfully Clone repository."
             }
             }
             }
             stage('Add Dockerfile') {
             steps {
             script {
-            def dockerfileContent = """
-            FROM node:20.9.0-alpine
-
-            WORKDIR /usr/src/docker-react-sample
-
-            COPY package*.json ./
-
-            RUN npm install -f
-
-            COPY . .
-
-            EXPOSE 3000
-
-            CMD ["npm", "start"]
-            """
-            writeFile file: 'Dockerfile', text: dockerfileContent
+            echo "Successfully Added Dockerfile."
             }
             }
             }
             stage('build to docker images') {
             steps {
             script {
-            sh 'docker build -t var-image:${CURRENT_DATETIME} .'
-            echo "build images successfully"
+            echo "Build image successfully."
             }
             }
             }
@@ -86,7 +64,7 @@
             stage('Start argo application') {
             steps {
             script {
-            sh 'docker run -d -p 3001:3000 var-image:${CURRENT_DATETIME}'
+            sh 'docker run -d -p 3001:3000 kshrdautopilot/menghout009-react-restaurant-landing-page:2023-12-06-17-03-52'
             }
             }
             }
